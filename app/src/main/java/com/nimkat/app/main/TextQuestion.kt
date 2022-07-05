@@ -36,6 +36,7 @@ fun TextQuestion() {
 
         TextField(
             value = text.value,
+            maxLines = 10,
             onValueChange = {
                 text.value = it
             },
