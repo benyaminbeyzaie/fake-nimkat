@@ -20,7 +20,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.colorResource
@@ -69,6 +68,7 @@ class ProfileEditActivity : ComponentActivity() {
         }
     }
 }
+
 @Preview
 @Composable
 fun ProfileEditContent() {
@@ -118,7 +118,7 @@ fun ProfileEditContent() {
             value = "+989123456789",
             onValueChange = {
             },
-            enabled = false,
+            enabled = true,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(20.dp, 0.dp),
@@ -146,7 +146,7 @@ fun ProfileEditContent() {
             ),
             keyboardOptions = KeyboardOptions.Default.copy(
                 keyboardType = KeyboardType.Text,
-                imeAction = ImeAction.Done
+                imeAction = ImeAction.Next
             )
         )
 
@@ -231,7 +231,7 @@ fun ProfileEditContent() {
                 Text(
                     stringResource(R.string.change),
                     modifier = Modifier
-                        .padding(12.dp , 6.dp),
+                        .padding(12.dp, 6.dp),
                     color = colorResource(R.color.main_color),
                     fontFamily = mainFont,
                     textAlign = TextAlign.Center,

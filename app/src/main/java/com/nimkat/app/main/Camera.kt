@@ -1,13 +1,10 @@
 package com.nimkat.app.main
 
 import android.annotation.SuppressLint
-import android.util.Log
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
@@ -18,7 +15,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.modifier.modifierLocalConsumer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
@@ -37,7 +33,6 @@ import com.nimkat.app.question_crop.QuestionCropActivity
 import com.nimkat.app.ui.theme.RippleWhite
 import com.nimkat.app.ui.theme.mainFont
 import com.nimkat.app.ui.theme.secondFont
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -136,6 +131,7 @@ fun Camera(cameraScaffoldState: ScaffoldState) {
         }
     }
 }
+
 @Preview
 @Composable
 fun Drawer(
@@ -325,7 +321,7 @@ fun Drawer(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        stringResource(R.string.send_review , stringResource(R.string.app_name)),
+                        stringResource(R.string.send_review, stringResource(R.string.app_name)),
                         modifier = Modifier
                             .weight(1f),
                         color = colorResource(R.color.main_color),

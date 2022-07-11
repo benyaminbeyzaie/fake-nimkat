@@ -23,6 +23,7 @@ import com.nimkat.app.R
 import com.nimkat.app.ui.theme.RippleWhite
 import com.nimkat.app.ui.theme.mainFont
 import com.nimkat.app.ui.theme.secondFont
+
 @Preview
 @Composable
 fun TextQuestion() {

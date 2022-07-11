@@ -6,9 +6,7 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -22,8 +20,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.modifier.modifierLocalConsumer
-import androidx.compose.ui.modifier.modifierLocalProvider
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.colorResource
@@ -38,12 +34,11 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.nimkat.app.R
-import com.nimkat.app.ui.theme.NimkatTheme
 import com.nimkat.app.otp.OtpActivity
+import com.nimkat.app.ui.theme.NimkatTheme
 import com.nimkat.app.ui.theme.RippleWhite
 import com.nimkat.app.ui.theme.mainFont
 import com.nimkat.app.ui.theme.secondFont
-import kotlinx.coroutines.launch
 
 class LoginActivity : ComponentActivity() {
 
@@ -71,6 +66,7 @@ class LoginActivity : ComponentActivity() {
         }
     }
 }
+
 @Preview
 @Composable
 fun LoginContent() {
@@ -192,7 +188,7 @@ fun LoginContent() {
             stringResource(R.string.login_invite_code),
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(20.dp, 12.dp , 20.dp , 4.dp),
+                .padding(20.dp, 12.dp, 20.dp, 4.dp),
             color = colorResource(R.color.gray500),
             fontFamily = mainFont,
             fontSize = 14.sp
@@ -205,7 +201,7 @@ fun LoginContent() {
             modifier = Modifier
                 .fillMaxWidth()
                 .height(55.dp)
-                .padding(20.dp , 0.dp),
+                .padding(20.dp, 0.dp),
             placeholder = {
                 Text(
                     stringResource(id = R.string.invite_code),
@@ -239,7 +235,7 @@ fun LoginContent() {
         CompositionLocalProvider(LocalRippleTheme provides RippleWhite) {
             Button(
                 onClick = {
-                    OtpActivity.sendIntent(context , mobile.value)
+                    OtpActivity.sendIntent(context, mobile.value)
                 },
                 modifier = Modifier
                     .fillMaxWidth()

@@ -9,11 +9,9 @@ import androidx.activity.compose.setContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
@@ -22,9 +20,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.modifier.modifierLocalConsumer
-import androidx.compose.ui.modifier.modifierLocalProvider
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.colorResource
@@ -37,8 +32,7 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.nimkat.app.R
-import com.nimkat.app.profile_edit.ProfileEditActivity
-import com.nimkat.app.profile_edit.grade.ui.theme.NimkatTheme
+import com.nimkat.app.ui.theme.NimkatTheme
 import com.nimkat.app.ui.theme.mainFont
 import com.nimkat.app.ui.theme.secondFont
 
@@ -71,6 +65,7 @@ class GradeActivity : ComponentActivity() {
 }
 
 @OptIn(ExperimentalMaterialApi::class)
+@Preview
 @Composable
 fun GradeContent() {
 
@@ -133,7 +128,7 @@ fun GradeContent() {
                             Card(
                                 modifier = Modifier,
                                 shape = RoundedCornerShape(12.dp),
-                                border = BorderStroke(1.dp , colorResource(R.color.gray300)),
+                                border = BorderStroke(1.dp, colorResource(R.color.gray300)),
                                 elevation = 0.dp,
                                 onClick = {
 
@@ -143,7 +138,7 @@ fun GradeContent() {
                                     it,
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .padding(12.dp , 10.dp),
+                                        .padding(12.dp, 10.dp),
                                     style = TextStyle(
                                         fontFamily = mainFont,
                                         color = colorResource(R.color.black)
@@ -192,7 +187,11 @@ fun ExpandableContainer(
             ) {
                 Text(
                     text = title, Modifier.weight(1f),
-                    style = TextStyle(fontFamily = mainFont , color = colorResource(R.color.gray800) , fontWeight = FontWeight.Bold),
+                    style = TextStyle(
+                        fontFamily = mainFont,
+                        color = colorResource(R.color.gray800),
+                        fontWeight = FontWeight.Bold
+                    ),
                     fontSize = 16.sp
                 )
                 Icon(

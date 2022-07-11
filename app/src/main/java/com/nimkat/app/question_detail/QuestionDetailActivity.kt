@@ -7,10 +7,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.GridCells
-import androidx.compose.foundation.lazy.LazyVerticalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.ripple.LocalRippleTheme
@@ -26,23 +23,21 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.nimkat.app.R
-import com.nimkat.app.my_questions.MyQuestionsActivity
-import com.nimkat.app.my_questions.MyQuestionsContent
-import com.nimkat.app.question_detail.ui.theme.NimkatTheme
+import com.nimkat.app.ui.theme.NimkatTheme
 import com.nimkat.app.ui.theme.RippleWhite
 import com.nimkat.app.ui.theme.mainFont
 
 class QuestionDetailActivity : ComponentActivity() {
 
     companion object {
-        fun sendIntent(context: Context) = Intent(context, QuestionDetailActivity::class.java).apply {
-            context.startActivity(this)
-        }
+        fun sendIntent(context: Context) =
+            Intent(context, QuestionDetailActivity::class.java).apply {
+                context.startActivity(this)
+            }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -110,7 +105,7 @@ fun QuestionDetailContent() {
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp,16.dp,16.dp,0.dp),
+                    .padding(16.dp, 16.dp, 16.dp, 0.dp),
                 shape = RoundedCornerShape(8.dp)
             ) {
                 Text(
@@ -131,7 +126,6 @@ fun QuestionDetailContent() {
                 textAlign = TextAlign.Center
             )
         }
-
 
 
     }

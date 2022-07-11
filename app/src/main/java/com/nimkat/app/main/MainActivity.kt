@@ -16,13 +16,10 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.modifier.modifierLocalProvider
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -90,10 +87,12 @@ fun Greeting(cameraScaffoldState: ScaffoldState) {
 
     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
         Column() {
-            Card(shape = RoundedCornerShape(0.dp , 0.dp , 16.dp , 16.dp),
+            Card(
+                shape = RoundedCornerShape(0.dp, 0.dp, 16.dp, 16.dp),
                 modifier = Modifier
                     .weight(1f)
-                    .background(color = colorResource(R.color.main_color))) {
+                    .background(color = colorResource(R.color.main_color))
+            ) {
 
                 Row(
                     modifier = Modifier
@@ -177,7 +176,9 @@ fun BnvItem(index: Int, @StringRes titleRes: Int, pagerState: PagerState, modifi
             text = stringResource(titleRes),
             modifier = Modifier.fillMaxWidth(),
             textAlign = TextAlign.Center,
-            color = if (index == pagerState.currentPage) colorResource(R.color.white) else colorResource(R.color.bnv_unselected_color),
+            color = if (index == pagerState.currentPage) colorResource(R.color.white) else colorResource(
+                R.color.bnv_unselected_color
+            ),
             fontSize = 13.sp
         )
         AnimatedVisibility(
