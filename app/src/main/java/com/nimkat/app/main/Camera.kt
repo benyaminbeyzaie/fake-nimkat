@@ -103,7 +103,7 @@ fun Camera(cameraScaffoldState: ScaffoldState) {
                         color = colorResource(R.color.white),
                         textAlign = TextAlign.Center,
                         fontFamily = secondFont,
-                        fontSize = 22.sp
+                        fontSize = 20.sp
                     )
                 }
             }
