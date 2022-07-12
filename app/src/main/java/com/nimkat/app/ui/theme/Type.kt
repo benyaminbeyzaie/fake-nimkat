@@ -15,7 +15,7 @@ val mainFont = FontFamily(
 )
 
 val secondFont = FontFamily(
-    Font(R.font.far_homa),
+    Font(R.font.vazir),
 )
 
 // Set of Material typography styles to start with
