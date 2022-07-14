@@ -1,4 +1,4 @@
-package com.nimkat.app.my_questions
+package com.nimkat.app.view.my_questions
 
 import android.app.Activity
 import android.content.Context
@@ -31,7 +31,7 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.nimkat.app.R
-import com.nimkat.app.question_detail.QuestionDetailActivity
+import com.nimkat.app.view.question_detail.QuestionDetailActivity
 import com.nimkat.app.ui.theme.NimkatTheme
 import com.nimkat.app.ui.theme.RippleWhite
 import com.nimkat.app.ui.theme.mainFont

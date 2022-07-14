@@ -1,4 +1,4 @@
-package com.nimkat.app.question_detail
+package com.nimkat.app.view.question_detail
 
 import android.app.Activity
 import android.content.Context

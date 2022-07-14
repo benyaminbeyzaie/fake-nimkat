@@ -1,4 +1,4 @@
-package com.nimkat.app.login
+package com.nimkat.app.view.login
 
 import android.app.Activity
 import android.content.Context
@@ -34,7 +34,7 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.nimkat.app.R
-import com.nimkat.app.otp.OtpActivity
+import com.nimkat.app.view.otp.OtpActivity
 import com.nimkat.app.ui.theme.NimkatTheme
 import com.nimkat.app.ui.theme.RippleWhite
 import com.nimkat.app.ui.theme.mainFont

@@ -1,4 +1,4 @@
-package com.nimkat.app.question_crop
+package com.nimkat.app.view.question_crop
 
 import android.content.Context
 import android.content.Intent
