@@ -21,7 +21,7 @@ class AuthViewModel @Inject constructor(private val repository: AuthRepository) 
     val authModelLiveData: LiveData<DataHolder<AuthModel>> = _authModel
 
     init {
-        getCode("+989931203930")
+//        getCode("+989174568295")
     }
 
     fun getCode(phoneNumber: String) {

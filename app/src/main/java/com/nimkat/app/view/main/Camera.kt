@@ -1,6 +1,14 @@
 package com.nimkat.app.view.main
 
 import android.annotation.SuppressLint
+import android.content.ContentValues
+import android.content.Context
+import android.net.Uri
+import android.os.Build
+import android.provider.MediaStore
+import android.util.Log
+import androidx.camera.core.ImageCapture
+import androidx.camera.core.ImageCaptureException
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -35,11 +43,16 @@ import com.nimkat.app.ui.theme.mainFont
 import com.nimkat.app.ui.theme.secondFont
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import java.io.File
+import java.text.SimpleDateFormat
+import java.util.*
+import java.util.concurrent.Executor
+import java.util.concurrent.ExecutorService
 
 
 @SuppressLint("RememberReturnType")
 @Composable
-fun Camera(cameraScaffoldState: ScaffoldState) {
+fun Camera(cameraScaffoldState: ScaffoldState , cameraExecutor: ExecutorService , outputDirectory: File) {
 
     val coroutineScope = rememberCoroutineScope()
 
@@ -68,6 +81,12 @@ fun Camera(cameraScaffoldState: ScaffoldState) {
                     .background(Color.Black)
             )
 
+            CameraView(
+                outputDirectory = outputDirectory,
+                executor = cameraExecutor,
+                onImageCaptured = ::handleImageCapture,
+                onError = { Log.e("kilo", "View error:", it) }
+            )
             Card(
                 Modifier
                     .fillMaxWidth()
@@ -109,27 +128,34 @@ fun Camera(cameraScaffoldState: ScaffoldState) {
             }
 
             val context = LocalContext.current
-            CompositionLocalProvider(LocalRippleTheme provides RippleWhite) {
-                FloatingActionButton(
-                    onClick = {
-                        QuestionCropActivity.sendIntent(context)
-                    },
-                    modifier = Modifier
-                        .align(alignment = Alignment.BottomCenter)
-                        .padding(24.dp)
-                        .size(80.dp),
-                    backgroundColor = colorResource(R.color.main_color)
-                ) {
-                    Icon(
-                        painterResource(R.drawable.ic_camera),
-                        null,
-                        tint = colorResource(R.color.white),
-                    )
-                }
-            }
+//            CompositionLocalProvider(LocalRippleTheme provides RippleWhite) {
+//                FloatingActionButton(
+//                    onClick = {
+//                        QuestionCropActivity.sendIntent(context)
+//                    },
+//                    modifier = Modifier
+//                        .align(alignment = Alignment.BottomCenter)
+//                        .padding(24.dp)
+//                        .size(80.dp),
+//                    backgroundColor = colorResource(R.color.main_color)
+//                ) {
+//                    Icon(
+//                        painterResource(R.drawable.ic_camera),
+//                        null,
+//                        tint = colorResource(R.color.white),
+//                    )
+//                }
+//            }
 
         }
     }
+
+
+}
+
+private fun handleImageCapture(uri: Uri) {
+    Log.i("kilo", "Image captured: $uri")
+//        shouldShowCamera.value = false
 }
 
 @Preview
@@ -256,7 +282,7 @@ fun Drawer(
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        "+989123456789",
+                        "+989397988295",
                         modifier = Modifier
                             .fillMaxWidth(),
                         color = colorResource(R.color.gray500),
@@ -409,4 +435,59 @@ fun Drawer(
 
 
     }
+}
+
+private fun takePhoto(
+    context: Context,
+    filenameFormat: String,
+    imageCapture: ImageCapture,
+    outputDirectory: File,
+    executor: Executor,
+    onImageCaptured: (Uri) -> Unit,
+    onError: (ImageCaptureException) -> Unit
+) {
+
+
+
+
+    val photoFile = File(
+        outputDirectory,
+        SimpleDateFormat(filenameFormat, Locale.US).format(System.currentTimeMillis()) + ".jpg"
+    )
+
+//    val outputOptions = ImageCapture.OutputFileOptions.Builder(photoFile).build()
+
+    val FILENAME_FORMAT = "yyyy-MM-dd-HH-mm-ss-SSS"
+    val name = SimpleDateFormat(FILENAME_FORMAT, Locale.US)
+        .format(System.currentTimeMillis())
+    val contentValues = ContentValues().apply {
+        put(MediaStore.MediaColumns.DISPLAY_NAME, name)
+        put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg")
+        if(Build.VERSION.SDK_INT > Build.VERSION_CODES.P) {
+            put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/Nimkat")
+        }
+    }
+
+
+    // Create output options object which contains file + metadata
+    val outputOptions = ImageCapture.OutputFileOptions
+        .Builder(context.contentResolver,
+            MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+            contentValues)
+        .build()
+
+    imageCapture.takePicture(
+        outputOptions,
+        executor,
+        object : ImageCapture.OnImageSavedCallback {
+            override fun onError(exception: ImageCaptureException) {
+                Log.e("kilo", "Take photo error:", exception)
+                onError(exception)
+            }
+
+            override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
+                val savedUri = Uri.fromFile(photoFile)
+                onImageCaptured(savedUri)
+            }
+        })
 }
