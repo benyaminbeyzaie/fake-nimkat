@@ -3,7 +3,9 @@ package com.nimkat.app.view.main
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
+import android.net.Uri
 import android.os.Environment
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -49,11 +51,13 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import java.io.File
+import java.util.concurrent.ExecutorService
 
 
 @SuppressLint("RememberReturnType")
 @Composable
-fun Camera(cameraScaffoldState: ScaffoldState) {
+fun Camera(cameraScaffoldState: ScaffoldState, cameraExecutor: ExecutorService, outputDirectory: File) {
 
     val context = LocalContext.current
 
@@ -86,6 +90,13 @@ fun Camera(cameraScaffoldState: ScaffoldState) {
                 modifier = Modifier
                     .fillMaxSize()
                     .background(Color.Black)
+            )
+
+            CameraView(
+                outputDirectory = outputDirectory,
+                executor = cameraExecutor,
+                onImageCaptured = ::handleImageCapture,
+                onError = { Log.e("kilo", "View error:", it) }
             )
 
             Card(
@@ -128,35 +139,13 @@ fun Camera(cameraScaffoldState: ScaffoldState) {
                 }
             }
 
-            CompositionLocalProvider(LocalRippleTheme provides RippleWhite) {
-                FloatingActionButton(
-                    onClick = {
-
-                        val testImagePath =
-                            Environment.getExternalStorageDirectory().path.plus("/test.png")
-
-
-                        launchCropImage.launch(
-                            QuestionCropActivity.sendIntent(context as Activity, testImagePath)
-                        )
-
-                    },
-                    modifier = Modifier
-                        .align(alignment = Alignment.BottomCenter)
-                        .padding(24.dp)
-                        .size(80.dp),
-                    backgroundColor = colorResource(R.color.main_color)
-                ) {
-                    Icon(
-                        painterResource(R.drawable.ic_camera),
-                        null,
-                        tint = colorResource(R.color.white),
-                    )
-                }
-            }
-
         }
     }
+}
+
+private fun handleImageCapture(uri: Uri) {
+    Log.i("kilo", "Image captured: $uri")
+//        shouldShowCamera.value = false
 }
 
 @Preview

@@ -1,10 +1,14 @@
 package com.nimkat.app.view.main
 
+import android.Manifest
+import android.app.Activity
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedVisibility
@@ -14,10 +18,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -28,6 +30,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
@@ -37,10 +41,15 @@ import com.nimkat.app.R
 import com.nimkat.app.models.DataStatus
 import com.nimkat.app.ui.theme.NimkatTheme
 import com.nimkat.app.view_model.AuthViewModel
+import com.theartofdev.edmodo.cropper.CropImage
+import com.theartofdev.edmodo.cropper.CropImageView
 import dagger.hilt.android.AndroidEntryPoint
 import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import java.io.File
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -49,12 +58,23 @@ class MainActivity : ComponentActivity() {
     val viewModel by viewModels<AuthViewModel>()
 
 
+    private lateinit var outputDirectory: File
+    private lateinit var cameraExecutor: ExecutorService
+
+    private var shouldShowCamera: MutableState<Boolean> = mutableStateOf(false)
+
+
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         viewModel.authModelLiveData.observe(this) { value ->
             Log.d("Main Activity m", value.toString())
         }
+
+        outputDirectory = getOutputDirectory()
+        cameraExecutor = Executors.newSingleThreadExecutor()
 
         setContent {
             NimkatTheme {
@@ -65,10 +85,12 @@ class MainActivity : ComponentActivity() {
                 ) {
                     cameraScaffoldState = rememberScaffoldState()
                     coroutineScope = rememberCoroutineScope()
-                    Greeting(cameraScaffoldState!!, viewModel())
+                    Greeting(cameraScaffoldState!!, viewModel() , cameraExecutor , outputDirectory)
                 }
             }
         }
+        requestCameraPermission()
+
     }
 
     override fun onBackPressed() {
@@ -84,13 +106,55 @@ class MainActivity : ComponentActivity() {
         super.onBackPressed()
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        cameraExecutor.shutdown()
+    }
+
+    private fun getOutputDirectory(): File {
+        val mediaDir = externalMediaDirs.firstOrNull()?.let {
+            File(it, resources.getString(R.string.app_name)).apply { mkdirs() }
+        }
+
+        return if (mediaDir != null && mediaDir.exists()) mediaDir else filesDir
+    }
+
+    private val requestPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            Log.d("permission", "Permission granted")
+            shouldShowCamera.value = true
+        } else {
+            Log.d("permission", "Permission denied")
+        }
+    }
+
+    private fun requestCameraPermission() {
+        when {
+            ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.CAMERA
+            ) == PackageManager.PERMISSION_GRANTED -> {
+                Log.d("permission", "Permission previously granted")
+                shouldShowCamera.value = true
+            }
+
+            ActivityCompat.shouldShowRequestPermissionRationale(
+                this,
+                Manifest.permission.CAMERA
+            ) -> Log.d("permission", "Show camera permissions dialog")
+
+            else -> requestPermissionLauncher.launch(Manifest.permission.CAMERA)
+        }
+    }
 
 }
 
 
 @OptIn(ExperimentalPagerApi::class)
 @Composable
-fun Greeting(cameraScaffoldState: ScaffoldState, authViewModel: AuthViewModel) {
+fun Greeting(cameraScaffoldState: ScaffoldState, authViewModel: AuthViewModel , cameraExecutor: ExecutorService , outputDirectory: File) {
     val coroutineScope = rememberCoroutineScope()
 
     val isCodeSent = authViewModel.isCodeSentLiveData.observeAsState()
@@ -133,7 +197,7 @@ fun Greeting(cameraScaffoldState: ScaffoldState, authViewModel: AuthViewModel) {
                                 TextQuestion()
                             }
                             1 -> {
-                                Camera(cameraScaffoldState)
+                                Camera(cameraScaffoldState , cameraExecutor , outputDirectory)
                             }
                             2 -> {
                                 Gallery()

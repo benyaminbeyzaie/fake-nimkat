@@ -1,10 +1,16 @@
 package com.nimkat.app.view.question_crop
 
 import android.app.Activity
+import android.content.ContentValues
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.os.Environment
+import android.provider.MediaStore
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.*
@@ -34,6 +40,9 @@ import com.nimkat.app.ui.theme.RippleWhite
 import com.nimkat.app.ui.theme.secondFont
 import com.nimkat.app.utils.IMAGE_PATH
 import com.theartofdev.edmodo.cropper.CropImageView
+import java.io.File
+import java.io.FileOutputStream
+import java.io.OutputStream
 
 
 class QuestionCropActivity : ComponentActivity() {
@@ -93,7 +102,8 @@ fun QuestionCropContent(imagePath: String) {
             update = { cropImageView ->
                 cropImageView.setAspectRatio(2, 1)
                 cropImageView.setFixedAspectRatio(false)
-                cropImageView.guidelines = CropImageView.Guidelines.OFF
+                cropImageView.guidelines = CropImageView.Guidelines.ON
+                cropImageView.setImageBitmap(croppedImage)
 //                cropImageView.imageResource = R.drawable.image_test2
 
 
@@ -110,6 +120,7 @@ fun QuestionCropContent(imagePath: String) {
 
                 cropImageView.setOnCropImageCompleteListener { view, result ->
                     croppedImage = view?.croppedImage
+                    cropImageView.setImageBitmap(croppedImage)
                 }
 
 
