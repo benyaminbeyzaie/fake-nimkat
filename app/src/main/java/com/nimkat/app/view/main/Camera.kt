@@ -1,6 +1,18 @@
 package com.nimkat.app.view.main
 
 import android.annotation.SuppressLint
+import android.app.Activity
+import android.content.Intent
+import android.os.Environment
+import android.widget.Toast
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.ActivityResult
+import androidx.activity.result.ActivityResultCallback
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult
+import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -33,6 +45,8 @@ import com.nimkat.app.view.question_crop.QuestionCropActivity
 import com.nimkat.app.ui.theme.RippleWhite
 import com.nimkat.app.ui.theme.mainFont
 import com.nimkat.app.ui.theme.secondFont
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -40,6 +54,12 @@ import kotlinx.coroutines.launch
 @SuppressLint("RememberReturnType")
 @Composable
 fun Camera(cameraScaffoldState: ScaffoldState) {
+
+    val context = LocalContext.current
+
+    val launchCropImage = rememberLauncherForActivityResult(StartActivityForResult()) {
+        Toast.makeText(context, "Image Cropped", Toast.LENGTH_SHORT).show()
+    }
 
     val coroutineScope = rememberCoroutineScope()
 
@@ -108,11 +128,18 @@ fun Camera(cameraScaffoldState: ScaffoldState) {
                 }
             }
 
-            val context = LocalContext.current
             CompositionLocalProvider(LocalRippleTheme provides RippleWhite) {
                 FloatingActionButton(
                     onClick = {
-                        QuestionCropActivity.sendIntent(context)
+
+                        val testImagePath =
+                            Environment.getExternalStorageDirectory().path.plus("/test.png")
+
+
+                        launchCropImage.launch(
+                            QuestionCropActivity.sendIntent(context as Activity, testImagePath)
+                        )
+
                     },
                     modifier = Modifier
                         .align(alignment = Alignment.BottomCenter)

@@ -1,7 +1,9 @@
 package com.nimkat.app.view.question_crop
 
-import android.content.Context
+import android.app.Activity
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.drawable.BitmapDrawable
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -14,6 +16,7 @@ import androidx.compose.material.ripple.LocalRippleTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
@@ -23,22 +26,32 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
+import coil.ImageLoader
+import coil.request.ImageRequest
 import com.nimkat.app.R
 import com.nimkat.app.ui.theme.NimkatTheme
 import com.nimkat.app.ui.theme.RippleWhite
 import com.nimkat.app.ui.theme.secondFont
+import com.nimkat.app.utils.IMAGE_PATH
 import com.theartofdev.edmodo.cropper.CropImageView
+
 
 class QuestionCropActivity : ComponentActivity() {
 
     companion object {
-        fun sendIntent(context: Context) = Intent(context, QuestionCropActivity::class.java).apply {
-            context.startActivity(this)
-        }
+        fun sendIntent(activity: Activity, imagePath: String) =
+            Intent(activity, QuestionCropActivity::class.java).apply {
+                putExtra(IMAGE_PATH, imagePath)
+            }
     }
+
+    private var imagePath = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        checkArgument()
+
         setContent {
             NimkatTheme {
                 // A surface container using the 'background' color from the theme
@@ -48,32 +61,58 @@ class QuestionCropActivity : ComponentActivity() {
                 ) {
 
                     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
-                        QuestionCropContent()
+                        QuestionCropContent(imagePath)
                     }
                 }
             }
         }
     }
 
+    private fun checkArgument() {
+        imagePath = intent.getStringExtra(IMAGE_PATH).orEmpty()
+    }
 
 }
 
 @Composable
-fun QuestionCropContent() {
+fun QuestionCropContent(imagePath: String) {
+
+    val context = LocalContext.current
+    var croppedImage: Bitmap? = null
+    var cropImageView: CropImageView? = null
+
     Column(Modifier.fillMaxSize()) {
         AndroidView(
             factory = { factoryContext ->
-                CropImageView(factoryContext)
+                cropImageView = CropImageView(factoryContext)
+                cropImageView!!
             },
-            modifier = Modifier.weight(1f),
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxWidth(),
             update = { cropImageView ->
                 cropImageView.setAspectRatio(2, 1)
                 cropImageView.setFixedAspectRatio(false)
                 cropImageView.guidelines = CropImageView.Guidelines.OFF
-//            cropImageView.setImageUriAsync()
+//                cropImageView.imageResource = R.drawable.image_test2
 
 
-                cropImageView.imageResource = R.drawable.image_test2
+                val loader = ImageLoader(context)
+                val req = ImageRequest.Builder(context)
+                    .data(imagePath) // demo link
+                    .lifecycle((context as ComponentActivity).lifecycle)
+                    .target { result ->
+                        val bitmap = (result as BitmapDrawable).bitmap
+                        cropImageView.setImageBitmap(bitmap)
+                    }
+                    .build()
+                loader.enqueue(req)
+
+                cropImageView.setOnCropImageCompleteListener { view, result ->
+                    croppedImage = view?.croppedImage
+                }
+
+
             }
         )
 
@@ -86,7 +125,7 @@ fun QuestionCropContent() {
 
             IconButton(
                 onClick = {
-
+                    cropImageView?.resetCropRect()
                 },
                 modifier = Modifier.size(40.dp)
             ) {
@@ -101,7 +140,7 @@ fun QuestionCropContent() {
 
             IconButton(
                 onClick = {
-
+                    cropImageView?.rotatedDegrees = cropImageView!!.rotatedDegrees + 90
                 },
                 modifier = Modifier.size(40.dp)
             ) {
@@ -115,7 +154,17 @@ fun QuestionCropContent() {
 
         CompositionLocalProvider(LocalRippleTheme provides RippleWhite) {
             Button(
-                onClick = { },
+                onClick = {
+                    val bundle = Bundle().apply {
+                        putParcelable("image", croppedImage)
+                    }
+                    if (context is Activity) {
+                        context.setResult(Activity.RESULT_OK, Intent().apply {
+                            putExtra("data", bundle)
+                        })
+                        context.finish()
+                    }
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp)
