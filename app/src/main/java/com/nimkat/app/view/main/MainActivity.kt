@@ -1,8 +1,11 @@
-package com.nimkat.app.main
+package com.nimkat.app.view.main
 
 import android.os.Bundle
+import android.util.Log
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -13,9 +16,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
@@ -23,23 +28,34 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.PagerState
 import com.google.accompanist.pager.rememberPagerState
 import com.nimkat.app.R
+import com.nimkat.app.models.DataStatus
 import com.nimkat.app.ui.theme.NimkatTheme
+import com.nimkat.app.view_model.AuthViewModel
+import dagger.hilt.android.AndroidEntryPoint
+import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-
-
     private var cameraScaffoldState: ScaffoldState? = null
     private var coroutineScope: CoroutineScope? = null
+    val viewModel by viewModels<AuthViewModel>()
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        viewModel.authModelLiveData.observe(this) { value ->
+            Log.d("Main Activity m", value.toString())
+        }
+
         setContent {
             NimkatTheme {
                 // A surface container using the 'background' color from the theme
@@ -49,7 +65,7 @@ class MainActivity : ComponentActivity() {
                 ) {
                     cameraScaffoldState = rememberScaffoldState()
                     coroutineScope = rememberCoroutineScope()
-                    Greeting(cameraScaffoldState!!)
+                    Greeting(cameraScaffoldState!!, viewModel())
                 }
             }
         }
@@ -74,10 +90,20 @@ class MainActivity : ComponentActivity() {
 
 @OptIn(ExperimentalPagerApi::class)
 @Composable
-fun Greeting(cameraScaffoldState: ScaffoldState) {
-
-
+fun Greeting(cameraScaffoldState: ScaffoldState, authViewModel: AuthViewModel) {
     val coroutineScope = rememberCoroutineScope()
+
+    val isCodeSent = authViewModel.isCodeSentLiveData.observeAsState()
+
+    Log.d("Main Activity", "authModel: $isCodeSent, status: ${isCodeSent.value?.status.toString()}")
+    if (isCodeSent.value?.status == DataStatus.Success) {
+        val text = "This is a Toast message"
+        val duration = Toast.LENGTH_SHORT
+        val context = LocalContext.current
+        val toast = Toast.makeText(context, text, duration)
+        toast.show()
+    }else {
+    }
 
     val pagerState = rememberPagerState(
         initialPage = 1,
@@ -86,7 +112,7 @@ fun Greeting(cameraScaffoldState: ScaffoldState) {
     )
 
     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
-        Column() {
+        Column {
             Card(
                 shape = RoundedCornerShape(0.dp, 0.dp, 16.dp, 16.dp),
                 modifier = Modifier

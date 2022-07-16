@@ -1,4 +1,4 @@
-package com.nimkat.app.main
+package com.nimkat.app.view.main
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*

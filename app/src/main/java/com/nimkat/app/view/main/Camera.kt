@@ -1,4 +1,4 @@
-package com.nimkat.app.main
+package com.nimkat.app.view.main
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.Image
@@ -26,10 +26,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.nimkat.app.R
-import com.nimkat.app.login.LoginActivity
-import com.nimkat.app.my_questions.MyQuestionsActivity
-import com.nimkat.app.profile_edit.ProfileEditActivity
-import com.nimkat.app.question_crop.QuestionCropActivity
+import com.nimkat.app.view.login.LoginActivity
+import com.nimkat.app.view.my_questions.MyQuestionsActivity
+import com.nimkat.app.view.profile_edit.ProfileEditActivity
+import com.nimkat.app.view.question_crop.QuestionCropActivity
 import com.nimkat.app.ui.theme.RippleWhite
 import com.nimkat.app.ui.theme.mainFont
 import com.nimkat.app.ui.theme.secondFont
@@ -103,7 +103,7 @@ fun Camera(cameraScaffoldState: ScaffoldState) {
                         color = colorResource(R.color.white),
                         textAlign = TextAlign.Center,
                         fontFamily = secondFont,
-                        fontSize = 22.sp
+                        fontSize = 20.sp
                     )
                 }
             }

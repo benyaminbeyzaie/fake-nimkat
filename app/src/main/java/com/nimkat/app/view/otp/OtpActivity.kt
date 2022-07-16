@@ -1,4 +1,4 @@
-package com.nimkat.app.otp
+package com.nimkat.app.view.otp
 
 import android.app.Activity
 import android.content.Context

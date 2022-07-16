@@ -1,4 +1,4 @@
-package com.nimkat.app.main
+package com.nimkat.app.view.main
 
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.ExperimentalFoundationApi

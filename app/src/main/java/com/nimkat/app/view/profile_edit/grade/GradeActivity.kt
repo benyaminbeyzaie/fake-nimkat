@@ -1,4 +1,4 @@
-package com.nimkat.app.profile_edit.grade
+package com.nimkat.app.view.profile_edit.grade
 
 import android.app.Activity
 import android.content.Context
@@ -168,7 +168,7 @@ fun ExpandableContainer(
 ) {
 
     //State
-    var isContentVisible = rememberSaveable { mutableStateOf(defaultState) }
+    val isContentVisible = rememberSaveable { mutableStateOf(defaultState) }
 
     Column(
         modifier = Modifier
