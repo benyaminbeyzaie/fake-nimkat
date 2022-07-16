@@ -1,6 +1,8 @@
 package com.nimkat.app.view.main
 
 import android.annotation.SuppressLint
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -25,14 +27,15 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat.startActivity
 import com.nimkat.app.R
+import com.nimkat.app.ui.theme.RippleWhite
+import com.nimkat.app.ui.theme.mainFont
+import com.nimkat.app.ui.theme.secondFont
 import com.nimkat.app.view.login.LoginActivity
 import com.nimkat.app.view.my_questions.MyQuestionsActivity
 import com.nimkat.app.view.profile_edit.ProfileEditActivity
 import com.nimkat.app.view.question_crop.QuestionCropActivity
-import com.nimkat.app.ui.theme.RippleWhite
-import com.nimkat.app.ui.theme.mainFont
-import com.nimkat.app.ui.theme.secondFont
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -312,7 +315,9 @@ fun Drawer(
                     .padding(0.dp, 4.dp, 0.dp, 0.dp)
                     .fillMaxWidth()
                     .clickable {
-
+                        val browserIntent =
+                            Intent(Intent.ACTION_VIEW, Uri.parse("https://t.me/benyamin_beyzaie"))
+                        startActivity(context, browserIntent, null)
                     }) {
                 Row(
                     Modifier
@@ -321,7 +326,7 @@ fun Drawer(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        stringResource(R.string.send_review, stringResource(R.string.app_name)),
+                        stringResource(R.string.contact_us),
                         modifier = Modifier
                             .weight(1f),
                         color = colorResource(R.color.main_color),

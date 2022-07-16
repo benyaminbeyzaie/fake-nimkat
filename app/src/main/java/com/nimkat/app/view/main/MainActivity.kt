@@ -46,7 +46,7 @@ import kotlinx.coroutines.launch
 class MainActivity : ComponentActivity() {
     private var cameraScaffoldState: ScaffoldState? = null
     private var coroutineScope: CoroutineScope? = null
-    val viewModel by viewModels<AuthViewModel>()
+    private val viewModel by viewModels<AuthViewModel>()
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
