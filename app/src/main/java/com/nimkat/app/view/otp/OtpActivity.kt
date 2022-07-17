@@ -4,8 +4,10 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -14,6 +16,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -39,24 +42,33 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.nimkat.app.R
+import com.nimkat.app.models.DataStatus
 import com.nimkat.app.ui.theme.NimkatTheme
 import com.nimkat.app.ui.theme.mainFont
 import com.nimkat.app.ui.theme.secondFont
 import com.nimkat.app.utils.MOBILE
+import com.nimkat.app.view.main.MainActivity
+import com.nimkat.app.view_model.AuthViewModel
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class OtpActivity : ComponentActivity() {
 
     companion object {
-        fun sendIntent(context: Context, mobile: String) =
+        fun sendIntent(context: Context, id: String) =
             Intent(context, OtpActivity::class.java).apply {
-                putExtra(MOBILE, mobile)
+                putExtra("id", id)
                 context.startActivity(this)
             }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         setContent {
             NimkatTheme {
                 // A surface container using the 'background' color from the theme
@@ -65,7 +77,7 @@ class OtpActivity : ComponentActivity() {
                     color = MaterialTheme.colors.background
                 ) {
                     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
-                        OtpContent(intent.getStringExtra(MOBILE).orEmpty())
+                        OtpContent(intent.getStringExtra("id").orEmpty(), viewModel())
                     }
                 }
             }
@@ -75,9 +87,13 @@ class OtpActivity : ComponentActivity() {
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
-fun OtpContent(mobile: String) {
-
+fun OtpContent(id: String, authViewModel: AuthViewModel) {
     val context = LocalContext.current
+    val authState = authViewModel.authModelLiveData.observeAsState()
+    Log.d("OptActivity", "auth state: ${authState.value?.status}")
+    if (authState.value?.status === DataStatus.Success) {
+        MainActivity.sendIntent(context)
+    }
 
     Column(
         modifier = Modifier
@@ -114,7 +130,7 @@ fun OtpContent(mobile: String) {
         )
 
         Text(
-            stringResource(R.string.otp_desc).plus("\n").plus(mobile),
+            stringResource(R.string.otp_desc).plus("\n").plus(""),
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(20.dp, 4.dp),
@@ -140,38 +156,15 @@ fun OtpContent(mobile: String) {
             remember { FocusRequester() },
         )
 
-
         val keyboardController = LocalSoftwareKeyboardController.current
-
 
         CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
             Row(modifier = Modifier.align(Alignment.CenterHorizontally)) {
                 for (i in 0..4) {
-                    CodeItem(i, items, activates, keyboardController)
+                    CodeItem(i, items, activates, keyboardController, authViewModel, id)
                 }
             }
         }
-
-
-        Box(modifier = Modifier
-            .padding(20.dp)
-            .align(Alignment.CenterHorizontally)
-            .clickable {
-
-            }) {
-            Text(
-                stringResource(R.string.resend),
-                modifier = Modifier
-                    .padding(16.dp, 8.dp),
-                color = colorResource(R.color.main_color),
-                fontFamily = mainFont,
-                textAlign = TextAlign.Center,
-                fontWeight = FontWeight.Bold,
-                fontSize = 16.sp
-            )
-        }
-
-
     }
 }
 
@@ -181,7 +174,9 @@ fun CodeItem(
     index: Int,
     states: List<MutableState<String>>,
     activates: List<FocusRequester>,
-    keyboardController: SoftwareKeyboardController?
+    keyboardController: SoftwareKeyboardController?,
+    authViewModel: AuthViewModel,
+    id: String,
 ) {
     OutlinedTextField(
         singleLine = true,
@@ -231,7 +226,16 @@ fun CodeItem(
             imeAction = ImeAction.Done,
         ),
         keyboardActions = KeyboardActions(
-            onDone = { keyboardController?.hide() }
+            onDone = {
+                keyboardController?.hide()
+                var enteredCode = "";
+                for (state in states) {
+                    enteredCode += state.value
+                }
+                Log.d("Opt", "keyboardActions: Done ---> $enteredCode");
+
+                authViewModel.verifyCode(enteredCode, id)
+            }
         )
     )
 }
