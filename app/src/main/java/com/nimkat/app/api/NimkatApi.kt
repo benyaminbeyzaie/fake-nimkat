@@ -14,5 +14,5 @@ interface NimkatApi {
     suspend fun getCode(@Body body: GetCodeBody): Response<GetCodeResponse>
 
     @POST("users/{id}/verify_code/")
-    suspend fun verifyCode(@Path("Id") id: String, @Body body: VerifyCodeBody): Response<AuthModel>
+    suspend fun verifyCode(@Path("id") id: String, @Body body: VerifyCodeBody): Response<AuthModel>
 }
