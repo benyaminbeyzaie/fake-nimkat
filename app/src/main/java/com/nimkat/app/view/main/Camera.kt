@@ -2,8 +2,6 @@ package com.nimkat.app.view.main
 
 import android.annotation.SuppressLint
 import android.app.Activity
-import android.content.Intent
-import android.net.Uri
 import android.os.Environment
 import android.util.Log
 import android.widget.Toast
@@ -46,7 +44,6 @@ import androidx.core.content.ContextCompat.startActivity
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.nimkat.app.R
 import com.nimkat.app.models.AuthModel
-import com.nimkat.app.ui.theme.RippleWhite
 import com.nimkat.app.ui.theme.mainFont
 import com.nimkat.app.ui.theme.secondFont
 import com.nimkat.app.view.login.LoginActivity

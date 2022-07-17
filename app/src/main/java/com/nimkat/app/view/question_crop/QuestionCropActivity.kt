@@ -4,12 +4,14 @@ import android.app.Activity
 import android.content.ContentValues
 import android.content.Intent
 import android.graphics.Bitmap
+import android.graphics.ImageDecoder
 import android.graphics.drawable.BitmapDrawable
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -32,6 +34,7 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.content.ContentProviderCompat.requireContext
 import coil.ImageLoader
 import coil.request.ImageRequest
 import com.nimkat.app.R
@@ -39,7 +42,9 @@ import com.nimkat.app.ui.theme.NimkatTheme
 import com.nimkat.app.ui.theme.RippleWhite
 import com.nimkat.app.ui.theme.secondFont
 import com.nimkat.app.utils.IMAGE_PATH
+import com.theartofdev.edmodo.cropper.CropImage
 import com.theartofdev.edmodo.cropper.CropImageView
+import com.yalantis.ucrop.UCrop
 import java.io.File
 import java.io.FileOutputStream
 import java.io.OutputStream
@@ -70,7 +75,9 @@ class QuestionCropActivity : ComponentActivity() {
                 ) {
 
                     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
+                        Log.d("imageview" , imagePath)
                         QuestionCropContent(imagePath)
+
                     }
                 }
             }
