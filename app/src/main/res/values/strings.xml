@@ -24,7 +24,7 @@
     <string name="otp_desc">کد تاییدی که به شماره زیر ارسال شده است را وارد کنید :</string>
     <string name="resend">ارسال مجدد</string>
     <string name="my_questions">سوالات من</string>
-    <string name="send_review">ارسال بازخورد به %1$s</string>
+    <string name="contact_us">ارتباط با ما</string>
     <string name="logout">خروج از حساب کاربری</string>
     <string name="username">نام کاربری</string>
     <string name="profile_edit">ویرایش اطلاعات</string>

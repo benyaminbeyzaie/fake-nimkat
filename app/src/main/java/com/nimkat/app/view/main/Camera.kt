@@ -15,6 +15,8 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult
 import androidx.appcompat.app.AppCompatActivity
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -26,6 +28,7 @@ import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.Menu
 import androidx.compose.material.ripple.LocalRippleTheme
 import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -39,11 +42,18 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat.startActivity
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.nimkat.app.R
+import com.nimkat.app.models.AuthModel
+import com.nimkat.app.ui.theme.RippleWhite
+import com.nimkat.app.ui.theme.mainFont
+import com.nimkat.app.ui.theme.secondFont
 import com.nimkat.app.view.login.LoginActivity
 import com.nimkat.app.view.my_questions.MyQuestionsActivity
 import com.nimkat.app.view.profile_edit.ProfileEditActivity
 import com.nimkat.app.view.question_crop.QuestionCropActivity
+import com.nimkat.app.view_model.AuthViewModel
 import com.nimkat.app.ui.theme.RippleWhite
 import com.nimkat.app.ui.theme.mainFont
 import com.nimkat.app.ui.theme.secondFont
@@ -57,7 +67,7 @@ import java.util.concurrent.ExecutorService
 
 @SuppressLint("RememberReturnType")
 @Composable
-fun Camera(cameraScaffoldState: ScaffoldState, cameraExecutor: ExecutorService, outputDirectory: File) {
+fun Camera(cameraScaffoldState: ScaffoldState, cameraExecutor: ExecutorService, outputDirectory: File , authViewModel: AuthViewModel) {
 
     val context = LocalContext.current
 
@@ -78,7 +88,7 @@ fun Camera(cameraScaffoldState: ScaffoldState, cameraExecutor: ExecutorService, 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         drawerContent = if (drawerVisibility.value) {
-            { Drawer() }
+            { Drawer(authViewModel = authViewModel) }
         } else null,
         scaffoldState = cameraScaffoldState,
     ) {
@@ -148,22 +158,21 @@ private fun handleImageCapture(uri: Uri) {
 //        shouldShowCamera.value = false
 }
 
-@Preview
 @Composable
 fun Drawer(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier, authViewModel: AuthViewModel,
 ) {
 
     val context = LocalContext.current
+    val authModel = authViewModel.authModelLiveData.observeAsState()
+    val isLogin = authModel.value?.data != null;
+
 
     Column(
         modifier
             .fillMaxSize()
             .background(Color.White),
-
-        ) {
-
-        val isLogin = true
+    ) {
 
         if (!isLogin) {
 
@@ -328,7 +337,9 @@ fun Drawer(
                     .padding(0.dp, 4.dp, 0.dp, 0.dp)
                     .fillMaxWidth()
                     .clickable {
-
+                        val browserIntent =
+                            Intent(Intent.ACTION_VIEW, Uri.parse("https://t.me/benyamin_beyzaie"))
+                        startActivity(context, browserIntent, null)
                     }) {
                 Row(
                     Modifier
@@ -337,7 +348,7 @@ fun Drawer(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        stringResource(R.string.send_review, stringResource(R.string.app_name)),
+                        stringResource(R.string.contact_us),
                         modifier = Modifier
                             .weight(1f),
                         color = colorResource(R.color.main_color),
@@ -359,7 +370,7 @@ fun Drawer(
                     .padding(0.dp, 4.dp, 0.dp, 0.dp)
                     .fillMaxWidth()
                     .clickable {
-
+                        authViewModel.clearAuth()
                     }) {
                 Row(
                     Modifier

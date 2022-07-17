@@ -3,6 +3,8 @@ package com.nimkat.app.view.main
 import android.Manifest
 import android.app.Activity
 import android.content.pm.PackageManager
+import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
@@ -40,6 +42,8 @@ import com.google.accompanist.pager.rememberPagerState
 import com.nimkat.app.R
 import com.nimkat.app.models.DataStatus
 import com.nimkat.app.ui.theme.NimkatTheme
+import com.nimkat.app.utils.MOBILE
+import com.nimkat.app.view.otp.OtpActivity
 import com.nimkat.app.view_model.AuthViewModel
 import com.theartofdev.edmodo.cropper.CropImage
 import com.theartofdev.edmodo.cropper.CropImageView
@@ -55,8 +59,13 @@ import java.util.concurrent.Executors
 class MainActivity : ComponentActivity() {
     private var cameraScaffoldState: ScaffoldState? = null
     private var coroutineScope: CoroutineScope? = null
-    val viewModel by viewModels<AuthViewModel>()
 
+    companion object {
+        fun sendIntent(context: Context) =
+            Intent(context, MainActivity::class.java).apply {
+                context.startActivity(this)
+            }
+    }
 
     private lateinit var outputDirectory: File
     private lateinit var cameraExecutor: ExecutorService
@@ -68,10 +77,8 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        viewModel.authModelLiveData.observe(this) { value ->
-            Log.d("Main Activity m", value.toString())
-        }
+        val authViewModel: AuthViewModel by viewModels()
+        authViewModel.initAuth()
 
         outputDirectory = getOutputDirectory()
         cameraExecutor = Executors.newSingleThreadExecutor()
@@ -157,18 +164,6 @@ class MainActivity : ComponentActivity() {
 fun Greeting(cameraScaffoldState: ScaffoldState, authViewModel: AuthViewModel , cameraExecutor: ExecutorService , outputDirectory: File) {
     val coroutineScope = rememberCoroutineScope()
 
-    val isCodeSent = authViewModel.isCodeSentLiveData.observeAsState()
-
-    Log.d("Main Activity", "authModel: $isCodeSent, status: ${isCodeSent.value?.status.toString()}")
-    if (isCodeSent.value?.status == DataStatus.Success) {
-        val text = "This is a Toast message"
-        val duration = Toast.LENGTH_SHORT
-        val context = LocalContext.current
-        val toast = Toast.makeText(context, text, duration)
-        toast.show()
-    }else {
-    }
-
     val pagerState = rememberPagerState(
         initialPage = 1,
         pageCount = 3,
@@ -197,7 +192,7 @@ fun Greeting(cameraScaffoldState: ScaffoldState, authViewModel: AuthViewModel , 
                                 TextQuestion()
                             }
                             1 -> {
-                                Camera(cameraScaffoldState , cameraExecutor , outputDirectory)
+                                Camera(cameraScaffoldState , cameraExecutor , outputDirectory , authViewModel)
                             }
                             2 -> {
                                 Gallery()
