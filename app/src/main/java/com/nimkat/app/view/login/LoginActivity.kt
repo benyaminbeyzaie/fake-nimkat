@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
@@ -14,6 +15,7 @@ import androidx.compose.material.*
 import androidx.compose.material.ripple.LocalRippleTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -33,13 +35,18 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.nimkat.app.R
+import com.nimkat.app.models.DataStatus
 import com.nimkat.app.view.otp.OtpActivity
 import com.nimkat.app.ui.theme.NimkatTheme
 import com.nimkat.app.ui.theme.RippleWhite
 import com.nimkat.app.ui.theme.mainFont
 import com.nimkat.app.ui.theme.secondFont
+import com.nimkat.app.view_model.AuthViewModel
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class LoginActivity : ComponentActivity() {
 
     companion object {
@@ -59,7 +66,7 @@ class LoginActivity : ComponentActivity() {
                 ) {
 
                     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
-                        LoginContent()
+                        LoginContent(viewModel())
                     }
                 }
             }
@@ -67,11 +74,17 @@ class LoginActivity : ComponentActivity() {
     }
 }
 
-@Preview
 @Composable
-fun LoginContent() {
-
+fun LoginContent(authViewModel: AuthViewModel) {
+    val mobile = remember { mutableStateOf("") }
+    val inviteCode = remember { mutableStateOf("") }
     val context = LocalContext.current
+    val isCodeSent = authViewModel.isCodeSentLiveData.observeAsState()
+
+    if (isCodeSent.value?.status == DataStatus.Success) {
+        Log.d("Login", "isCodeSent.value?.status == DataStatus.Success")
+        OtpActivity.sendIntent(context, isCodeSent.value!!.data!!.toString())
+    }
 
     Column(
         modifier = Modifier
@@ -115,8 +128,7 @@ fun LoginContent() {
             fontFamily = mainFont,
             fontSize = 14.sp
         )
-        val mobile = remember { mutableStateOf("") }
-        val inviteCode = remember { mutableStateOf("") }
+
 
         Row(
             modifier = Modifier.padding(20.dp, 20.dp, 20.dp, 0.dp)
@@ -235,7 +247,8 @@ fun LoginContent() {
         CompositionLocalProvider(LocalRippleTheme provides RippleWhite) {
             Button(
                 onClick = {
-                    OtpActivity.sendIntent(context, mobile.value)
+                    Log.d("LoginActivity", "getting code with phone: +98" + mobile.value);
+                    authViewModel.getCode("+98" + mobile.value);
                 },
                 modifier = Modifier
                     .fillMaxWidth()

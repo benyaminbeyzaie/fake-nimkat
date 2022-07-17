@@ -14,6 +14,7 @@ import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.Menu
 import androidx.compose.material.ripple.LocalRippleTheme
 import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -28,7 +29,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat.startActivity
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.nimkat.app.R
+import com.nimkat.app.models.AuthModel
 import com.nimkat.app.ui.theme.RippleWhite
 import com.nimkat.app.ui.theme.mainFont
 import com.nimkat.app.ui.theme.secondFont
@@ -36,13 +39,14 @@ import com.nimkat.app.view.login.LoginActivity
 import com.nimkat.app.view.my_questions.MyQuestionsActivity
 import com.nimkat.app.view.profile_edit.ProfileEditActivity
 import com.nimkat.app.view.question_crop.QuestionCropActivity
+import com.nimkat.app.view_model.AuthViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 
 @SuppressLint("RememberReturnType")
 @Composable
-fun Camera(cameraScaffoldState: ScaffoldState) {
+fun Camera(cameraScaffoldState: ScaffoldState, authViewModel: AuthViewModel) {
 
     val coroutineScope = rememberCoroutineScope()
 
@@ -57,7 +61,7 @@ fun Camera(cameraScaffoldState: ScaffoldState) {
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         drawerContent = if (drawerVisibility.value) {
-            { Drawer() }
+            { Drawer(authViewModel = authViewModel) }
         } else null,
         scaffoldState = cameraScaffoldState,
     ) {
@@ -135,22 +139,21 @@ fun Camera(cameraScaffoldState: ScaffoldState) {
     }
 }
 
-@Preview
 @Composable
 fun Drawer(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier, authViewModel: AuthViewModel,
 ) {
 
     val context = LocalContext.current
+    val authModel = authViewModel.authModelLiveData.observeAsState()
+    val isLogin = authModel.value?.data != null;
+
 
     Column(
         modifier
             .fillMaxSize()
             .background(Color.White),
-
-        ) {
-
-        val isLogin = true
+    ) {
 
         if (!isLogin) {
 
@@ -348,7 +351,7 @@ fun Drawer(
                     .padding(0.dp, 4.dp, 0.dp, 0.dp)
                     .fillMaxWidth()
                     .clickable {
-
+                        authViewModel.clearAuth()
                     }) {
                 Row(
                     Modifier
