@@ -89,7 +89,7 @@ fun Camera(cameraScaffoldState: ScaffoldState,
                 Modifier
                     .fillMaxWidth()
                     .padding(16.dp),
-                shape = RoundedCornerShape(20.dp),
+                shape = RoundedCornerShape(30.dp),
                 backgroundColor = colorResource(R.color.camera_title_back),
             ) {
                 Box(contentAlignment = Alignment.CenterStart) {
