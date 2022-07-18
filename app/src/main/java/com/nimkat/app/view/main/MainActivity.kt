@@ -5,10 +5,12 @@ import android.app.Activity
 import android.content.pm.PackageManager
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
@@ -42,8 +44,10 @@ import com.google.accompanist.pager.rememberPagerState
 import com.nimkat.app.R
 import com.nimkat.app.models.DataStatus
 import com.nimkat.app.ui.theme.NimkatTheme
+import com.nimkat.app.utils.CROP_IMAGE_CODE
 import com.nimkat.app.utils.MOBILE
 import com.nimkat.app.view.otp.OtpActivity
+import com.nimkat.app.view.question_crop.QuestionCropActivity
 import com.nimkat.app.view_model.AuthViewModel
 import com.theartofdev.edmodo.cropper.CropImage
 import com.theartofdev.edmodo.cropper.CropImageView
@@ -73,8 +77,6 @@ class MainActivity : ComponentActivity() {
     private var shouldShowCamera: MutableState<Boolean> = mutableStateOf(false)
 
 
-
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val authViewModel: AuthViewModel by viewModels()
@@ -92,7 +94,13 @@ class MainActivity : ComponentActivity() {
                 ) {
                     cameraScaffoldState = rememberScaffoldState()
                     coroutineScope = rememberCoroutineScope()
-                    Greeting(cameraScaffoldState!!, viewModel() , cameraExecutor , outputDirectory)
+                    Greeting(
+                        cameraScaffoldState!!,
+                        viewModel(),
+                        cameraExecutor,
+                        outputDirectory,
+                        onImageCaptured = ::handleImageCapture
+                    )
                 }
             }
         }
@@ -126,6 +134,7 @@ class MainActivity : ComponentActivity() {
         return if (mediaDir != null && mediaDir.exists()) mediaDir else filesDir
     }
 
+
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { isGranted ->
@@ -156,17 +165,61 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+
+    private fun handleImageCapture(uri: Uri , mode: Int) {
+        Log.i("kilo", "Image captured: $uri")
+//        shouldShowCamera.value = false
+        val intent = Intent(this@MainActivity, QuestionCropActivity::class.java)
+        intent.putExtra("mode" , mode)
+        if (uri != null){
+            intent.putExtra("URI", uri)
+        }
+        startActivityForResult(intent, CROP_IMAGE_CODE)
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        val x = this
+        when (requestCode) {
+            CROP_IMAGE_CODE -> {
+                if (resultCode == Activity.RESULT_OK) {
+                    data?.apply {
+                        val parcelableExtra = getParcelableExtra<Uri>("photouri")
+                        Log.d("kiloURI", "IMAGE CROPPING SUCCESSFULL. $parcelableExtra")
+                        Toast.makeText(x, "IMAGE CROPPING SUCCESSFULL.", Toast.LENGTH_SHORT).show()
+                        val intent = Intent(x, MainActivity2::class.java)
+                        intent.putExtra("URI", parcelableExtra)
+                        startActivity(intent)
+                    }
+
+
+                } else {
+                    Log.d("kiloURI", "IMAGE CROPPING CANCELED.")
+                    Toast.makeText(this, "IMAGE CROPPING CANCELED.", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+        }
+    }
+
+
 }
 
 
 @OptIn(ExperimentalPagerApi::class)
 @Composable
-fun Greeting(cameraScaffoldState: ScaffoldState, authViewModel: AuthViewModel , cameraExecutor: ExecutorService , outputDirectory: File) {
+fun Greeting(
+    cameraScaffoldState: ScaffoldState,
+    authViewModel: AuthViewModel,
+    cameraExecutor: ExecutorService,
+    outputDirectory: File,
+    onImageCaptured: (Uri , Int) -> Unit
+) {
     val coroutineScope = rememberCoroutineScope()
 
     val pagerState = rememberPagerState(
         initialPage = 1,
-        pageCount = 3,
+        pageCount = 2,
         infiniteLoop = false
     )
 
@@ -192,11 +245,17 @@ fun Greeting(cameraScaffoldState: ScaffoldState, authViewModel: AuthViewModel , 
                                 TextQuestion()
                             }
                             1 -> {
-                                Camera(cameraScaffoldState , cameraExecutor , outputDirectory , authViewModel)
+                                Camera(
+                                    cameraScaffoldState,
+                                    cameraExecutor,
+                                    outputDirectory,
+                                    authViewModel,
+                                    onImageCaptured = onImageCaptured
+                                )
                             }
-                            2 -> {
-                                Gallery()
-                            }
+//                            2 -> {
+//                                Gallery()
+//                            }
                         }
                     }
                 }
@@ -232,18 +291,18 @@ fun Greeting(cameraScaffoldState: ScaffoldState, authViewModel: AuthViewModel , 
                                 pagerState.animateScrollToPage(1)
                             }
                         })
-                BnvItem(
-                    2,
-                    R.string.gallery,
-                    pagerState,
-                    Modifier
-                        .weight(1.0F)
-                        .fillMaxHeight()
-                        .clickable {
-                            coroutineScope.launch {
-                                pagerState.animateScrollToPage(2)
-                            }
-                        })
+//                BnvItem(
+//                    2,
+//                    R.string.gallery,
+//                    pagerState,
+//                    Modifier
+//                        .weight(1.0F)
+//                        .fillMaxHeight()
+//                        .clickable {
+//                            coroutineScope.launch {
+//                                pagerState.animateScrollToPage(2)
+//                            }
+//                        })
             }
         }
     }

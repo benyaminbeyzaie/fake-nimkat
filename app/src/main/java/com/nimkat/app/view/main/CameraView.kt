@@ -16,6 +16,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -49,7 +50,7 @@ import kotlin.coroutines.suspendCoroutine
 fun CameraView(
     outputDirectory: File,
     executor: Executor,
-    onImageCaptured: (Uri) -> Unit,
+    onImageCaptured: (Uri , Int) -> Unit,
     onError: (ImageCaptureException) -> Unit
 ) {
     // 1
@@ -108,9 +109,9 @@ fun CameraView(
 
                 Log.d("kilouri", testImagePath)
 
-                launchCropImage.launch(
-                    QuestionCropActivity.sendIntent(context as Activity, testImagePath)
-                )
+//                launchCropImage.launch(
+//                    QuestionCropActivity.sendIntent(context as Activity, testImagePath)
+//                )
 
             },
             modifier = Modifier
@@ -126,7 +127,38 @@ fun CameraView(
             )
         }
 
+        FloatingActionButton(
+            onClick = {
+                Log.i("kilo", "ON CLICK")
+                pickFromGallery(
+                    onImageCaptured = onImageCaptured,
+                )
+            },
+            modifier = Modifier
+                .align(alignment = Alignment.BottomEnd)
+                .padding(24.dp)
+                .size(65.dp),
+            backgroundColor = colorResource(R.color.red)
+        ) {
+            Image(painterResource(R.drawable.galley_icon),
+                contentDescription = "null")
+//            Icon(
+//                painterResource(R.drawable.galley_icon),
+//                null,
+//                tint = colorResource(R.color.white),
+//            )
+        }
+
     }
+}
+
+
+
+
+private fun pickFromGallery(
+    onImageCaptured: (Uri , Int) -> Unit,
+) {
+    onImageCaptured(Uri.parse("") , 1)
 }
 
 
@@ -136,97 +168,79 @@ private fun takePhoto(
     imageCapture: ImageCapture,
     outputDirectory: File,
     executor: Executor,
-    onImageCaptured: (Uri) -> Unit,
+    onImageCaptured: (Uri , Int) -> Unit,
     onError: (ImageCaptureException) -> Unit
 ) {
 
+//    val photoFile = File(
+//        outputDirectory,
+//        SimpleDateFormat(filenameFormat, Locale.US).format(System.currentTimeMillis()) + ".jpg"
+//    )
+//
+//
+//    val FILENAME_FORMAT = "yyyy-MM-dd-HH-mm-ss-SSS"
+//    val name = SimpleDateFormat(FILENAME_FORMAT, Locale.US)
+//        .format(System.currentTimeMillis())
+//    val contentValues = ContentValues().apply {
+//        put(MediaStore.MediaColumns.DISPLAY_NAME, name)
+//        put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg")
+//        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.P) {
+//            put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/Nimkat")
+//        }
+//    }
+//
+//
+//    // Create output options object which contains file + metadata
+//    val outputOptions = ImageCapture.OutputFileOptions
+//        .Builder(
+//            context.contentResolver,
+//            MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+//            contentValues
+//        )
+//        .build()
+//
+//    imageCapture.takePicture(
+//        outputOptions,
+//        executor,
+//        object : ImageCapture.OnImageSavedCallback {
+//            override fun onError(exception: ImageCaptureException) {
+//                Log.e("kilo", "Take photo error:", exception)
+////                Toast.makeText(context, "Image ERROR", Toast.LENGTH_SHORT).show()
+//                onError(exception)
+//            }
+//
+//            override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
+//                val savedUri = Uri.fromFile(photoFile)
+////                Toast.makeText(context, "Image SAVED", Toast.LENGTH_SHORT).show()
+//                savedUri.toString().substring(8)
+//                Log.d("kilouri", savedUri.toString().substring(7))
+//                onImageCaptured(savedUri)
+//
+//            }
+//        })
+//
 
-//    val testImagePath =
-//        Environment.getExternalStorageDirectory().path.plus("/test.png")
-//    val photoFile = File(testImagePath)
 
     val photoFile = File(
         outputDirectory,
         SimpleDateFormat(filenameFormat, Locale.US).format(System.currentTimeMillis()) + ".jpg"
     )
 
-//    val photoFile = File(
-//        Environment.getExternalStoragePublicDirectory(
-//            Environment.DIRECTORY_DCIM
-//        ), "Camera"
-//    )
+    val outputOptions = ImageCapture.OutputFileOptions.Builder(photoFile).build()
 
-
-//    val outputOptions = ImageCapture.OutputFileOptions.Builder(photoFile).build()
-
-    val FILENAME_FORMAT = "yyyy-MM-dd-HH-mm-ss-SSS"
-    val name = SimpleDateFormat(FILENAME_FORMAT, Locale.US)
-        .format(System.currentTimeMillis())
-//    val name = "test"
-    val contentValues = ContentValues().apply {
-        put(MediaStore.MediaColumns.DISPLAY_NAME, name)
-        put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg")
-        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.P) {
-            put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/Nimkat")
+    imageCapture.takePicture(outputOptions, executor, object: ImageCapture.OnImageSavedCallback {
+        override fun onError(exception: ImageCaptureException) {
+            Log.e("kilo", "Take photo error:", exception)
+            onError(exception)
         }
-    }
+
+        override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
+            val savedUri = Uri.fromFile(photoFile)
+            onImageCaptured(savedUri , 0)
+        }
+    })
 
 
-    // Create output options object which contains file + metadata
-    val outputOptions = ImageCapture.OutputFileOptions
-        .Builder(
-            context.contentResolver,
-            MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-            contentValues
-        )
-        .build()
-
-    imageCapture.takePicture(
-        outputOptions,
-        executor,
-        object : ImageCapture.OnImageSavedCallback {
-            override fun onError(exception: ImageCaptureException) {
-                Log.e("kilo", "Take photo error:", exception)
-//                Toast.makeText(context, "Image ERROR", Toast.LENGTH_SHORT).show()
-                onError(exception)
-            }
-
-            override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
-                val savedUri = Uri.fromFile(photoFile)
-//                Toast.makeText(context, "Image SAVED", Toast.LENGTH_SHORT).show()
-                savedUri.toString().substring(8)
-                Log.d("kilouri", savedUri.toString().substring(7))
-                onImageCaptured(savedUri)
-
-            }
-        })
-//
-
-//    var bitmap: Bitmap? = null
-//    imageCapture.takePicture(executor, object :
-//        ImageCapture.OnImageCapturedCallback() {
-//        override fun onCaptureSuccess(image: ImageProxy) {
-//            //get bitmap from image
-//            bitmap = imageProxyToBitmap(image)
-////            super.onCaptureSuccess(image)
-//        }
-//
-//        override fun onError(exception: ImageCaptureException) {
-//                Log.e("kilo", "Take photo error:", exception)
-////                Toast.makeText(context, "Image ERROR", Toast.LENGTH_SHORT).show()
-//                onError(exception)
-//
-//            }
-//
-//    })
-}
-
-private fun imageProxyToBitmap(image: ImageProxy): Bitmap {
-    val planeProxy = image.planes[0]
-    val buffer: ByteBuffer = planeProxy.buffer
-    val bytes = ByteArray(buffer.remaining())
-    buffer.get(bytes)
-    return BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
 }
 
 private suspend fun Context.getCameraProvider(): ProcessCameraProvider =

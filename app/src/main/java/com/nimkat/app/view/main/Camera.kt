@@ -63,7 +63,11 @@ import java.util.concurrent.ExecutorService
 
 @SuppressLint("RememberReturnType")
 @Composable
-fun Camera(cameraScaffoldState: ScaffoldState, cameraExecutor: ExecutorService, outputDirectory: File , authViewModel: AuthViewModel) {
+fun Camera(cameraScaffoldState: ScaffoldState,
+           cameraExecutor: ExecutorService,
+           outputDirectory: File ,
+           authViewModel: AuthViewModel,
+           onImageCaptured: (Uri , Int) -> Unit) {
 
     val context = LocalContext.current
 
@@ -101,7 +105,7 @@ fun Camera(cameraScaffoldState: ScaffoldState, cameraExecutor: ExecutorService, 
             CameraView(
                 outputDirectory = outputDirectory,
                 executor = cameraExecutor,
-                onImageCaptured = ::handleImageCapture,
+                onImageCaptured = onImageCaptured,
                 onError = { Log.e("kilo", "View error:", it) }
             )
 
@@ -147,14 +151,6 @@ fun Camera(cameraScaffoldState: ScaffoldState, cameraExecutor: ExecutorService, 
 
         }
     }
-}
-
-
-
-private fun handleImageCapture(uri: Uri) {
-    Log.i("kilo", "Image captured: $uri")
-//        shouldShowCamera.value = false
-
 }
 
 @Composable
