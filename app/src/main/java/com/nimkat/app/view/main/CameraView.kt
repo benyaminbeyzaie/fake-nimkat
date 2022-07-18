@@ -1,11 +1,10 @@
 package com.nimkat.app.view.main
 
-import android.Manifest
 import android.app.Activity
 import android.content.ContentValues
 import android.content.Context
-import android.content.ContextWrapper
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
@@ -14,29 +13,20 @@ import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.camera.core.CameraSelector
-import androidx.camera.core.ImageCapture
-import androidx.camera.core.ImageCaptureException
-import androidx.camera.core.Preview
+import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.FloatingActionButton
 import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.sharp.Lens
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.colorResource
@@ -47,6 +37,7 @@ import androidx.core.content.ContextCompat
 import com.nimkat.app.R
 import com.nimkat.app.view.question_crop.QuestionCropActivity
 import java.io.File
+import java.nio.ByteBuffer
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.Executor
@@ -74,14 +65,11 @@ fun CameraView(
         .build()
 
 
-    val launchCropImage = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-        Toast.makeText(context, "Image Cropped", Toast.LENGTH_SHORT).show()
+    val launchCropImage =
+        rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+            Toast.makeText(context, "Image Cropped", Toast.LENGTH_SHORT).show()
 
-
-
-    }
-
-
+        }
 
 
     // 2
@@ -112,25 +100,24 @@ fun CameraView(
                     outputDirectory = outputDirectory,
                     executor = executor,
                     onImageCaptured = onImageCaptured,
-                    onError = onError
+                    onError = onError,
                 )
 
                 val testImagePath =
                     Environment.getExternalStorageDirectory().path.plus("/test.png")
 
+                Log.d("kilouri", testImagePath)
 
                 launchCropImage.launch(
                     QuestionCropActivity.sendIntent(context as Activity, testImagePath)
                 )
 
-
-//                QuestionCropActivity.sendIntent(context)
             },
             modifier = Modifier
                 .align(alignment = Alignment.BottomCenter)
                 .padding(24.dp)
                 .size(80.dp),
-            backgroundColor = colorResource(R.color.main_color)
+            backgroundColor = colorResource(R.color.blue)
         ) {
             Icon(
                 painterResource(R.drawable.ic_camera),
@@ -139,35 +126,6 @@ fun CameraView(
             )
         }
 
-
-
-
-//        IconButton(
-//            modifier = Modifier.padding(bottom = 20.dp),
-//            onClick = {
-//                Log.i("kilo", "ON CLICK")
-//                takePhoto(
-//                    context = context,
-//                    filenameFormat = "yyyy-MM-dd-HH-mm-ss-SSS",
-//                    imageCapture = imageCapture,
-//                    outputDirectory = outputDirectory,
-//                    executor = executor,
-//                    onImageCaptured = onImageCaptured,
-//                    onError = onError
-//                )
-//            },
-//            content = {
-//                Icon(
-//                    imageVector = Icons.Sharp.Lens,
-//                    contentDescription = "Take picture",
-//                    tint = Color.White,
-//                    modifier = Modifier
-//                        .size(100.dp)
-//                        .padding(1.dp)
-//                        .border(1.dp, Color.White, CircleShape)
-//                )
-//            }
-//        )
     }
 }
 
@@ -183,16 +141,28 @@ private fun takePhoto(
 ) {
 
 
+//    val testImagePath =
+//        Environment.getExternalStorageDirectory().path.plus("/test.png")
+//    val photoFile = File(testImagePath)
+
     val photoFile = File(
         outputDirectory,
         SimpleDateFormat(filenameFormat, Locale.US).format(System.currentTimeMillis()) + ".jpg"
     )
+
+//    val photoFile = File(
+//        Environment.getExternalStoragePublicDirectory(
+//            Environment.DIRECTORY_DCIM
+//        ), "Camera"
+//    )
+
 
 //    val outputOptions = ImageCapture.OutputFileOptions.Builder(photoFile).build()
 
     val FILENAME_FORMAT = "yyyy-MM-dd-HH-mm-ss-SSS"
     val name = SimpleDateFormat(FILENAME_FORMAT, Locale.US)
         .format(System.currentTimeMillis())
+//    val name = "test"
     val contentValues = ContentValues().apply {
         put(MediaStore.MediaColumns.DISPLAY_NAME, name)
         put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg")
@@ -224,11 +194,40 @@ private fun takePhoto(
             override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
                 val savedUri = Uri.fromFile(photoFile)
 //                Toast.makeText(context, "Image SAVED", Toast.LENGTH_SHORT).show()
+                savedUri.toString().substring(8)
+                Log.d("kilouri", savedUri.toString().substring(7))
                 onImageCaptured(savedUri)
+
             }
         })
+//
+
+//    var bitmap: Bitmap? = null
+//    imageCapture.takePicture(executor, object :
+//        ImageCapture.OnImageCapturedCallback() {
+//        override fun onCaptureSuccess(image: ImageProxy) {
+//            //get bitmap from image
+//            bitmap = imageProxyToBitmap(image)
+////            super.onCaptureSuccess(image)
+//        }
+//
+//        override fun onError(exception: ImageCaptureException) {
+//                Log.e("kilo", "Take photo error:", exception)
+////                Toast.makeText(context, "Image ERROR", Toast.LENGTH_SHORT).show()
+//                onError(exception)
+//
+//            }
+//
+//    })
 }
 
+private fun imageProxyToBitmap(image: ImageProxy): Bitmap {
+    val planeProxy = image.planes[0]
+    val buffer: ByteBuffer = planeProxy.buffer
+    val bytes = ByteArray(buffer.remaining())
+    buffer.get(bytes)
+    return BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+}
 
 private suspend fun Context.getCameraProvider(): ProcessCameraProvider =
     suspendCoroutine { continuation ->

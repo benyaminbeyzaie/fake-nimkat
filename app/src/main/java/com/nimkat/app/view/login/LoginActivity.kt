@@ -62,7 +62,7 @@ class LoginActivity : ComponentActivity() {
                 // A surface container using the 'background' color from the theme
                 Surface(
                     modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colors.background
+                    color = colorResource(id = R.color.background)
                 ) {
 
                     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
@@ -89,7 +89,7 @@ fun LoginContent(authViewModel: AuthViewModel) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(colorResource(R.color.color_back))
+            .background(colorResource(R.color.background))
     ) {
         IconButton(
             onClick = {
@@ -100,7 +100,7 @@ fun LoginContent(authViewModel: AuthViewModel) {
         ) {
             Icon(
                 painter = painterResource(R.drawable.ic_back), null,
-                tint = colorResource(R.color.black),
+                tint = colorResource(R.color.primary_text),
                 modifier = Modifier
                     .size(24.dp)
                     .rotate(180f)
@@ -114,7 +114,7 @@ fun LoginContent(authViewModel: AuthViewModel) {
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(20.dp, 20.dp, 20.dp, 0.dp),
-            color = colorResource(R.color.black),
+            color = colorResource(R.color.primary_text),
             fontFamily = secondFont,
             fontSize = 32.sp
         )
@@ -124,7 +124,7 @@ fun LoginContent(authViewModel: AuthViewModel) {
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(20.dp, 4.dp),
-            color = colorResource(R.color.gray500),
+            color = colorResource(R.color.primary_text_variant),
             fontFamily = mainFont,
             fontSize = 14.sp
         )
@@ -156,7 +156,7 @@ fun LoginContent(authViewModel: AuthViewModel) {
                 },
                 shape = RoundedCornerShape(6.dp),
                 colors = TextFieldDefaults.textFieldColors(
-                    backgroundColor = colorResource(R.color.gray300),
+                    backgroundColor = colorResource(R.color.textfield_background),
                     focusedIndicatorColor = Color.Transparent,
                     unfocusedIndicatorColor = Color.Transparent,
                     disabledIndicatorColor = Color.Transparent,
@@ -164,7 +164,7 @@ fun LoginContent(authViewModel: AuthViewModel) {
                 textStyle = TextStyle(
                     fontSize = 14.sp,
                     fontFamily = mainFont,
-                    color = colorResource(R.color.black),
+                    color = colorResource(R.color.primary_text),
                     textAlign = TextAlign.Left
                 ),
                 keyboardOptions = KeyboardOptions.Default.copy(
@@ -182,11 +182,11 @@ fun LoginContent(authViewModel: AuthViewModel) {
             ) {
                 Box(
                     contentAlignment = Alignment.Center, modifier = Modifier
-                        .background(colorResource(R.color.gray300))
+                        .background(colorResource(R.color.textfield_background))
                 ) {
                     Text(
                         "+98",
-                        color = colorResource(R.color.color_hint),
+                        color = colorResource(R.color.primary_text),
                         modifier = Modifier
                             .wrapContentSize(),
                         fontSize = 14.sp
@@ -201,7 +201,7 @@ fun LoginContent(authViewModel: AuthViewModel) {
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(20.dp, 12.dp, 20.dp, 4.dp),
-            color = colorResource(R.color.gray500),
+            color = colorResource(R.color.primary_text_variant),
             fontFamily = mainFont,
             fontSize = 14.sp
         )
@@ -227,7 +227,7 @@ fun LoginContent(authViewModel: AuthViewModel) {
             },
             shape = RoundedCornerShape(6.dp),
             colors = TextFieldDefaults.textFieldColors(
-                backgroundColor = colorResource(R.color.gray300),
+                backgroundColor = colorResource(R.color.textfield_background),
                 focusedIndicatorColor = Color.Transparent,
                 unfocusedIndicatorColor = Color.Transparent,
                 disabledIndicatorColor = Color.Transparent
@@ -235,7 +235,7 @@ fun LoginContent(authViewModel: AuthViewModel) {
             textStyle = TextStyle(
                 fontSize = 14.sp,
                 fontFamily = mainFont,
-                color = colorResource(R.color.black),
+                color = colorResource(R.color.primary_text),
                 textAlign = TextAlign.Left
             ),
             keyboardOptions = KeyboardOptions.Default.copy(
@@ -255,7 +255,7 @@ fun LoginContent(authViewModel: AuthViewModel) {
                     .padding(20.dp)
                     .height(60.dp),
                 shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.buttonColors(backgroundColor = colorResource(R.color.main_color)),
+                colors = ButtonDefaults.buttonColors(backgroundColor = colorResource(R.color.blue)),
             ) {
                 Row {
                     Text(

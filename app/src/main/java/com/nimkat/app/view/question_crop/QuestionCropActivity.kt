@@ -1,20 +1,20 @@
 package com.nimkat.app.view.question_crop
 
 import android.app.Activity
-import android.content.ContentValues
 import android.content.Intent
 import android.graphics.Bitmap
-import android.graphics.ImageDecoder
 import android.graphics.drawable.BitmapDrawable
+import android.graphics.drawable.Drawable
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
-import android.os.Environment
 import android.provider.MediaStore
 import android.util.Log
-import android.widget.Toast
+import android.view.View
+import android.view.ViewGroup
+import android.widget.ImageView
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
@@ -24,6 +24,7 @@ import androidx.compose.material.ripple.LocalRippleTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.colorResource
@@ -34,20 +35,19 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.core.content.ContentProviderCompat.requireContext
 import coil.ImageLoader
+import coil.compose.rememberAsyncImagePainter
+import coil.compose.rememberImagePainter
 import coil.request.ImageRequest
+import com.bumptech.glide.Glide
+import com.bumptech.glide.request.target.Target
 import com.nimkat.app.R
 import com.nimkat.app.ui.theme.NimkatTheme
 import com.nimkat.app.ui.theme.RippleWhite
 import com.nimkat.app.ui.theme.secondFont
 import com.nimkat.app.utils.IMAGE_PATH
-import com.theartofdev.edmodo.cropper.CropImage
 import com.theartofdev.edmodo.cropper.CropImageView
-import com.yalantis.ucrop.UCrop
 import java.io.File
-import java.io.FileOutputStream
-import java.io.OutputStream
 
 
 class QuestionCropActivity : ComponentActivity() {
@@ -56,6 +56,7 @@ class QuestionCropActivity : ComponentActivity() {
         fun sendIntent(activity: Activity, imagePath: String) =
             Intent(activity, QuestionCropActivity::class.java).apply {
                 putExtra(IMAGE_PATH, imagePath)
+
             }
     }
 
@@ -73,7 +74,6 @@ class QuestionCropActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colors.background
                 ) {
-
                     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
                         Log.d("imageview" , imagePath)
                         QuestionCropContent(imagePath)
@@ -86,9 +86,11 @@ class QuestionCropActivity : ComponentActivity() {
 
     private fun checkArgument() {
         imagePath = intent.getStringExtra(IMAGE_PATH).orEmpty()
-    }
+        Log.d("kiloURI" , imagePath)
 
+    }
 }
+
 
 @Composable
 fun QuestionCropContent(imagePath: String) {
@@ -96,6 +98,7 @@ fun QuestionCropContent(imagePath: String) {
     val context = LocalContext.current
     var croppedImage: Bitmap? = null
     var cropImageView: CropImageView? = null
+
 
     Column(Modifier.fillMaxSize()) {
         AndroidView(
@@ -129,8 +132,6 @@ fun QuestionCropContent(imagePath: String) {
                     croppedImage = view?.croppedImage
                     cropImageView.setImageBitmap(croppedImage)
                 }
-
-
             }
         )
 
@@ -150,7 +151,7 @@ fun QuestionCropContent(imagePath: String) {
                 Icon(
                     painter = painterResource(R.drawable.ic_reset),
                     null,
-                    tint = colorResource(R.color.main_color),
+                    tint = colorResource(R.color.blue),
                 )
             }
 
@@ -165,7 +166,7 @@ fun QuestionCropContent(imagePath: String) {
                 Icon(
                     painter = painterResource(R.drawable.ic_rotate),
                     null,
-                    tint = colorResource(R.color.main_color),
+                    tint = colorResource(R.color.blue),
                 )
             }
         }

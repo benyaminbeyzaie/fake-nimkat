@@ -1,35 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="main_color">#1E88E5</color>
+
+    <color name="main_color">#000000</color>
     <color name="blue">#1E88E5</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="color_back">#F8F8F8</color>
-    <color name="color_hint">#6C6C6C</color>
+    <color name="color_hint">#878787</color>
     <color name="green">#00C766</color>
     <color name="camera_title_back">#23E0E0E0</color>
     <color name="red">#E53935</color>
     <color name="bnv_unselected_color">#78FFFFFF</color>
 
-    <color name="background">#FFFFFFFF</color>
+    <color name="background">#1D1D1D</color>
+
+    <color name="primary_text"> #FFFFFFFF </color>
+    <color name="primary_text_variant">#BABABA</color>
 
     <color name="secondary_text">#FFFFFFFF</color>
     <color name="secondary_text_variant">#BABABA</color>
 
-    <color name="primary_text"> #151515 </color>
-    <color name="primary_text_variant">#3A3A3A</color>
-
-    <color name="textfield_background">#E0E0E0 </color>
-
+    <color name="textfield_background">#373737</color>
 
     <color name="gray50">#FAFAFA</color>
     <color name="gray100">#F5F5F5</color>
     <color name="gray200">#EEEEEE</color>
-    <color name="gray300">#E0E0E0</color>
+    <color name="gray300">#757575</color>
     <color name="gray400">#BDBDBD</color>
     <color name="gray500">#9E9E9E</color>
     <color name="gray600">#757575</color>
     <color name="gray700">#616161</color>
     <color name="gray800">#424242</color>
     <color name="gray900">#212121</color>
+
 </resources>

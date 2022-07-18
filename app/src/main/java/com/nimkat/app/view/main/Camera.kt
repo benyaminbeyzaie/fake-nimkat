@@ -29,7 +29,6 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
@@ -96,7 +95,7 @@ fun Camera(cameraScaffoldState: ScaffoldState, cameraExecutor: ExecutorService, 
             Spacer(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color.Black)
+                    .background(colorResource(R.color.background))
             )
 
             CameraView(
@@ -150,9 +149,12 @@ fun Camera(cameraScaffoldState: ScaffoldState, cameraExecutor: ExecutorService, 
     }
 }
 
+
+
 private fun handleImageCapture(uri: Uri) {
     Log.i("kilo", "Image captured: $uri")
 //        shouldShowCamera.value = false
+
 }
 
 @Composable
@@ -168,7 +170,7 @@ fun Drawer(
     Column(
         modifier
             .fillMaxSize()
-            .background(Color.White),
+            .background(colorResource(id = R.color.background)),
     ) {
 
         if (!isLogin) {
@@ -191,7 +193,7 @@ fun Drawer(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(0.dp, 12.dp, 0.dp, 0.dp),
-                color = colorResource(R.color.black),
+                color = colorResource(R.color.primary_text),
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -208,7 +210,7 @@ fun Drawer(
                     Icon(
                         Icons.Outlined.CheckCircle,
                         null,
-                        tint = colorResource(R.color.gray600),
+                        tint = colorResource(R.color.primary_text),
                         modifier = Modifier.padding(0.dp, 0.dp, 0.dp, 0.dp)
                     )
                     Spacer(modifier = Modifier.width(4.dp))
@@ -217,7 +219,7 @@ fun Drawer(
                         fontFamily = mainFont,
                         fontSize = 14.sp,
                         textAlign = TextAlign.Center,
-                        color = colorResource(R.color.gray500),
+                        color = colorResource(R.color.primary_text_variant),
                     )
                 }
             }
@@ -232,7 +234,7 @@ fun Drawer(
                         .padding(16.dp)
                         .height(60.dp),
                     shape = RoundedCornerShape(12.dp),
-                    colors = ButtonDefaults.buttonColors(backgroundColor = colorResource(R.color.main_color)),
+                    colors = ButtonDefaults.buttonColors(backgroundColor = colorResource(R.color.blue)),
                 ) {
                     Row {
                         Text(
@@ -270,7 +272,7 @@ fun Drawer(
                         "آنیتا علیخانی",
                         modifier = Modifier
                             .fillMaxWidth(),
-                        color = colorResource(R.color.black),
+                        color = colorResource(R.color.primary_text),
                         textAlign = TextAlign.Right,
                         fontFamily = mainFont,
                         fontWeight = FontWeight.Bold,
@@ -281,7 +283,7 @@ fun Drawer(
                         "+989123456789",
                         modifier = Modifier
                             .fillMaxWidth(),
-                        color = colorResource(R.color.gray500),
+                        color = colorResource(R.color.primary_text_variant),
                         textAlign = TextAlign.Right,
                         fontFamily = mainFont,
                         fontWeight = FontWeight.Normal,
@@ -295,6 +297,7 @@ fun Drawer(
                         painter = painterResource(R.drawable.ic_edit),
                         contentDescription = null,
                         modifier = Modifier.size(24.dp),
+                        colorResource(R.color.primary_text)
                     )
                 }
             }
@@ -315,7 +318,7 @@ fun Drawer(
                         stringResource(R.string.my_questions),
                         modifier = Modifier
                             .weight(1f),
-                        color = colorResource(R.color.main_color),
+                        color = colorResource(R.color.blue),
                         textAlign = TextAlign.Right,
                         fontFamily = mainFont,
                         fontWeight = FontWeight.Bold,
@@ -325,7 +328,7 @@ fun Drawer(
                         painter = painterResource(R.drawable.ic_my_questions),
                         contentDescription = null,
                         modifier = Modifier.size(20.dp),
-                        tint = colorResource(R.color.main_color)
+                        tint = colorResource(R.color.blue)
                     )
                 }
             }
@@ -348,7 +351,7 @@ fun Drawer(
                         stringResource(R.string.contact_us),
                         modifier = Modifier
                             .weight(1f),
-                        color = colorResource(R.color.main_color),
+                        color = colorResource(R.color.blue),
                         textAlign = TextAlign.Right,
                         fontFamily = mainFont,
                         fontWeight = FontWeight.Bold,
@@ -358,7 +361,7 @@ fun Drawer(
                         painter = painterResource(R.drawable.ic_back),
                         contentDescription = null,
                         modifier = Modifier.size(20.dp),
-                        tint = colorResource(R.color.main_color)
+                        tint = colorResource(R.color.blue)
                     )
                 }
             }
@@ -408,7 +411,7 @@ fun Drawer(
         ) {
             Text(
                 text = stringResource(R.string.background_color),
-                color = colorResource(R.color.main_color),
+                color = colorResource(R.color.blue),
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold
             )
