@@ -2,15 +2,14 @@ package com.nimkat.app.view.main
 
 import android.Manifest
 import android.app.Activity
-import android.content.pm.PackageManager
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
-import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
@@ -23,10 +22,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
@@ -42,17 +39,11 @@ import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.PagerState
 import com.google.accompanist.pager.rememberPagerState
 import com.nimkat.app.R
-import com.nimkat.app.models.DataStatus
 import com.nimkat.app.ui.theme.NimkatTheme
 import com.nimkat.app.utils.CROP_IMAGE_CODE
-import com.nimkat.app.utils.MOBILE
-import com.nimkat.app.view.otp.OtpActivity
 import com.nimkat.app.view.question_crop.QuestionCropActivity
 import com.nimkat.app.view_model.AuthViewModel
-import com.theartofdev.edmodo.cropper.CropImage
-import com.theartofdev.edmodo.cropper.CropImageView
 import dagger.hilt.android.AndroidEntryPoint
-import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import java.io.File
@@ -166,14 +157,12 @@ class MainActivity : ComponentActivity() {
     }
 
 
-    private fun handleImageCapture(uri: Uri , mode: Int) {
+    private fun handleImageCapture(uri: Uri, mode: Int) {
         Log.i("kilo", "Image captured: $uri")
 //        shouldShowCamera.value = false
         val intent = Intent(this@MainActivity, QuestionCropActivity::class.java)
-        intent.putExtra("mode" , mode)
-        if (uri != null){
-            intent.putExtra("URI", uri)
-        }
+        intent.putExtra("mode", mode)
+        intent.putExtra("URI", uri)
         startActivityForResult(intent, CROP_IMAGE_CODE)
     }
 
@@ -187,9 +176,7 @@ class MainActivity : ComponentActivity() {
                         val parcelableExtra = getParcelableExtra<Uri>("photouri")
                         Log.d("kiloURI", "IMAGE CROPPING SUCCESSFULL. $parcelableExtra")
                         Toast.makeText(x, "IMAGE CROPPING SUCCESSFULL.", Toast.LENGTH_SHORT).show()
-                        val intent = Intent(x, MainActivity2::class.java)
-                        intent.putExtra("URI", parcelableExtra)
-                        startActivity(intent)
+                        // now we should use this uri to load bitmap of the image and then send it to server
                     }
 
 
@@ -213,7 +200,7 @@ fun Greeting(
     authViewModel: AuthViewModel,
     cameraExecutor: ExecutorService,
     outputDirectory: File,
-    onImageCaptured: (Uri , Int) -> Unit
+    onImageCaptured: (Uri, Int) -> Unit
 ) {
     val coroutineScope = rememberCoroutineScope()
 
@@ -253,9 +240,6 @@ fun Greeting(
                                     onImageCaptured = onImageCaptured
                                 )
                             }
-//                            2 -> {
-//                                Gallery()
-//                            }
                         }
                     }
                 }
@@ -291,18 +275,6 @@ fun Greeting(
                                 pagerState.animateScrollToPage(1)
                             }
                         })
-//                BnvItem(
-//                    2,
-//                    R.string.gallery,
-//                    pagerState,
-//                    Modifier
-//                        .weight(1.0F)
-//                        .fillMaxHeight()
-//                        .clickable {
-//                            coroutineScope.launch {
-//                                pagerState.animateScrollToPage(2)
-//                            }
-//                        })
             }
         }
     }

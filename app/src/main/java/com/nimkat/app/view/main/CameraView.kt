@@ -1,19 +1,13 @@
 package com.nimkat.app.view.main
 
-import android.app.Activity
-import android.content.ContentValues
 import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.net.Uri
-import android.os.Build
 import android.os.Environment
-import android.provider.MediaStore
 import android.util.Log
-import android.widget.Toast
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.camera.core.*
+import androidx.camera.core.CameraSelector
+import androidx.camera.core.ImageCapture
+import androidx.camera.core.ImageCaptureException
+import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.compose.foundation.Image
@@ -36,9 +30,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import com.nimkat.app.R
-import com.nimkat.app.view.question_crop.QuestionCropActivity
 import java.io.File
-import java.nio.ByteBuffer
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.Executor
@@ -66,13 +58,6 @@ fun CameraView(
         .build()
 
 
-    val launchCropImage =
-        rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-            Toast.makeText(context, "Image Cropped", Toast.LENGTH_SHORT).show()
-
-        }
-
-
     // 2
     LaunchedEffect(lensFacing) {
         val cameraProvider = context.getCameraProvider()
@@ -95,8 +80,6 @@ fun CameraView(
             onClick = {
                 Log.i("kilo", "ON CLICK")
                 takePhoto(
-                    context = context,
-                    filenameFormat = "yyyy-MM-dd-HH-mm-ss-SSS",
                     imageCapture = imageCapture,
                     outputDirectory = outputDirectory,
                     executor = executor,
@@ -108,10 +91,6 @@ fun CameraView(
                     Environment.getExternalStorageDirectory().path.plus("/test.png")
 
                 Log.d("kilouri", testImagePath)
-
-//                launchCropImage.launch(
-//                    QuestionCropActivity.sendIntent(context as Activity, testImagePath)
-//                )
 
             },
             modifier = Modifier
@@ -142,11 +121,6 @@ fun CameraView(
         ) {
             Image(painterResource(R.drawable.galley_icon),
                 contentDescription = "null")
-//            Icon(
-//                painterResource(R.drawable.galley_icon),
-//                null,
-//                tint = colorResource(R.color.white),
-//            )
         }
 
     }
@@ -163,8 +137,6 @@ private fun pickFromGallery(
 
 
 private fun takePhoto(
-    context: Context,
-    filenameFormat: String,
     imageCapture: ImageCapture,
     outputDirectory: File,
     executor: Executor,
@@ -172,55 +144,7 @@ private fun takePhoto(
     onError: (ImageCaptureException) -> Unit
 ) {
 
-//    val photoFile = File(
-//        outputDirectory,
-//        SimpleDateFormat(filenameFormat, Locale.US).format(System.currentTimeMillis()) + ".jpg"
-//    )
-//
-//
-//    val FILENAME_FORMAT = "yyyy-MM-dd-HH-mm-ss-SSS"
-//    val name = SimpleDateFormat(FILENAME_FORMAT, Locale.US)
-//        .format(System.currentTimeMillis())
-//    val contentValues = ContentValues().apply {
-//        put(MediaStore.MediaColumns.DISPLAY_NAME, name)
-//        put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg")
-//        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.P) {
-//            put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/Nimkat")
-//        }
-//    }
-//
-//
-//    // Create output options object which contains file + metadata
-//    val outputOptions = ImageCapture.OutputFileOptions
-//        .Builder(
-//            context.contentResolver,
-//            MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-//            contentValues
-//        )
-//        .build()
-//
-//    imageCapture.takePicture(
-//        outputOptions,
-//        executor,
-//        object : ImageCapture.OnImageSavedCallback {
-//            override fun onError(exception: ImageCaptureException) {
-//                Log.e("kilo", "Take photo error:", exception)
-////                Toast.makeText(context, "Image ERROR", Toast.LENGTH_SHORT).show()
-//                onError(exception)
-//            }
-//
-//            override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
-//                val savedUri = Uri.fromFile(photoFile)
-////                Toast.makeText(context, "Image SAVED", Toast.LENGTH_SHORT).show()
-//                savedUri.toString().substring(8)
-//                Log.d("kilouri", savedUri.toString().substring(7))
-//                onImageCaptured(savedUri)
-//
-//            }
-//        })
-//
-
-
+    val filenameFormat = "yyyy-MM-dd-HH-mm-ss-SSS"
     val photoFile = File(
         outputDirectory,
         SimpleDateFormat(filenameFormat, Locale.US).format(System.currentTimeMillis()) + ".jpg"

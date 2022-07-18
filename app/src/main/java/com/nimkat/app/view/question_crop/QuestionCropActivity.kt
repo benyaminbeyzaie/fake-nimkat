@@ -35,20 +35,11 @@ import com.nimkat.app.R
 import com.nimkat.app.ui.theme.NimkatTheme
 import com.nimkat.app.ui.theme.RippleWhite
 import com.nimkat.app.ui.theme.secondFont
-import com.nimkat.app.utils.IMAGE_PATH
 import com.theartofdev.edmodo.cropper.CropImage
 import com.theartofdev.edmodo.cropper.CropImageView
 
 
 class QuestionCropActivity : ComponentActivity() {
-
-    companion object {
-        fun sendIntent(activity: Activity, imagePath: String) =
-            Intent(activity, QuestionCropActivity::class.java).apply {
-                putExtra(IMAGE_PATH, imagePath)
-
-            }
-    }
 
     private var imagePath = ""
     private lateinit var photoUri: Uri
@@ -61,11 +52,11 @@ class QuestionCropActivity : ComponentActivity() {
 
         if (mode == 0) {
             CropImage.activity(photoUri)
-                .start(this);
+                .start(this)
         }else if (mode == 1){
             CropImage.activity()
                 .setGuidelines(CropImageView.Guidelines.ON)
-                .start(this);
+                .start(this)
         }
 
     }
@@ -86,10 +77,7 @@ class QuestionCropActivity : ComponentActivity() {
             if (resultCode == RESULT_OK) {
                 val resultUri = result.uri
                 Log.d("kiloURI", "copped image uri is: $resultUri")
-                val bitmap = result.bitmap
                 a(resultUri);
-            } else if (resultCode == CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE) {
-                val error = result.error
             }
         }
     }
@@ -188,9 +176,6 @@ fun QuestionCropContent(photouri: Uri) {
             ) {
                 Button(
                     onClick = {
-//                        val bundle = Bundle().apply {
-//                        putParcelable("photouri", photouri)
-//                        }
                         val data = Intent().apply {
                             putExtra("photouri", photouri)
                         }
@@ -263,43 +248,6 @@ fun QuestionCropContent(photouri: Uri) {
                     }
                 }
             }
-//            Button(
-//                onClick = {
-//                    val bundle = Bundle().apply {
-////                        putParcelable("image", croppedImage)
-//                    }
-//                    if (context is Activity) {
-//                        context.setResult(Activity.RESULT_OK, Intent().apply {
-//                            putExtra("data", bundle)
-//                        })
-//                        context.finish()
-//                    }
-//                },
-//                modifier = Modifier
-//                    .fillMaxWidth()
-//                    .padding(16.dp)
-//                    .height(60.dp),
-//                shape = RoundedCornerShape(20.dp),
-//                colors = ButtonDefaults.buttonColors(backgroundColor = colorResource(R.color.green)),
-//            ) {
-//                Row {
-//                    Text(
-//                        text = stringResource(R.string.ok),
-//                        style = TextStyle(
-//                            fontFamily = secondFont
-//                        ),
-//                        color = colorResource(R.color.white),
-//                        fontSize = 20.sp,
-//                    )
-//                    Spacer(modifier = Modifier.width(4.dp))
-//                    Icon(
-//                        Icons.Outlined.CheckCircle,
-//                        null,
-//                        tint = colorResource(R.color.white),
-//                        modifier = Modifier.padding(0.dp, 6.dp, 0.dp, 0.dp)
-//                    )
-//                }
-//            }
         }
 
     }

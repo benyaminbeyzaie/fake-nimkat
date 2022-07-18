@@ -1,20 +1,9 @@
 package com.nimkat.app.view.main
 
 import android.annotation.SuppressLint
-import android.app.Activity
-import android.os.Environment
-import android.util.Log
-import android.widget.Toast
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.ActivityResult
-import androidx.activity.result.ActivityResultCallback
-import androidx.activity.result.ActivityResultLauncher
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult
-import androidx.appcompat.app.AppCompatActivity
 import android.content.Intent
 import android.net.Uri
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -36,25 +25,17 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat.startActivity
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.nimkat.app.R
-import com.nimkat.app.models.AuthModel
+import com.nimkat.app.ui.theme.RippleWhite
 import com.nimkat.app.ui.theme.mainFont
 import com.nimkat.app.ui.theme.secondFont
 import com.nimkat.app.view.login.LoginActivity
 import com.nimkat.app.view.my_questions.MyQuestionsActivity
 import com.nimkat.app.view.profile_edit.ProfileEditActivity
-import com.nimkat.app.view.question_crop.QuestionCropActivity
 import com.nimkat.app.view_model.AuthViewModel
-import com.nimkat.app.ui.theme.RippleWhite
-import com.nimkat.app.ui.theme.mainFont
-import com.nimkat.app.ui.theme.secondFont
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.io.File
@@ -69,11 +50,6 @@ fun Camera(cameraScaffoldState: ScaffoldState,
            authViewModel: AuthViewModel,
            onImageCaptured: (Uri , Int) -> Unit) {
 
-    val context = LocalContext.current
-
-    val launchCropImage = rememberLauncherForActivityResult(StartActivityForResult()) {
-        Toast.makeText(context, "Image Cropped", Toast.LENGTH_SHORT).show()
-    }
 
     val coroutineScope = rememberCoroutineScope()
 
@@ -160,7 +136,7 @@ fun Drawer(
 
     val context = LocalContext.current
     val authModel = authViewModel.authModelLiveData.observeAsState()
-    val isLogin = authModel.value?.data != null;
+    val isLogin = authModel.value?.data != null
 
 
     Column(
