@@ -15,5 +15,5 @@ interface NimkatApi {
     suspend fun updateProfile(@Path("id") id: String , @Body body: ProfileInfo): Response<ProfileModel>
 
     @GET("users/{id}/")
-    suspend fun getProfile(@Path("id") id: String): Response<ProfileModel>
+    suspend fun getProfile(@Path("id") id: String  , @Header("Authorization") token: String): Response<ProfileModel>
 }

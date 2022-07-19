@@ -38,10 +38,10 @@ class ProfileViewModel @Inject constructor(private val repository: ProfileReposi
         }
     }
 
-    fun getProfile(id: String){
+    fun getProfile(id: String , token: String){
         _profileModel.postValue(DataHolder.loading())
         viewModelScope.launch {
-            val response = repository.getProfile(id)
+            val response = repository.getProfile(id , token)
             if (response != null && response.isSuccessful && response.body() != null) {
                 _profileModel.postValue(DataHolder.success(response.body()!!))
             }else {

@@ -19,12 +19,14 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat.startActivity
@@ -50,7 +52,6 @@ fun Camera(
     cameraExecutor: ExecutorService,
     outputDirectory: File,
     authViewModel: AuthViewModel,
-    profileViewModel: ProfileViewModel,
     onImageCaptured: (Uri, Int) -> Unit
 ) {
 
@@ -68,7 +69,7 @@ fun Camera(
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         drawerContent = if (drawerVisibility.value) {
-            { Drawer(authViewModel = authViewModel, profileViewModel = profileViewModel) }
+            { Drawer(authViewModel = authViewModel) }
         } else null,
         scaffoldState = cameraScaffoldState,
     ) {
@@ -135,16 +136,14 @@ fun Camera(
 
 @Composable
 fun Drawer(
-    modifier: Modifier = Modifier, authViewModel: AuthViewModel, profileViewModel: ProfileViewModel
+    modifier: Modifier = Modifier, authViewModel: AuthViewModel
 ) {
 
     val context = LocalContext.current
     val authModel = authViewModel.authModelLiveData.observeAsState()
-    val profileModel = profileViewModel.profileModelLiveData.observeAsState()
+    var profileModel = authViewModel.profileModelLiveData.observeAsState()
     val isLogin = authModel.value?.data != null
-//    if (isLogin) {
-//        profileViewModel.getProfile(authModel.value?.data?.userId.toString())
-//    }
+
 
     Column(
         modifier
@@ -229,7 +228,6 @@ fun Drawer(
             }
         } else {
 
-
             Row(
                 Modifier
                     .fillMaxWidth()
@@ -269,17 +267,30 @@ fun Drawer(
                         fontSize = 16.sp
                     )
                     Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        phone1,
+                    CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
+                        Text(
+                            phone1,
 //                        "+989123456789",
-                        modifier = Modifier
-                            .fillMaxWidth(),
-                        color = colorResource(R.color.primary_text_variant),
-                        textAlign = TextAlign.Right,
-                        fontFamily = mainFont,
-                        fontWeight = FontWeight.Normal,
-                        fontSize = 14.sp
-                    )
+                            modifier = Modifier
+                                .fillMaxWidth(),
+                            color = colorResource(R.color.primary_text_variant),
+                            textAlign = TextAlign.Right,
+                            fontFamily = mainFont,
+                            fontWeight = FontWeight.Normal,
+                            fontSize = 14.sp
+                        )
+                    }
+//                    Text(
+//                        phone1,
+////                        "+989123456789",
+//                        modifier = Modifier
+//                            .fillMaxWidth(),
+//                        color = colorResource(R.color.primary_text_variant),
+//                        textAlign = TextAlign.Left,
+//                        fontFamily = mainFont,
+//                        fontWeight = FontWeight.Normal,
+//                        fontSize = 14.sp
+//                    )
                 }
                 IconButton(onClick = {
                     ProfileEditActivity.sendIntent(context)

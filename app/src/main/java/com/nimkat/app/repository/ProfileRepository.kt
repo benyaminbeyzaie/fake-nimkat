@@ -37,8 +37,8 @@ class ProfileRepository @Inject constructor(
 
     }
 
-    suspend fun getProfile(id: String): Response<ProfileModel>?{
-        val apiResponse = api.getProfile(id)
+    suspend fun getProfile(id: String , token: String): Response<ProfileModel>?{
+        val apiResponse = api.getProfile(id , token)
         if (apiResponse.body() === null) return null;
         Log.d("Auth" , "profile status " + apiResponse.body()!!.isProfileCompleted)
         val gson = Gson()

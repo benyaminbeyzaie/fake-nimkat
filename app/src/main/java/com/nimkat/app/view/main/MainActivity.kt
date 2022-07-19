@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -33,6 +34,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.Observer
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
@@ -71,9 +73,10 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val profileViewModel:ProfileViewModel by viewModels()
+        profileViewModel.initAuth()
         val authViewModel: AuthViewModel by viewModels()
         authViewModel.initAuth()
-
         outputDirectory = getOutputDirectory()
         cameraExecutor = Executors.newSingleThreadExecutor()
 
@@ -88,7 +91,6 @@ class MainActivity : ComponentActivity() {
                     coroutineScope = rememberCoroutineScope()
                     Greeting(
                         cameraScaffoldState!!,
-                        viewModel(),
                         viewModel(),
                         cameraExecutor,
                         outputDirectory,
@@ -200,7 +202,6 @@ class MainActivity : ComponentActivity() {
 fun Greeting(
     cameraScaffoldState: ScaffoldState,
     authViewModel: AuthViewModel,
-    profileViewModel: ProfileViewModel,
     cameraExecutor: ExecutorService,
     outputDirectory: File,
     onImageCaptured: (Uri, Int) -> Unit
@@ -240,7 +241,6 @@ fun Greeting(
                                     cameraExecutor,
                                     outputDirectory,
                                     authViewModel,
-                                    profileViewModel,
                                     onImageCaptured = onImageCaptured
                                 )
                             }
