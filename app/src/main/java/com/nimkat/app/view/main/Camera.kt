@@ -38,7 +38,6 @@ import com.nimkat.app.view.login.LoginActivity
 import com.nimkat.app.view.my_questions.MyQuestionsActivity
 import com.nimkat.app.view.profile_edit.ProfileEditActivity
 import com.nimkat.app.view_model.AuthViewModel
-import com.nimkat.app.view_model.ProfileViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.io.File

@@ -10,7 +10,6 @@ import com.nimkat.app.models.DataHolder
 import com.nimkat.app.models.GetCodeResponse
 import com.nimkat.app.models.ProfileModel
 import com.nimkat.app.repository.AuthRepository
-import com.nimkat.app.repository.ProfileRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -19,23 +18,23 @@ import javax.inject.Singleton
 @HiltViewModel
 class AuthViewModel @Inject constructor(
     private val repository: AuthRepository,
-    private val profileRepository: ProfileRepository
 ) : ViewModel() {
 
     private val _authModel = MutableLiveData<DataHolder<AuthModel>>(DataHolder.pure())
     private val _isCodeSent = MutableLiveData<DataHolder<Int>>(DataHolder.pure())
-    private val _code = MutableLiveData<DataHolder<GetCodeResponse>>(DataHolder.pure())
     val isCodeSentLiveData: LiveData<DataHolder<Int>> = _isCodeSent
     val authModelLiveData: LiveData<DataHolder<AuthModel>> = _authModel
-
     private val _profileModel = MutableLiveData<DataHolder<ProfileModel>>(DataHolder.pure())
+
+
     val profileModelLiveData: LiveData<DataHolder<ProfileModel>> = _profileModel
-    private val _isProfileUpdated = MutableLiveData<DataHolder<Int>>(DataHolder.pure())
-    val isProfileUpdatedLiveData: LiveData<DataHolder<Int>> = _isProfileUpdated
+    private val _code = MutableLiveData<DataHolder<GetCodeResponse>>(DataHolder.pure())
+
+
 
     fun initProf() {
         Log.d("Prof View Model", "init prof called")
-        val profileModel = profileRepository.initProfile() ?: return
+        val profileModel = repository.initProfile() ?: return
         _profileModel.postValue(DataHolder.success(profileModel))
     }
 
@@ -78,7 +77,7 @@ class AuthViewModel @Inject constructor(
                 } else {
 //                    getProfile(response.body()!!.userId.toString() ,  response.body()!!.token)
                     _profileModel.postValue(DataHolder.loading())
-                    val response1 = profileRepository.getProfile(id, response.body()!!.token)
+                    val response1 = repository.getProfile(id, response.body()!!.token)
                     if (response1 != null && response1.isSuccessful && response1.body() != null) {
                         Log.d("PROF", response1.body()!!.toString())
                         _profileModel.postValue(DataHolder.success(response1.body()!!))
@@ -107,6 +106,15 @@ class AuthViewModel @Inject constructor(
         }
     }
 
+
+
+
+
+
+
+
+//    profile view model
+
     fun update(name: String, gradeID: Int, grade: String) {
         _profileModel.postValue(DataHolder.loading())
         viewModelScope.launch {
@@ -129,28 +137,9 @@ class AuthViewModel @Inject constructor(
         }
     }
 
-    fun getProfile(id: String, token: String) {
-        _profileModel.postValue(DataHolder.loading())
-        viewModelScope.launch {
-            val response = profileRepository.getProfile(id, token)
-            if (response != null && response.isSuccessful && response.body() != null) {
-                Log.d("PROF", response.body()!!.toString())
-                val profileModel = profileRepository.initProfile()
-                if (profileModel != null) {
-                    _profileModel.postValue(DataHolder.success(profileModel))
-                }
-//                _profileModel.postValue(DataHolder.success(response.body()!!))
-                Log.d("PROF", "LOAD Into Profile Model ")
-            } else {
-                _profileModel.postValue(DataHolder.error())
-                Log.d("PROF", "COULD NOT LOAD ")
-            }
-        }
-    }
-
     fun delete() {
         viewModelScope.launch {
-            profileRepository.delete(_authModel.value?.data?.userId.toString() , _authModel.value?.data?.token)
+            repository.delete(_authModel.value?.data?.userId.toString() , _authModel.value?.data?.token)
         }
     }
 
