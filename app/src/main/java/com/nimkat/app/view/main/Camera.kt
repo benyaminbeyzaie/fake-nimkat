@@ -36,6 +36,7 @@ import com.nimkat.app.view.login.LoginActivity
 import com.nimkat.app.view.my_questions.MyQuestionsActivity
 import com.nimkat.app.view.profile_edit.ProfileEditActivity
 import com.nimkat.app.view_model.AuthViewModel
+import com.nimkat.app.view_model.ProfileViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.io.File
@@ -44,11 +45,14 @@ import java.util.concurrent.ExecutorService
 
 @SuppressLint("RememberReturnType")
 @Composable
-fun Camera(cameraScaffoldState: ScaffoldState,
-           cameraExecutor: ExecutorService,
-           outputDirectory: File ,
-           authViewModel: AuthViewModel,
-           onImageCaptured: (Uri , Int) -> Unit) {
+fun Camera(
+    cameraScaffoldState: ScaffoldState,
+    cameraExecutor: ExecutorService,
+    outputDirectory: File,
+    authViewModel: AuthViewModel,
+    profileViewModel: ProfileViewModel,
+    onImageCaptured: (Uri, Int) -> Unit
+) {
 
 
     val coroutineScope = rememberCoroutineScope()
@@ -64,7 +68,7 @@ fun Camera(cameraScaffoldState: ScaffoldState,
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         drawerContent = if (drawerVisibility.value) {
-            { Drawer(authViewModel = authViewModel) }
+            { Drawer(authViewModel = authViewModel, profileViewModel = profileViewModel) }
         } else null,
         scaffoldState = cameraScaffoldState,
     ) {
@@ -131,13 +135,16 @@ fun Camera(cameraScaffoldState: ScaffoldState,
 
 @Composable
 fun Drawer(
-    modifier: Modifier = Modifier, authViewModel: AuthViewModel,
+    modifier: Modifier = Modifier, authViewModel: AuthViewModel, profileViewModel: ProfileViewModel
 ) {
 
     val context = LocalContext.current
     val authModel = authViewModel.authModelLiveData.observeAsState()
+    val profileModel = profileViewModel.profileModelLiveData.observeAsState()
     val isLogin = authModel.value?.data != null
-
+//    if (isLogin) {
+//        profileViewModel.getProfile(authModel.value?.data?.userId.toString())
+//    }
 
     Column(
         modifier
@@ -222,6 +229,7 @@ fun Drawer(
             }
         } else {
 
+
             Row(
                 Modifier
                     .fillMaxWidth()
@@ -240,8 +248,18 @@ fun Drawer(
                         .weight(1f)
                         .padding(12.dp, 6.dp)
                 ) {
+                    var name1 = "default"
+                    var phone1 = "default"
+                    profileModel.value?.data?.name?.let {
+                        name1 = it
+                    }
+                    profileModel.value?.data?.phone?.let {
+                        phone1 = it
+                    }
+
                     Text(
-                        "آنیتا علیخانی",
+                        name1,
+//                        "آنیتا علیخانی",
                         modifier = Modifier
                             .fillMaxWidth(),
                         color = colorResource(R.color.primary_text),
@@ -252,7 +270,8 @@ fun Drawer(
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        "+989123456789",
+                        phone1,
+//                        "+989123456789",
                         modifier = Modifier
                             .fillMaxWidth(),
                         color = colorResource(R.color.primary_text_variant),

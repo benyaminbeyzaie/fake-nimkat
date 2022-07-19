@@ -38,7 +38,7 @@ data class ProfileInfo(
     var grade: Int
 )
 
-data class Profile(
+data class ProfileModel(
 
     @SerializedName("first_name")
     var name: String,

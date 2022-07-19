@@ -43,6 +43,7 @@ import com.nimkat.app.ui.theme.NimkatTheme
 import com.nimkat.app.utils.CROP_IMAGE_CODE
 import com.nimkat.app.view.question_crop.QuestionCropActivity
 import com.nimkat.app.view_model.AuthViewModel
+import com.nimkat.app.view_model.ProfileViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -87,6 +88,7 @@ class MainActivity : ComponentActivity() {
                     coroutineScope = rememberCoroutineScope()
                     Greeting(
                         cameraScaffoldState!!,
+                        viewModel(),
                         viewModel(),
                         cameraExecutor,
                         outputDirectory,
@@ -198,6 +200,7 @@ class MainActivity : ComponentActivity() {
 fun Greeting(
     cameraScaffoldState: ScaffoldState,
     authViewModel: AuthViewModel,
+    profileViewModel: ProfileViewModel,
     cameraExecutor: ExecutorService,
     outputDirectory: File,
     onImageCaptured: (Uri, Int) -> Unit
@@ -237,6 +240,7 @@ fun Greeting(
                                     cameraExecutor,
                                     outputDirectory,
                                     authViewModel,
+                                    profileViewModel,
                                     onImageCaptured = onImageCaptured
                                 )
                             }
