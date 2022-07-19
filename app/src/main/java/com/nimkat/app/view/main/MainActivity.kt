@@ -58,6 +58,8 @@ class MainActivity : ComponentActivity() {
     private var cameraScaffoldState: ScaffoldState? = null
     private var coroutineScope: CoroutineScope? = null
 
+
+
     companion object {
         fun sendIntent(context: Context) =
             Intent(context, MainActivity::class.java).apply {
@@ -73,8 +75,8 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val profileViewModel:ProfileViewModel by viewModels()
-        profileViewModel.initAuth()
+//        val profileViewModel:ProfileViewModel by viewModels()
+//        profileViewModel.initAuth()
         val authViewModel: AuthViewModel by viewModels()
         authViewModel.initAuth()
         outputDirectory = getOutputDirectory()
@@ -91,7 +93,7 @@ class MainActivity : ComponentActivity() {
                     coroutineScope = rememberCoroutineScope()
                     Greeting(
                         cameraScaffoldState!!,
-                        viewModel(),
+                        authViewModel,
                         cameraExecutor,
                         outputDirectory,
                         onImageCaptured = ::handleImageCapture

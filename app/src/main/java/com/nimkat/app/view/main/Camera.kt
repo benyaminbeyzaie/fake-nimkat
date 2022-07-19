@@ -141,8 +141,16 @@ fun Drawer(
 
     val context = LocalContext.current
     val authModel = authViewModel.authModelLiveData.observeAsState()
-    var profileModel = authViewModel.profileModelLiveData.observeAsState()
+    val profileModel = authViewModel.profileModelLiveData.observeAsState()
+    val isLoaded = profileModel.value?.data != null
     val isLogin = authModel.value?.data != null
+
+    Log.d("PROF" , profileModel.value?.data.toString())
+    if (profileModel.value?.data != null){
+        Log.d("PROF" , "load status changed to loaded")
+    }else{
+        Log.d("PROF" , "load status changed to unloaded")
+    }
 
 
     Column(
@@ -246,40 +254,68 @@ fun Drawer(
                         .weight(1f)
                         .padding(12.dp, 6.dp)
                 ) {
-                    var name1 = "default"
-                    var phone1 = "default"
-                    profileModel.value?.data?.name?.let {
-                        name1 = it
-                    }
-                    profileModel.value?.data?.phone?.let {
-                        phone1 = it
-                    }
+                    if (isLoaded) {
 
-                    Text(
-                        name1,
-//                        "آنیتا علیخانی",
-                        modifier = Modifier
-                            .fillMaxWidth(),
-                        color = colorResource(R.color.primary_text),
-                        textAlign = TextAlign.Right,
-                        fontFamily = mainFont,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 16.sp
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
+                        var name1 = profileModel.value?.data?.name!!
+                        var phone1 = profileModel.value?.data?.phone!!
                         Text(
-                            phone1,
-//                        "+989123456789",
+                            name1,
+//                        "آنیتا علیخانی",
                             modifier = Modifier
                                 .fillMaxWidth(),
-                            color = colorResource(R.color.primary_text_variant),
+                            color = colorResource(R.color.primary_text),
                             textAlign = TextAlign.Right,
                             fontFamily = mainFont,
-                            fontWeight = FontWeight.Normal,
-                            fontSize = 14.sp
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 16.sp
                         )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
+                            Text(
+                                phone1,
+//                        "+989123456789",
+                                modifier = Modifier
+                                    .fillMaxWidth(),
+                                color = colorResource(R.color.primary_text_variant),
+                                textAlign = TextAlign.Right,
+                                fontFamily = mainFont,
+                                fontWeight = FontWeight.Normal,
+                                fontSize = 14.sp
+                            )
+                        }
+                    }else{
+                        Log.d("PROF" , "load status changed to unloaded")
+
+                        var name1 = "default"
+                        var phone1 = "default"
+                        Text(
+                            name1,
+//                        "آنیتا علیخانی",
+                            modifier = Modifier
+                                .fillMaxWidth(),
+                            color = colorResource(R.color.primary_text),
+                            textAlign = TextAlign.Right,
+                            fontFamily = mainFont,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 16.sp
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
+                            Text(
+                                phone1,
+//                        "+989123456789",
+                                modifier = Modifier
+                                    .fillMaxWidth(),
+                                color = colorResource(R.color.primary_text_variant),
+                                textAlign = TextAlign.Right,
+                                fontFamily = mainFont,
+                                fontWeight = FontWeight.Normal,
+                                fontSize = 14.sp
+                            )
+                        }
                     }
+
+
 //                    Text(
 //                        phone1,
 ////                        "+989123456789",
@@ -398,6 +434,41 @@ fun Drawer(
                     )
                 }
             }
+
+            Box(
+                Modifier
+                    .padding(0.dp, 4.dp, 0.dp, 0.dp)
+                    .fillMaxWidth()
+                    .clickable {
+                        authViewModel.delete()
+                        authViewModel.clearAuth()
+                    }) {
+                Row(
+                    Modifier
+                        .padding(24.dp, 12.dp)
+                        .fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        "حذف اکانت",
+                        modifier = Modifier
+                            .weight(1f),
+                        color = colorResource(R.color.red),
+                        textAlign = TextAlign.Right,
+                        fontFamily = mainFont,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 17.sp
+                    )
+                    Icon(
+                        painter = painterResource(R.drawable.ic_logout),
+                        contentDescription = null,
+                        modifier = Modifier.size(20.dp),
+                        tint = colorResource(R.color.red)
+                    )
+                }
+            }
+
+
 
         }
 

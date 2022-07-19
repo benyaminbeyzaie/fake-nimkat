@@ -25,9 +25,11 @@ class ProfileRepository @Inject constructor(
         authPrefs.clearAuth()
     }
 
-    suspend fun updateProfile(name: String , gradeID :Int  , id: String): Response<ProfileModel>?{
+    suspend fun updateProfile(name: String , gradeID :Int  , id: String , token: String): Response<ProfileModel>?{
 
-        val apiResponse = api.updateProfile(id , ProfileInfo(name = name , grade = gradeID))
+        val apiResponse = api.updateProfile(id , ProfileInfo(name = name , grade = gradeID) ,
+            "Token $token"
+        )
         if (apiResponse.body() === null) return null;
         Log.d("Auth" , "profile status " + apiResponse.body()!!.isProfileCompleted)
         val gson = Gson()
@@ -38,13 +40,17 @@ class ProfileRepository @Inject constructor(
     }
 
     suspend fun getProfile(id: String , token: String): Response<ProfileModel>?{
-        val apiResponse = api.getProfile(id , token)
+        val apiResponse = api.getProfile(id , "Token $token")
         if (apiResponse.body() === null) return null;
         Log.d("Auth" , "profile status " + apiResponse.body()!!.isProfileCompleted)
         val gson = Gson()
         authPrefs.setProfileString(gson.toJson(apiResponse.body()))
         Log.d("Auth" , "json is: " + gson.toJson(apiResponse.body()))
         return apiResponse
+    }
+
+    suspend fun delete(toString: String, token: String?) {
+        api.deleteAccount(toString , "Token $token")
     }
 
 

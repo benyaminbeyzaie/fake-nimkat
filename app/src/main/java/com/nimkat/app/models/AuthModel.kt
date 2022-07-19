@@ -28,6 +28,9 @@ data class VerifyCodeBody(
 data class GetCodeResponse(
     @SerializedName("id")
     var smsCode: Int,
+    @SerializedName("username")
+    var username: String
+
 )
 
 data class ProfileInfo(
@@ -51,9 +54,15 @@ data class ProfileModel(
     @SerializedName("educational_grade")
     var educationalGrade: EducationalGrade?,
     @SerializedName("is_profile_completed")
-var isProfileCompleted: Boolean,
+    var isProfileCompleted: Boolean,
 
-)
+
+
+) {
+    override fun toString(): String {
+        return "ProfileModel(name='$name', grade=$grade, userId=$userId, phone='$phone', educationalGrade=$educationalGrade, isProfileCompleted=$isProfileCompleted)"
+    }
+}
 
 data class EducationalGrade(
 

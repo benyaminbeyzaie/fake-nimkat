@@ -105,7 +105,7 @@ fun OtpContent(id: String, authViewModel: AuthViewModel) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(colorResource(R.color.color_back))
+            .background(colorResource(R.color.background))
     ) {
         IconButton(
             onClick = {
@@ -116,7 +116,7 @@ fun OtpContent(id: String, authViewModel: AuthViewModel) {
         ) {
             Icon(
                 painter = painterResource(R.drawable.ic_back), null,
-                tint = colorResource(R.color.black),
+                tint = colorResource(R.color.primary_text),
                 modifier = Modifier
                     .size(24.dp)
                     .rotate(180f)
@@ -131,7 +131,7 @@ fun OtpContent(id: String, authViewModel: AuthViewModel) {
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(20.dp, 20.dp, 20.dp, 0.dp),
-            color = colorResource(R.color.black),
+            color = colorResource(R.color.primary_text),
             fontFamily = secondFont,
             fontSize = 32.sp
         )
@@ -141,7 +141,7 @@ fun OtpContent(id: String, authViewModel: AuthViewModel) {
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(20.dp, 4.dp),
-            color = colorResource(R.color.gray500),
+            color = colorResource(R.color.primary_text_variant),
             fontFamily = mainFont,
             fontSize = 14.sp
         )
@@ -218,14 +218,14 @@ fun CodeItem(
             },
         shape = RoundedCornerShape(6.dp),
         colors = TextFieldDefaults.outlinedTextFieldColors(
-            backgroundColor = colorResource(R.color.white),
-            focusedBorderColor = colorResource(R.color.main_color),
-            unfocusedBorderColor = colorResource(R.color.gray300),
+            backgroundColor = colorResource(R.color.textfield_background),
+            focusedBorderColor = colorResource(R.color.blue),
+            unfocusedBorderColor = colorResource(R.color.textfield_background),
         ),
         textStyle = TextStyle(
             fontSize = 16.sp,
             fontFamily = mainFont,
-            color = colorResource(R.color.black),
+            color = colorResource(R.color.primary_text),
             textAlign = TextAlign.Center
         ),
         keyboardOptions = KeyboardOptions.Default.copy(

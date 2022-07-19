@@ -39,9 +39,11 @@ class AuthRepository @Inject constructor(
         authPrefs.clearAuth()
     }
 
-    suspend fun updateProfile(name: String , gradeID :Int  , id: String): Response<ProfileModel>?{
+    suspend fun updateProfile(name: String , gradeID :Int  , id: String , token: String): Response<ProfileModel>?{
 
-        val apiResponse = api.updateProfile(id , ProfileInfo(name = name , grade = gradeID))
+        val apiResponse = api.updateProfile(id , ProfileInfo(name = name , grade = gradeID) ,
+            "Token $token"
+        )
         if (apiResponse.body() === null) return null;
         Log.d("Auth" , "profile status " + apiResponse.body()!!.isProfileCompleted)
         val gson = Gson()

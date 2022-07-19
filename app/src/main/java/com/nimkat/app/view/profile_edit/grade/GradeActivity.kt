@@ -75,7 +75,7 @@ fun GradeContent() {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(colorResource(R.color.color_back))
+            .background(colorResource(R.color.background))
     ) {
         IconButton(
             onClick = {
@@ -86,7 +86,7 @@ fun GradeContent() {
         ) {
             Icon(
                 painter = painterResource(R.drawable.ic_back), null,
-                tint = colorResource(R.color.black),
+                tint = colorResource(R.color.primary_text),
                 modifier = Modifier
                     .size(24.dp)
                     .rotate(180f)
@@ -100,7 +100,7 @@ fun GradeContent() {
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(20.dp, 20.dp, 20.dp, 0.dp),
-            color = colorResource(R.color.black),
+            color = colorResource(R.color.primary_text),
             fontFamily = secondFont,
             fontSize = 32.sp
         )
@@ -163,7 +163,7 @@ fun GradeContent() {
                                         .padding(12.dp, 10.dp),
                                     style = TextStyle(
                                         fontFamily = mainFont,
-                                        color = colorResource(R.color.black)
+                                        color = colorResource(R.color.primary_text)
                                     ),
                                     fontSize = 14.sp
                                 )
@@ -211,7 +211,7 @@ fun ExpandableContainer(
                     text = title, Modifier.weight(1f),
                     style = TextStyle(
                         fontFamily = mainFont,
-                        color = colorResource(R.color.gray800),
+                        color = colorResource(R.color.primary_text_variant),
                         fontWeight = FontWeight.Bold
                     ),
                     fontSize = 16.sp

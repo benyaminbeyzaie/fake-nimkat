@@ -16,7 +16,10 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @HiltViewModel
-class AuthViewModel @Inject constructor(private val repository: AuthRepository  , private val profileRepository: ProfileRepository) : ViewModel() {
+class AuthViewModel @Inject constructor(
+    private val repository: AuthRepository,
+    private val profileRepository: ProfileRepository
+) : ViewModel() {
 
     private val _authModel = MutableLiveData<DataHolder<AuthModel>>(DataHolder.pure())
     private val _isCodeSent = MutableLiveData<DataHolder<Int>>(DataHolder.pure())
@@ -29,7 +32,7 @@ class AuthViewModel @Inject constructor(private val repository: AuthRepository  
     val isProfileUpdatedLiveData: LiveData<DataHolder<Int>> = _isProfileUpdated
 
     fun initProf() {
-        Log.d("Auth View Model", "init auth called")
+        Log.d("Prof View Model", "init prof called")
         val profileModel = profileRepository.initProfile() ?: return
         _profileModel.postValue(DataHolder.success(profileModel))
     }
@@ -48,7 +51,7 @@ class AuthViewModel @Inject constructor(private val repository: AuthRepository  
             val response = repository.getCode(phoneNumber)
             if (response.isSuccessful && response.body() != null) {
                 _isCodeSent.postValue(DataHolder.success(response.body()!!.smsCode))
-            }else {
+            } else {
                 _isCodeSent.postValue(DataHolder.error())
             }
         }
@@ -59,13 +62,25 @@ class AuthViewModel @Inject constructor(private val repository: AuthRepository  
         viewModelScope.launch {
             val response = repository.verifyCode(smsCode, id)
             if (response != null && response.isSuccessful && response.body() != null) {
-                if (!response.body()!!.isProfileCompleted){
-                    _authModel.postValue(DataHolder.needCompletion())
-                }else {
+                if (!response.body()!!.isProfileCompleted) {
+                    _authModel.postValue(DataHolder.needCompletion(response.body()!!))
+                    Log.d("AUTH NEED ", response.body()!!.toString())
+                } else {
+//                    getProfile(response.body()!!.userId.toString() ,  response.body()!!.token)
+                    _profileModel.postValue(DataHolder.loading())
+                    val response1 = profileRepository.getProfile(id, response.body()!!.token)
+                    if (response1 != null && response1.isSuccessful && response1.body() != null) {
+                        Log.d("PROF", response1.body()!!.toString())
+                        _profileModel.postValue(DataHolder.success(response1.body()!!))
+                        Log.d("PROF", "LOAD Into Profile Model ")
+                    } else {
+                        _profileModel.postValue(DataHolder.error())
+                        Log.d("PROF", "COULD NOT LOAD ")
+                    }
                     _authModel.postValue(DataHolder.success(response.body()!!))
-                    getProfile(response.body()!!.userId.toString() , "Token " + response.body()!!.token)
+
                 }
-            }else {
+            } else {
                 _authModel.postValue(DataHolder.error())
             }
         }
@@ -73,35 +88,60 @@ class AuthViewModel @Inject constructor(private val repository: AuthRepository  
 
     fun clearAuth() {
         _authModel.postValue(DataHolder.loading())
+        _profileModel.postValue(DataHolder.loading())
         viewModelScope.launch {
             repository.clearAuth()
+//            profileRepository.clearAuth()
             _authModel.postValue(DataHolder.pure())
+            _profileModel.postValue(DataHolder.pure())
         }
     }
 
-    fun update(name: String , gradeID :Int  , id: String) {
+    fun update(name: String, gradeID: Int, grade: String) {
         _profileModel.postValue(DataHolder.loading())
         viewModelScope.launch {
-            val response = repository.updateProfile(name, gradeID, id)
+            if (_authModel.value == null){
+                Log.d("update" , "value is null")
+            }
+            if (_authModel.value?.data == null){
+                Log.d("update" , "data is null " + _authModel.value?.status.toString())
+            }
+
+            val response = repository.updateProfile(name, gradeID, _authModel.value?.data?.userId.toString(), _authModel.value?.data?.token!!)
             if (response != null && response.isSuccessful && response.body() != null) {
+                Log.d("PROF", response.body()!!.toString())
                 _profileModel.postValue(DataHolder.success(response.body()!!))
-            }else {
+                Log.d("PROF", "LOAD Into Profile Model ")
+                _authModel.postValue(DataHolder.success(_authModel.value!!.data!!))
+            } else {
                 _profileModel.postValue(DataHolder.error())
             }
         }
     }
 
-    fun getProfile(id: String , token: String){
+    fun getProfile(id: String, token: String) {
         _profileModel.postValue(DataHolder.loading())
         viewModelScope.launch {
-            val response = profileRepository.getProfile(id , token)
+            val response = profileRepository.getProfile(id, token)
             if (response != null && response.isSuccessful && response.body() != null) {
-                _profileModel.postValue(DataHolder.success(response.body()!!))
-            }else {
+                Log.d("PROF", response.body()!!.toString())
+                val profileModel = profileRepository.initProfile()
+                if (profileModel != null) {
+                    _profileModel.postValue(DataHolder.success(profileModel))
+                }
+//                _profileModel.postValue(DataHolder.success(response.body()!!))
+                Log.d("PROF", "LOAD Into Profile Model ")
+            } else {
                 _profileModel.postValue(DataHolder.error())
+                Log.d("PROF", "COULD NOT LOAD ")
             }
         }
     }
 
+    fun delete() {
+        viewModelScope.launch {
+            profileRepository.delete(_authModel.value?.data?.userId.toString() , _authModel.value?.data?.token)
+        }
+    }
 
 }
