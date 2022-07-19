@@ -185,6 +185,7 @@ fun CodeItem(
     authViewModel: AuthViewModel,
     id: String,
 ) {
+    var current = LocalContext.current
     OutlinedTextField(
         singleLine = true,
         value = states[index].value,

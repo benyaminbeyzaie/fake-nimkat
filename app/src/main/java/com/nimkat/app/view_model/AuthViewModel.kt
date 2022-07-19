@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.nimkat.app.models.AuthModel
 import com.nimkat.app.models.DataHolder
+import com.nimkat.app.models.GetCodeResponse
 import com.nimkat.app.models.ProfileModel
 import com.nimkat.app.repository.AuthRepository
 import com.nimkat.app.repository.ProfileRepository
@@ -23,6 +24,7 @@ class AuthViewModel @Inject constructor(
 
     private val _authModel = MutableLiveData<DataHolder<AuthModel>>(DataHolder.pure())
     private val _isCodeSent = MutableLiveData<DataHolder<Int>>(DataHolder.pure())
+    private val _code = MutableLiveData<DataHolder<GetCodeResponse>>(DataHolder.pure())
     val isCodeSentLiveData: LiveData<DataHolder<Int>> = _isCodeSent
     val authModelLiveData: LiveData<DataHolder<AuthModel>> = _authModel
 
@@ -43,6 +45,14 @@ class AuthViewModel @Inject constructor(
         val authModel = repository.initAuth() ?: return
         _authModel.postValue(DataHolder.success(authModel))
         initProf()
+        initCode()
+    }
+
+
+    fun initCode(){
+        Log.d("Auth View Model", "init auth called")
+        val authModel = repository.initCode() ?: return
+        _code.postValue(DataHolder.success(authModel))
     }
 
     fun getCode(phoneNumber: String) {
@@ -107,11 +117,11 @@ class AuthViewModel @Inject constructor(
                 Log.d("update" , "data is null " + _authModel.value?.status.toString())
             }
 
-            val response = repository.updateProfile(name, gradeID, _authModel.value?.data?.userId.toString(), _authModel.value?.data?.token!!)
+            val response = repository.updateProfile(name, gradeID, _authModel.value?.data?.userId.toString(), _authModel.value?.data?.token!! , _code.value?.data?.username!!)
             if (response != null && response.isSuccessful && response.body() != null) {
-                Log.d("PROF", response.body()!!.toString())
+                Log.d("update ", response.body()!!.toString())
                 _profileModel.postValue(DataHolder.success(response.body()!!))
-                Log.d("PROF", "LOAD Into Profile Model ")
+                Log.d("update ", "LOAD Into Profile Model ")
                 _authModel.postValue(DataHolder.success(_authModel.value!!.data!!))
             } else {
                 _profileModel.postValue(DataHolder.error())

@@ -25,9 +25,9 @@ class ProfileRepository @Inject constructor(
         authPrefs.clearAuth()
     }
 
-    suspend fun updateProfile(name: String , gradeID :Int  , id: String , token: String): Response<ProfileModel>?{
+    suspend fun updateProfile(name: String , gradeID :Int  , id: String , token: String , username: String): Response<ProfileModel>?{
 
-        val apiResponse = api.updateProfile(id , ProfileInfo(name = name , grade = gradeID) ,
+        val apiResponse = api.updateProfile(id , ProfileInfo(name = name , grade = gradeID , username = username) ,
             "Token $token"
         )
         if (apiResponse.body() === null) return null;

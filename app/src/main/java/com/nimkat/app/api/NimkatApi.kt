@@ -18,5 +18,5 @@ interface NimkatApi {
     suspend fun getProfile(@Path("id") id: String  , @Header("Authorization") token: String): Response<ProfileModel>
 
     @DELETE("users/{id}/")
-    suspend fun deleteAccount(@Path("id") id: String  , @Header("Authorization") token: String): Unit
+    suspend fun deleteAccount(@Path("id") id: String  , @Header("Authorization") token: String): Response<Unit>
 }

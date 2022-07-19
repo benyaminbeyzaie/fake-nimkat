@@ -27,15 +27,15 @@ class ProfileViewModel @Inject constructor(private val repository: ProfileReposi
     }
 
     fun update(name: String , gradeID :Int  , id: String , token: String) {
-        _profileModel.postValue(DataHolder.loading())
-        viewModelScope.launch {
-            val response = repository.updateProfile(name, gradeID, id , token)
-            if (response != null && response.isSuccessful && response.body() != null) {
-                    _profileModel.postValue(DataHolder.success(response.body()!!))
-            }else {
-                _profileModel.postValue(DataHolder.error())
-            }
-        }
+//        _profileModel.postValue(DataHolder.loading())
+//        viewModelScope.launch {
+//            val response = repository.updateProfile(name, gradeID, id , token)
+//            if (response != null && response.isSuccessful && response.body() != null) {
+//                    _profileModel.postValue(DataHolder.success(response.body()!!))
+//            }else {
+//                _profileModel.postValue(DataHolder.error())
+//            }
+//        }
     }
 
     fun getProfile(id: String , token: String){

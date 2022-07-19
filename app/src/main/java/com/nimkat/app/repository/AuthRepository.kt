@@ -21,8 +21,19 @@ class AuthRepository @Inject constructor(
         return gson.fromJson(authString, AuthModel::class.java)
     }
 
+
+    fun initCode(): GetCodeResponse?{
+        val authString = authPrefs.getCode()
+        if (authString === null || authString == "") return null
+        val gson = Gson()
+        return gson.fromJson(authString, GetCodeResponse::class.java)
+    }
+
     suspend fun getCode(phoneNumber: String): Response<GetCodeResponse> {
-        return api.getCode(GetCodeBody(phoneNumber, "-"))
+        var apiResponse = api.getCode(GetCodeBody(phoneNumber, "-"))
+        val gson = Gson()
+        authPrefs.setCode(gson.toJson(apiResponse.body()))
+        return apiResponse
     }
 
     suspend fun verifyCode(smsCode: String, id: String): Response<AuthModel>? {
@@ -39,9 +50,9 @@ class AuthRepository @Inject constructor(
         authPrefs.clearAuth()
     }
 
-    suspend fun updateProfile(name: String , gradeID :Int  , id: String , token: String): Response<ProfileModel>?{
+    suspend fun updateProfile(name: String , gradeID :Int  , id: String , token: String , username: String): Response<ProfileModel>?{
 
-        val apiResponse = api.updateProfile(id , ProfileInfo(name = name , grade = gradeID) ,
+        val apiResponse = api.updateProfile(id , ProfileInfo(name = name , grade = gradeID , username = username) ,
             "Token $token"
         )
         if (apiResponse.body() === null) return null;
