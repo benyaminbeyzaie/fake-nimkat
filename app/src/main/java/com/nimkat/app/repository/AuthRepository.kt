@@ -3,10 +3,7 @@ package com.nimkat.app.repository
 import android.util.Log
 import com.google.gson.Gson
 import com.nimkat.app.api.NimkatApi
-import com.nimkat.app.models.AuthModel
-import com.nimkat.app.models.GetCodeBody
-import com.nimkat.app.models.GetCodeResponse
-import com.nimkat.app.models.VerifyCodeBody
+import com.nimkat.app.models.*
 import com.nimkat.app.utils.AuthPrefs
 import retrofit2.Response
 import javax.inject.Inject
@@ -31,12 +28,26 @@ class AuthRepository @Inject constructor(
     suspend fun verifyCode(smsCode: String, id: String): Response<AuthModel>? {
         val apiResponse = api.verifyCode(id, VerifyCodeBody(smsCode))
         if (apiResponse.body() === null) return null;
+        Log.d("Auth" , "profile status " + apiResponse.body()!!.isProfileCompleted)
         val gson = Gson()
         authPrefs.setAuthString(gson.toJson(apiResponse.body()))
+        Log.d("Auth" , "json is: " + gson.toJson(apiResponse.body()))
         return apiResponse
     }
 
     fun clearAuth(){
         authPrefs.clearAuth()
+    }
+
+    suspend fun updateProfile(name: String , gradeID :Int  , id: String): Response<Profile>?{
+
+        val apiResponse = api.updateProfile(id , ProfileInfo(name = name , grade = gradeID))
+        if (apiResponse.body() === null) return null;
+        Log.d("Auth" , "profile status " + apiResponse.body()!!.isProfileCompleted)
+        val gson = Gson()
+        authPrefs.setProfileString(gson.toJson(apiResponse.body()))
+        Log.d("Auth" , "json is: " + gson.toJson(apiResponse.body()))
+        return apiResponse
+
     }
 }

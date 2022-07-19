@@ -17,6 +17,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.FloatingActionButton
 import androidx.compose.material.Icon
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Collections
+import androidx.compose.material.icons.outlined.HighlightOff
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
@@ -116,11 +119,14 @@ fun CameraView(
             modifier = Modifier
                 .align(alignment = Alignment.BottomEnd)
                 .padding(24.dp)
-                .size(65.dp),
-            backgroundColor = colorResource(R.color.red)
+                .size(50.dp),
+            backgroundColor = colorResource(R.color.blue)
         ) {
-            Image(painterResource(R.drawable.galley_icon),
-                contentDescription = "null")
+            Icon(
+                Icons.Outlined.Collections,
+                null,
+                tint = colorResource(R.color.white),
+            )
         }
 
     }

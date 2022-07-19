@@ -10,6 +10,7 @@ import javax.inject.Singleton
 @Singleton
 class AuthPrefs @Inject constructor(@ApplicationContext context : Context){
     private val authPrefTag = "auth_tag";
+    private val authProfileTag = "profile_tag"
     private val prefs: SharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
 
     fun getAuthString(): String? {
@@ -22,7 +23,12 @@ class AuthPrefs @Inject constructor(@ApplicationContext context : Context){
         prefs.edit().putString(authPrefTag, query).apply()
     }
 
+    fun setProfileString(query: String){
+        prefs.edit().putString(authProfileTag , query).apply()
+    }
+
     fun clearAuth() {
         prefs.edit().remove(authPrefTag).apply()
+        prefs.edit().remove(authProfileTag).apply()
     }
 }

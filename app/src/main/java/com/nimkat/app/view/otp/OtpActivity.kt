@@ -42,6 +42,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.app.ActivityCompat.startActivityForResult
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -50,8 +51,11 @@ import com.nimkat.app.models.DataStatus
 import com.nimkat.app.ui.theme.NimkatTheme
 import com.nimkat.app.ui.theme.mainFont
 import com.nimkat.app.ui.theme.secondFont
+import com.nimkat.app.utils.CROP_IMAGE_CODE
 import com.nimkat.app.utils.MOBILE
 import com.nimkat.app.view.main.MainActivity
+import com.nimkat.app.view.profile_edit.CompleteProfile
+import com.nimkat.app.view.question_crop.QuestionCropActivity
 import com.nimkat.app.view_model.AuthViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -93,6 +97,9 @@ fun OtpContent(id: String, authViewModel: AuthViewModel) {
     Log.d("OptActivity", "auth state: ${authState.value?.status}")
     if (authState.value?.status === DataStatus.Success) {
         MainActivity.sendIntent(context)
+    }
+    if (authState.value?.status === DataStatus.NeedCompletion){
+        CompleteProfile.sendIntent(context)
     }
 
     Column(

@@ -113,6 +113,20 @@ fun GradeContent() {
             GradeModel("متوسطه دوم", listOf("دهم", "یازدهم", "دوازدهم")),
         )
 
+        val map: HashMap<String, Int> = HashMap<String, Int>()
+        map.put("اول", 1)
+        map.put("دوم", 2)
+        map.put("سوم", 3)
+        map.put("چهارم", 4)
+        map.put("پنجم", 5)
+        map.put("ششم", 6)
+        map.put("هفتم", 7)
+        map.put("هشتم", 8)
+        map.put("نهم", 9)
+        map.put("دهم", 10)
+        map.put("یازدهم", 11)
+        map.put("دوازدهم", 12)
+
         LazyColumn(
             Modifier
                 .fillMaxSize()
@@ -131,6 +145,14 @@ fun GradeContent() {
                                 border = BorderStroke(1.dp, colorResource(R.color.gray300)),
                                 elevation = 0.dp,
                                 onClick = {
+                                    val data = Intent().apply {
+                                        putExtra("grade", it)
+                                        putExtra("gradeID" , map.get(it))
+                                    }
+                                    if (context is Activity) {
+                                        context.setResult(Activity.RESULT_OK, data)
+                                        context.finish()
+                                    }
 
                                 }
                             ) {

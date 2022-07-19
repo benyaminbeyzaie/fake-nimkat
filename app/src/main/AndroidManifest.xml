@@ -19,9 +19,14 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Nimkat">
         <activity
-            android:name=".view.main.MainActivity2"
+            android:name=".view.profile_edit.CompleteProfile"
             android:exported="false"
-            android:label="@string/title_activity_main2"
+            android:label="@string/title_activity_complete_profile"
+            android:theme="@style/Theme.Nimkat" />
+        <activity
+            android:name=".view.profile_edit.WhatsYourNameActivity"
+            android:exported="false"
+            android:label="@string/title_activity_whats_your_name"
             android:theme="@style/Theme.Nimkat" />
         <activity
             android:name=".view.question_crop.QuestionCropActivity"

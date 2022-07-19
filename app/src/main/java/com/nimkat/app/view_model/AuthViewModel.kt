@@ -44,7 +44,11 @@ class AuthViewModel @Inject constructor(private val repository: AuthRepository) 
         viewModelScope.launch {
             val response = repository.verifyCode(smsCode, id)
             if (response != null && response.isSuccessful && response.body() != null) {
-                _authModel.postValue(DataHolder.success(response.body()!!))
+                if (!response.body()!!.isProfileCompleted){
+                    _authModel.postValue(DataHolder.needCompletion())
+                }else {
+                    _authModel.postValue(DataHolder.success(response.body()!!))
+                }
             }else {
                 _authModel.postValue(DataHolder.error())
             }
