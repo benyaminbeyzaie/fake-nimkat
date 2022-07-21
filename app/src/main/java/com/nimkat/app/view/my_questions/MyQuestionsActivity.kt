@@ -3,7 +3,6 @@ package com.nimkat.app.view.my_questions
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
-import android.media.Image
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
@@ -30,17 +29,12 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.Role.Companion.Image
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
-import coil.compose.rememberAsyncImagePainter
 import com.nimkat.app.R
-import com.nimkat.app.models.DataStatus
 import com.nimkat.app.models.QuestionModel
 import com.nimkat.app.ui.theme.NimkatTheme
 import com.nimkat.app.ui.theme.RippleWhite
