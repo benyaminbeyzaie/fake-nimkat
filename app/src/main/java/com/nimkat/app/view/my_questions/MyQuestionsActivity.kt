@@ -31,10 +31,10 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.nimkat.app.R
-import com.nimkat.app.view.question_detail.QuestionDetailActivity
 import com.nimkat.app.ui.theme.NimkatTheme
 import com.nimkat.app.ui.theme.RippleWhite
 import com.nimkat.app.ui.theme.mainFont
+import com.nimkat.app.view.question_detail.QuestionDetailActivity
 
 class MyQuestionsActivity : ComponentActivity() {
 

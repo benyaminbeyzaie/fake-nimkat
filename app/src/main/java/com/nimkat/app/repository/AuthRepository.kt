@@ -14,49 +14,34 @@ class AuthRepository @Inject constructor(
     private val api: NimkatApi,
     private val authPrefs: AuthPrefs
 ) {
+    var authModel: AuthModel? = null;
+
     fun initAuth(): AuthModel? {
+        if (authModel != null) return authModel
         val authString = authPrefs.getAuthString()
         if (authString === null) return null
         val gson = Gson()
-        return gson.fromJson(authString, AuthModel::class.java)
+        authModel = gson.fromJson(authString, AuthModel::class.java)
+        return authModel;
     }
-
-    fun initCode(): GetCodeResponse?{
-        val authString = authPrefs.getCode()
-        if (authString === null || authString == "") return null
-        val gson = Gson()
-        return gson.fromJson(authString, GetCodeResponse::class.java)
-    }
-
 
     suspend fun getCode(phoneNumber: String): Response<GetCodeResponse> {
-        var apiResponse = api.getCode(GetCodeBody(phoneNumber, "-"))
-        val gson = Gson()
-        authPrefs.setCode(gson.toJson(apiResponse.body()))
-        return apiResponse
+        return api.getCode(GetCodeBody(phoneNumber, "-"))
     }
 
     suspend fun verifyCode(smsCode: String, id: String): Response<AuthModel>? {
         val apiResponse = api.verifyCode(id, VerifyCodeBody(smsCode))
         if (apiResponse.body() === null) return null;
-        Log.d("Auth" , "profile status " + apiResponse.body()!!.isProfileCompleted)
+        Log.d("Auth", "profile status " + apiResponse.body()!!.isProfileCompleted)
         val gson = Gson()
         authPrefs.setAuthString(gson.toJson(apiResponse.body()))
-        Log.d("Auth" , "json is: " + gson.toJson(apiResponse.body()))
+        Log.d("Auth", "json is: " + gson.toJson(apiResponse.body()))
         return apiResponse
     }
 
-    fun clearAuth(){
+    fun clearAuth() {
         authPrefs.clearAuth()
     }
-
-
-
-
-
-
-
-//    profile Repository
 
     fun initProfile(): ProfileModel? {
         val profileString = authPrefs.getProfileString()
@@ -65,32 +50,43 @@ class AuthRepository @Inject constructor(
         return gson.fromJson(profileString, ProfileModel::class.java)
     }
 
-    suspend fun updateProfile(name: String , gradeID :Int  , id: String , token: String , username: String): Response<ProfileModel>?{
-
-        val apiResponse = api.updateProfile(id , ProfileInfo(name = name , grade = gradeID , username = username) ,
-            "Token $token"
+    suspend fun updateProfile(
+        name: String,
+        gradeID: Int,
+    ): Response<ProfileModel>? {
+        initAuth();
+        if (authModel == null) return null
+        val apiResponse = api.updateProfile(
+            authModel?.userId.toString(), ProfileInfo(name = name, grade = gradeID, username = "-"),
+            "Token ${authModel?.token}"
         )
         if (apiResponse.body() === null) return null;
-        Log.d("Auth" , "profile status " + apiResponse.body()!!.isProfileCompleted)
+        Log.d("Auth", "profile status " + apiResponse.body()!!.isProfileCompleted)
         val gson = Gson()
         authPrefs.setProfileString(gson.toJson(apiResponse.body()))
-        Log.d("Auth" , "json is: " + gson.toJson(apiResponse.body()))
+        Log.d("Auth", "json is: " + gson.toJson(apiResponse.body()))
         return apiResponse
     }
 
 
-    suspend fun getProfile(id: String , token: String): Response<ProfileModel>?{
-        val apiResponse = api.getProfile(id , "Token $token")
+    suspend fun getProfile(id: String): Response<ProfileModel>? {
+        initAuth()
+        if (authModel == null) return null
+        val apiResponse = api.getProfile(id, "Token ${authModel?.token}")
         if (apiResponse.body() === null) return null;
-        Log.d("Auth" , "profile status " + apiResponse.body()!!.isProfileCompleted)
+        Log.d("Auth", "profile status " + apiResponse.body()!!.isProfileCompleted)
         val gson = Gson()
         authPrefs.setProfileString(gson.toJson(apiResponse.body()))
-        Log.d("Auth" , "json is: " + gson.toJson(apiResponse.body()))
+        Log.d("Auth", "json is: " + gson.toJson(apiResponse.body()))
         return apiResponse
     }
 
-    suspend fun delete(toString: String, token: String?) {
-        api.deleteAccount(toString , "Token $token")
+    suspend fun delete() {
+        initAuth()
+        if (authModel == null) return
+        authPrefs.clearAuth()
+        api.deleteAccount(authModel!!.userId.toString(), "Token ${authModel!!.token}")
+        authModel = null
     }
 
 }

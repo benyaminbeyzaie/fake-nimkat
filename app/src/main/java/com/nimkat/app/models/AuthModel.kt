@@ -34,13 +34,12 @@ data class GetCodeResponse(
 )
 
 data class ProfileInfo(
-
     @SerializedName("first_name")
     var name: String,
     @SerializedName("educational_grade_id")
     var grade: Int,
     @SerializedName("username")
-    var username: String,
+    var username: String? = "",
     @SerializedName("is_profile_completed")
     var isProfileCompleted: Boolean = true
 
@@ -62,8 +61,7 @@ data class ProfileModel(
     var isProfileCompleted: Boolean,
 
 
-
-) {
+    ) {
     override fun toString(): String {
         return "ProfileModel(name='$name', grade=$grade, userId=$userId, phone='$phone', educationalGrade=$educationalGrade, isProfileCompleted=$isProfileCompleted)"
     }

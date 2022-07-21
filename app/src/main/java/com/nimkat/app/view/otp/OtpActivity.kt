@@ -7,9 +7,7 @@ import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.viewModels
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
@@ -35,27 +33,20 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.app.ActivityCompat.startActivityForResult
-import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.nimkat.app.R
 import com.nimkat.app.models.DataStatus
 import com.nimkat.app.ui.theme.NimkatTheme
 import com.nimkat.app.ui.theme.mainFont
 import com.nimkat.app.ui.theme.secondFont
-import com.nimkat.app.utils.CROP_IMAGE_CODE
-import com.nimkat.app.utils.MOBILE
 import com.nimkat.app.view.main.MainActivity
 import com.nimkat.app.view.profile_edit.CompleteProfile
-import com.nimkat.app.view.question_crop.QuestionCropActivity
 import com.nimkat.app.view_model.AuthViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -98,7 +89,7 @@ fun OtpContent(id: String, authViewModel: AuthViewModel) {
     if (authState.value?.status === DataStatus.Success) {
         MainActivity.sendIntent(context)
     }
-    if (authState.value?.status === DataStatus.NeedCompletion){
+    if (authState.value?.status === DataStatus.NeedCompletion) {
         CompleteProfile.sendIntent(context)
     }
 
@@ -185,7 +176,6 @@ fun CodeItem(
     authViewModel: AuthViewModel,
     id: String,
 ) {
-    var current = LocalContext.current
     OutlinedTextField(
         singleLine = true,
         value = states[index].value,
@@ -210,10 +200,8 @@ fun CodeItem(
             .size(55.dp)
             .onKeyEvent { event: KeyEvent ->
                 if (event.key.keyCode == Key.Backspace.keyCode) {
-
                     if (index > 0)
                         activates[index - 1].requestFocus()
-
                 }
                 false
             },
