@@ -6,6 +6,7 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -20,6 +21,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.colorResource
@@ -35,11 +37,11 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.nimkat.app.R
-import com.nimkat.app.view.profile_edit.grade.GradeActivity
 import com.nimkat.app.ui.theme.NimkatTheme
 import com.nimkat.app.ui.theme.RippleWhite
 import com.nimkat.app.ui.theme.mainFont
 import com.nimkat.app.ui.theme.secondFont
+import com.nimkat.app.view.profile_edit.grade.GradeActivity
 
 
 class ProfileEditActivity : ComponentActivity() {
@@ -113,42 +115,70 @@ fun ProfileEditContent() {
         )
 
         Spacer(modifier = Modifier.height(16.dp))
+        Row(
+            modifier = Modifier.padding(20.dp, 20.dp, 20.dp, 0.dp)
+        ) {
 
-        OutlinedTextField(
-            value = "+989123456789",
-            onValueChange = {
-            },
-            enabled = true,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(20.dp, 0.dp),
-            label = {
-                Text(
-                    stringResource(id = R.string.mobile),
+            OutlinedTextField(
+                value = "9123456789",
+                onValueChange = {
+                },
+                enabled = false,
+                modifier = Modifier
+                    .weight(1f)
+                    .height(65.dp),
+                label = {
+                    Text(
+                        stringResource(id = R.string.mobile),
+                        fontFamily = mainFont,
+                        color = colorResource(
+                            R.color.color_hint
+                        ),
+                        fontSize = 12.sp,
+                        textAlign = TextAlign.Left
+                    )
+                },
+                shape = RoundedCornerShape(6.dp),
+                colors = TextFieldDefaults.outlinedTextFieldColors(
+                    focusedBorderColor = colorResource(R.color.main_color),
+                    unfocusedBorderColor = colorResource(R.color.gray500),
+                ),
+                textStyle = TextStyle(
+                    fontSize = 14.sp,
                     fontFamily = mainFont,
-                    color = colorResource(
-                        R.color.color_hint
-                    ),
-                    fontSize = 12.sp,
+                    color = colorResource(R.color.black),
                     textAlign = TextAlign.Left
+                ),
+                keyboardOptions = KeyboardOptions.Default.copy(
+                    keyboardType = KeyboardType.Text,
+                    imeAction = ImeAction.Done
                 )
-            },
-            shape = RoundedCornerShape(6.dp),
-            colors = TextFieldDefaults.outlinedTextFieldColors(
-                focusedBorderColor = colorResource(R.color.main_color),
-                unfocusedBorderColor = colorResource(R.color.gray500),
-            ),
-            textStyle = TextStyle(
-                fontSize = 14.sp,
-                fontFamily = mainFont,
-                color = colorResource(R.color.black),
-                textAlign = TextAlign.Left
-            ),
-            keyboardOptions = KeyboardOptions.Default.copy(
-                keyboardType = KeyboardType.Text,
-                imeAction = ImeAction.Next
             )
-        )
+            Spacer(modifier = Modifier.width(8.dp))
+            Card(
+                shape = RoundedCornerShape(6.dp),
+                modifier = Modifier
+                    .width(67.dp)
+                    .height(67.dp)
+                    .align(Alignment.CenterVertically)
+                    .padding(0.dp, 8.dp, 0.dp, 0.dp),
+                backgroundColor = Color.Transparent,
+                elevation = 0.dp,
+                border = BorderStroke(1.dp, colorResource(id = R.color.gray300)),
+            ) {
+                Box(
+                    contentAlignment = Alignment.Center, modifier = Modifier,
+                ) {
+                    Text(
+                        "+98",
+                        color = colorResource(R.color.black),
+                        modifier = Modifier
+                            .wrapContentSize(),
+                        fontSize = 14.sp
+                    )
+                }
+            }
+        }
 
         Spacer(modifier = Modifier.height(10.dp))
 

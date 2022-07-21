@@ -7,9 +7,7 @@ import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.viewModels
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
@@ -35,23 +33,20 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.nimkat.app.R
 import com.nimkat.app.models.DataStatus
 import com.nimkat.app.ui.theme.NimkatTheme
 import com.nimkat.app.ui.theme.mainFont
 import com.nimkat.app.ui.theme.secondFont
-import com.nimkat.app.utils.MOBILE
 import com.nimkat.app.view.main.MainActivity
+import com.nimkat.app.view.profile_edit.CompleteProfile
 import com.nimkat.app.view_model.AuthViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -94,11 +89,14 @@ fun OtpContent(id: String, authViewModel: AuthViewModel) {
     if (authState.value?.status === DataStatus.Success) {
         MainActivity.sendIntent(context)
     }
+    if (authState.value?.status === DataStatus.NeedCompletion) {
+        CompleteProfile.sendIntent(context)
+    }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(colorResource(R.color.color_back))
+            .background(colorResource(R.color.background))
     ) {
         IconButton(
             onClick = {
@@ -109,7 +107,7 @@ fun OtpContent(id: String, authViewModel: AuthViewModel) {
         ) {
             Icon(
                 painter = painterResource(R.drawable.ic_back), null,
-                tint = colorResource(R.color.black),
+                tint = colorResource(R.color.primary_text),
                 modifier = Modifier
                     .size(24.dp)
                     .rotate(180f)
@@ -124,7 +122,7 @@ fun OtpContent(id: String, authViewModel: AuthViewModel) {
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(20.dp, 20.dp, 20.dp, 0.dp),
-            color = colorResource(R.color.black),
+            color = colorResource(R.color.primary_text),
             fontFamily = secondFont,
             fontSize = 32.sp
         )
@@ -134,7 +132,7 @@ fun OtpContent(id: String, authViewModel: AuthViewModel) {
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(20.dp, 4.dp),
-            color = colorResource(R.color.gray500),
+            color = colorResource(R.color.primary_text_variant),
             fontFamily = mainFont,
             fontSize = 14.sp
         )
@@ -202,23 +200,21 @@ fun CodeItem(
             .size(55.dp)
             .onKeyEvent { event: KeyEvent ->
                 if (event.key.keyCode == Key.Backspace.keyCode) {
-
                     if (index > 0)
                         activates[index - 1].requestFocus()
-
                 }
                 false
             },
         shape = RoundedCornerShape(6.dp),
         colors = TextFieldDefaults.outlinedTextFieldColors(
-            backgroundColor = colorResource(R.color.white),
-            focusedBorderColor = colorResource(R.color.main_color),
-            unfocusedBorderColor = colorResource(R.color.gray300),
+            backgroundColor = colorResource(R.color.textfield_background),
+            focusedBorderColor = colorResource(R.color.blue),
+            unfocusedBorderColor = colorResource(R.color.textfield_background),
         ),
         textStyle = TextStyle(
             fontSize = 16.sp,
             fontFamily = mainFont,
-            color = colorResource(R.color.black),
+            color = colorResource(R.color.primary_text),
             textAlign = TextAlign.Center
         ),
         keyboardOptions = KeyboardOptions.Default.copy(

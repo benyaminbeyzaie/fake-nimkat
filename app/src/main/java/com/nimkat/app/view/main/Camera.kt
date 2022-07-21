@@ -3,6 +3,7 @@ package com.nimkat.app.view.main
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.net.Uri
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -17,36 +18,42 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat.startActivity
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.nimkat.app.R
-import com.nimkat.app.models.AuthModel
 import com.nimkat.app.ui.theme.RippleWhite
 import com.nimkat.app.ui.theme.mainFont
 import com.nimkat.app.ui.theme.secondFont
 import com.nimkat.app.view.login.LoginActivity
 import com.nimkat.app.view.my_questions.MyQuestionsActivity
 import com.nimkat.app.view.profile_edit.ProfileEditActivity
-import com.nimkat.app.view.question_crop.QuestionCropActivity
 import com.nimkat.app.view_model.AuthViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import java.io.File
+import java.util.concurrent.ExecutorService
 
 
 @SuppressLint("RememberReturnType")
 @Composable
-fun Camera(cameraScaffoldState: ScaffoldState, authViewModel: AuthViewModel) {
+fun Camera(
+    cameraScaffoldState: ScaffoldState,
+    cameraExecutor: ExecutorService,
+    outputDirectory: File,
+    authViewModel: AuthViewModel,
+    onImageCaptured: (Uri, Int) -> Unit
+) {
+
 
     val coroutineScope = rememberCoroutineScope()
 
@@ -72,14 +79,21 @@ fun Camera(cameraScaffoldState: ScaffoldState, authViewModel: AuthViewModel) {
             Spacer(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color.Black)
+                    .background(colorResource(R.color.background))
+            )
+
+            CameraView(
+                outputDirectory = outputDirectory,
+                executor = cameraExecutor,
+                onImageCaptured = onImageCaptured,
+                onError = { Log.e("kilo", "View error:", it) }
             )
 
             Card(
                 Modifier
                     .fillMaxWidth()
                     .padding(16.dp),
-                shape = RoundedCornerShape(20.dp),
+                shape = RoundedCornerShape(30.dp),
                 backgroundColor = colorResource(R.color.camera_title_back),
             ) {
                 Box(contentAlignment = Alignment.CenterStart) {
@@ -115,44 +129,33 @@ fun Camera(cameraScaffoldState: ScaffoldState, authViewModel: AuthViewModel) {
                 }
             }
 
-            val context = LocalContext.current
-            CompositionLocalProvider(LocalRippleTheme provides RippleWhite) {
-                FloatingActionButton(
-                    onClick = {
-                        QuestionCropActivity.sendIntent(context)
-                    },
-                    modifier = Modifier
-                        .align(alignment = Alignment.BottomCenter)
-                        .padding(24.dp)
-                        .size(80.dp),
-                    backgroundColor = colorResource(R.color.main_color)
-                ) {
-                    Icon(
-                        painterResource(R.drawable.ic_camera),
-                        null,
-                        tint = colorResource(R.color.white),
-                    )
-                }
-            }
-
         }
     }
 }
 
 @Composable
 fun Drawer(
-    modifier: Modifier = Modifier, authViewModel: AuthViewModel,
+    modifier: Modifier = Modifier, authViewModel: AuthViewModel
 ) {
 
     val context = LocalContext.current
     val authModel = authViewModel.authModelLiveData.observeAsState()
-    val isLogin = authModel.value?.data != null;
+    val profileModel = authViewModel.profileModelLiveData.observeAsState()
+    val isLoaded = profileModel.value?.data != null
+    val isLogin = authModel.value?.data != null
+
+    Log.d("PROF" , profileModel.value?.data.toString())
+    if (profileModel.value?.data != null){
+        Log.d("PROF" , "load status changed to loaded")
+    }else{
+        Log.d("PROF" , "load status changed to unloaded")
+    }
 
 
     Column(
         modifier
             .fillMaxSize()
-            .background(Color.White),
+            .background(colorResource(id = R.color.background)),
     ) {
 
         if (!isLogin) {
@@ -175,7 +178,7 @@ fun Drawer(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(0.dp, 12.dp, 0.dp, 0.dp),
-                color = colorResource(R.color.black),
+                color = colorResource(R.color.primary_text),
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -192,7 +195,7 @@ fun Drawer(
                     Icon(
                         Icons.Outlined.CheckCircle,
                         null,
-                        tint = colorResource(R.color.gray600),
+                        tint = colorResource(R.color.primary_text),
                         modifier = Modifier.padding(0.dp, 0.dp, 0.dp, 0.dp)
                     )
                     Spacer(modifier = Modifier.width(4.dp))
@@ -201,7 +204,7 @@ fun Drawer(
                         fontFamily = mainFont,
                         fontSize = 14.sp,
                         textAlign = TextAlign.Center,
-                        color = colorResource(R.color.gray500),
+                        color = colorResource(R.color.primary_text_variant),
                     )
                 }
             }
@@ -216,7 +219,7 @@ fun Drawer(
                         .padding(16.dp)
                         .height(60.dp),
                     shape = RoundedCornerShape(12.dp),
-                    colors = ButtonDefaults.buttonColors(backgroundColor = colorResource(R.color.main_color)),
+                    colors = ButtonDefaults.buttonColors(backgroundColor = colorResource(R.color.blue)),
                 ) {
                     Row {
                         Text(
@@ -250,27 +253,79 @@ fun Drawer(
                         .weight(1f)
                         .padding(12.dp, 6.dp)
                 ) {
-                    Text(
-                        "آنیتا علیخانی",
-                        modifier = Modifier
-                            .fillMaxWidth(),
-                        color = colorResource(R.color.black),
-                        textAlign = TextAlign.Right,
-                        fontFamily = mainFont,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 16.sp
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        "+989123456789",
-                        modifier = Modifier
-                            .fillMaxWidth(),
-                        color = colorResource(R.color.gray500),
-                        textAlign = TextAlign.Right,
-                        fontFamily = mainFont,
-                        fontWeight = FontWeight.Normal,
-                        fontSize = 14.sp
-                    )
+                    if (isLoaded) {
+
+                        var name1 = profileModel.value?.data?.name!!
+                        var phone1 = profileModel.value?.data?.phone!!
+                        Text(
+                            name1,
+//                        "آنیتا علیخانی",
+                            modifier = Modifier
+                                .fillMaxWidth(),
+                            color = colorResource(R.color.primary_text),
+                            textAlign = TextAlign.Right,
+                            fontFamily = mainFont,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 16.sp
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
+                            Text(
+                                phone1,
+//                        "+989123456789",
+                                modifier = Modifier
+                                    .fillMaxWidth(),
+                                color = colorResource(R.color.primary_text_variant),
+                                textAlign = TextAlign.Right,
+                                fontFamily = mainFont,
+                                fontWeight = FontWeight.Normal,
+                                fontSize = 14.sp
+                            )
+                        }
+                    }else{
+                        Log.d("PROF" , "load status changed to unloaded")
+
+                        var name1 = "default"
+                        var phone1 = "default"
+                        Text(
+                            name1,
+//                        "آنیتا علیخانی",
+                            modifier = Modifier
+                                .fillMaxWidth(),
+                            color = colorResource(R.color.primary_text),
+                            textAlign = TextAlign.Right,
+                            fontFamily = mainFont,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 16.sp
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
+                            Text(
+                                phone1,
+//                        "+989123456789",
+                                modifier = Modifier
+                                    .fillMaxWidth(),
+                                color = colorResource(R.color.primary_text_variant),
+                                textAlign = TextAlign.Right,
+                                fontFamily = mainFont,
+                                fontWeight = FontWeight.Normal,
+                                fontSize = 14.sp
+                            )
+                        }
+                    }
+
+
+//                    Text(
+//                        phone1,
+////                        "+989123456789",
+//                        modifier = Modifier
+//                            .fillMaxWidth(),
+//                        color = colorResource(R.color.primary_text_variant),
+//                        textAlign = TextAlign.Left,
+//                        fontFamily = mainFont,
+//                        fontWeight = FontWeight.Normal,
+//                        fontSize = 14.sp
+//                    )
                 }
                 IconButton(onClick = {
                     ProfileEditActivity.sendIntent(context)
@@ -279,6 +334,7 @@ fun Drawer(
                         painter = painterResource(R.drawable.ic_edit),
                         contentDescription = null,
                         modifier = Modifier.size(24.dp),
+                        colorResource(R.color.primary_text)
                     )
                 }
             }
@@ -299,7 +355,7 @@ fun Drawer(
                         stringResource(R.string.my_questions),
                         modifier = Modifier
                             .weight(1f),
-                        color = colorResource(R.color.main_color),
+                        color = colorResource(R.color.blue),
                         textAlign = TextAlign.Right,
                         fontFamily = mainFont,
                         fontWeight = FontWeight.Bold,
@@ -309,7 +365,7 @@ fun Drawer(
                         painter = painterResource(R.drawable.ic_my_questions),
                         contentDescription = null,
                         modifier = Modifier.size(20.dp),
-                        tint = colorResource(R.color.main_color)
+                        tint = colorResource(R.color.blue)
                     )
                 }
             }
@@ -332,7 +388,7 @@ fun Drawer(
                         stringResource(R.string.contact_us),
                         modifier = Modifier
                             .weight(1f),
-                        color = colorResource(R.color.main_color),
+                        color = colorResource(R.color.blue),
                         textAlign = TextAlign.Right,
                         fontFamily = mainFont,
                         fontWeight = FontWeight.Bold,
@@ -342,7 +398,7 @@ fun Drawer(
                         painter = painterResource(R.drawable.ic_back),
                         contentDescription = null,
                         modifier = Modifier.size(20.dp),
-                        tint = colorResource(R.color.main_color)
+                        tint = colorResource(R.color.blue)
                     )
                 }
             }
@@ -378,6 +434,41 @@ fun Drawer(
                 }
             }
 
+            Box(
+                Modifier
+                    .padding(0.dp, 4.dp, 0.dp, 0.dp)
+                    .fillMaxWidth()
+                    .clickable {
+                        authViewModel.delete()
+                        authViewModel.clearAuth()
+                    }) {
+                Row(
+                    Modifier
+                        .padding(24.dp, 12.dp)
+                        .fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        "حذف اکانت",
+                        modifier = Modifier
+                            .weight(1f),
+                        color = colorResource(R.color.red),
+                        textAlign = TextAlign.Right,
+                        fontFamily = mainFont,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 17.sp
+                    )
+                    Icon(
+                        painter = painterResource(R.drawable.ic_logout),
+                        contentDescription = null,
+                        modifier = Modifier.size(20.dp),
+                        tint = colorResource(R.color.red)
+                    )
+                }
+            }
+
+
+
         }
 
         Spacer(modifier = Modifier.weight(1F))
@@ -392,7 +483,7 @@ fun Drawer(
         ) {
             Text(
                 text = stringResource(R.string.background_color),
-                color = colorResource(R.color.main_color),
+                color = colorResource(R.color.blue),
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold
             )

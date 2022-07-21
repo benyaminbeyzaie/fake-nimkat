@@ -3,10 +3,7 @@ package com.nimkat.app.repository
 import android.util.Log
 import com.google.gson.Gson
 import com.nimkat.app.api.NimkatApi
-import com.nimkat.app.models.AuthModel
-import com.nimkat.app.models.GetCodeBody
-import com.nimkat.app.models.GetCodeResponse
-import com.nimkat.app.models.VerifyCodeBody
+import com.nimkat.app.models.*
 import com.nimkat.app.utils.AuthPrefs
 import retrofit2.Response
 import javax.inject.Inject
@@ -17,11 +14,15 @@ class AuthRepository @Inject constructor(
     private val api: NimkatApi,
     private val authPrefs: AuthPrefs
 ) {
+    var authModel: AuthModel? = null;
+
     fun initAuth(): AuthModel? {
+        if (authModel != null) return authModel
         val authString = authPrefs.getAuthString()
         if (authString === null) return null
         val gson = Gson()
-        return gson.fromJson(authString, AuthModel::class.java)
+        authModel = gson.fromJson(authString, AuthModel::class.java)
+        return authModel;
     }
 
     suspend fun getCode(phoneNumber: String): Response<GetCodeResponse> {
@@ -31,12 +32,61 @@ class AuthRepository @Inject constructor(
     suspend fun verifyCode(smsCode: String, id: String): Response<AuthModel>? {
         val apiResponse = api.verifyCode(id, VerifyCodeBody(smsCode))
         if (apiResponse.body() === null) return null;
+        Log.d("Auth", "profile status " + apiResponse.body()!!.isProfileCompleted)
         val gson = Gson()
         authPrefs.setAuthString(gson.toJson(apiResponse.body()))
+        Log.d("Auth", "json is: " + gson.toJson(apiResponse.body()))
         return apiResponse
     }
 
-    fun clearAuth(){
+    fun clearAuth() {
         authPrefs.clearAuth()
     }
+
+    fun initProfile(): ProfileModel? {
+        val profileString = authPrefs.getProfileString()
+        if (profileString === null) return null
+        val gson = Gson()
+        return gson.fromJson(profileString, ProfileModel::class.java)
+    }
+
+    suspend fun updateProfile(
+        name: String,
+        gradeID: Int,
+    ): Response<ProfileModel>? {
+        initAuth();
+        if (authModel == null) return null
+        val apiResponse = api.updateProfile(
+            authModel?.userId.toString(), ProfileInfo(name = name, grade = gradeID, username = "-"),
+            "Token ${authModel?.token}"
+        )
+        if (apiResponse.body() === null) return null;
+        Log.d("Auth", "profile status " + apiResponse.body()!!.isProfileCompleted)
+        val gson = Gson()
+        authPrefs.setProfileString(gson.toJson(apiResponse.body()))
+        Log.d("Auth", "json is: " + gson.toJson(apiResponse.body()))
+        return apiResponse
+    }
+
+
+    suspend fun getProfile(id: String): Response<ProfileModel>? {
+        initAuth()
+        if (authModel == null) return null
+        val apiResponse = api.getProfile(id, "Token ${authModel?.token}")
+        if (apiResponse.body() === null) return null;
+        Log.d("Auth", "profile status " + apiResponse.body()!!.isProfileCompleted)
+        val gson = Gson()
+        authPrefs.setProfileString(gson.toJson(apiResponse.body()))
+        Log.d("Auth", "json is: " + gson.toJson(apiResponse.body()))
+        return apiResponse
+    }
+
+    suspend fun delete() {
+        initAuth()
+        if (authModel == null) return
+        authPrefs.clearAuth()
+        api.deleteAccount(authModel!!.userId.toString(), "Token ${authModel!!.token}")
+        authModel = null
+    }
+
 }

@@ -30,7 +30,7 @@ fun TextQuestion() {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(colorResource(id = R.color.color_back))
+            .background(colorResource(R.color.background))
     ) {
 
         val text = remember { mutableStateOf("") }
@@ -57,6 +57,7 @@ fun TextQuestion() {
             },
             shape = RoundedCornerShape(24.dp),
             colors = TextFieldDefaults.textFieldColors(
+                backgroundColor = colorResource(R.color.textfield_background),
                 focusedIndicatorColor = Color.Transparent,
                 unfocusedIndicatorColor = Color.Transparent,
                 disabledIndicatorColor = Color.Transparent
@@ -64,7 +65,7 @@ fun TextQuestion() {
             textStyle = TextStyle(
                 fontSize = 14.sp,
                 fontFamily = mainFont,
-                color = colorResource(R.color.black)
+                color = colorResource(R.color.primary_text)
             )
         )
 

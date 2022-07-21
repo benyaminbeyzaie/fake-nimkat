@@ -1,13 +1,8 @@
 package com.nimkat.app.api
 
-import com.nimkat.app.models.AuthModel
-import com.nimkat.app.models.GetCodeBody
-import com.nimkat.app.models.GetCodeResponse
-import com.nimkat.app.models.VerifyCodeBody
+import com.nimkat.app.models.*
 import retrofit2.Response
-import retrofit2.http.Body
-import retrofit2.http.POST
-import retrofit2.http.Path
+import retrofit2.http.*
 
 interface NimkatApi {
     @POST("users/sign_up/")
@@ -15,4 +10,13 @@ interface NimkatApi {
 
     @POST("users/{id}/verify_code/")
     suspend fun verifyCode(@Path("id") id: String, @Body body: VerifyCodeBody): Response<AuthModel>
+
+    @PUT("users/{id}/")
+    suspend fun updateProfile(@Path("id") id: String , @Body body: ProfileInfo , @Header("Authorization") token: String): Response<ProfileModel>
+
+    @GET("users/{id}/")
+    suspend fun getProfile(@Path("id") id: String  , @Header("Authorization") token: String): Response<ProfileModel>
+
+    @DELETE("users/{id}/")
+    suspend fun deleteAccount(@Path("id") id: String  , @Header("Authorization") token: String): Response<Unit>
 }

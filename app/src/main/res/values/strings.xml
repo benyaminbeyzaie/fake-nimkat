@@ -5,6 +5,7 @@
     <string name="text_question">سوال متنی</string>
     <string name="enter_your_question">سوالت رو اینجا بنویس</string>
     <string name="ok">حله</string>
+    <string name="cancel">دوباره</string>
     <string name="take_picture">از سوالت عکس بگیر</string>
     <string name="drawer_title">سلام هم نیمکتی 🖐</string>
     <string name="drawer_desc_1">دسترسی به  سابقه سوالاتی که می پرسی</string>
@@ -33,7 +34,12 @@
     <string name="change">تغییر</string>
     <string name="title_activity_grade">GradeActivity</string>
     <string name="choose_your_grade">مقطع تحصیلیت رو انتخاب کن</string>
+    <string name="whats_your_name">چی صدا بزنیمت؟</string>
     <string name="title_activity_question_detail">QuestionDetailActivity</string>
     <string name="question_and_answer">سوال و جواب</string>
     <string name="title_activity_question_crop">QuestionCropActivity</string>
+    <string name="title_activity_main2">MainActivity2</string>
+    <string name="title_activity_whats_your_name">WhatsYourNameActivity</string>
+    <string name="name">نام</string>
+    <string name="title_activity_complete_profile">CompleteProfile</string>
 </resources>

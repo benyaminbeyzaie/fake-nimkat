@@ -1,12 +1,17 @@
 package com.nimkat.app.view.main
 
+import android.Manifest
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedVisibility
@@ -16,13 +21,9 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
@@ -30,26 +31,30 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.PagerState
 import com.google.accompanist.pager.rememberPagerState
 import com.nimkat.app.R
-import com.nimkat.app.models.DataStatus
 import com.nimkat.app.ui.theme.NimkatTheme
-import com.nimkat.app.utils.MOBILE
-import com.nimkat.app.view.otp.OtpActivity
+import com.nimkat.app.utils.CROP_IMAGE_CODE
+import com.nimkat.app.view.question_crop.QuestionCropActivity
 import com.nimkat.app.view_model.AuthViewModel
 import dagger.hilt.android.AndroidEntryPoint
-import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import java.io.File
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     private var cameraScaffoldState: ScaffoldState? = null
     private var coroutineScope: CoroutineScope? = null
+
+
 
     companion object {
         fun sendIntent(context: Context) =
@@ -58,24 +63,42 @@ class MainActivity : ComponentActivity() {
             }
     }
 
+    private lateinit var outputDirectory: File
+    private lateinit var cameraExecutor: ExecutorService
+
+    private var shouldShowCamera: MutableState<Boolean> = mutableStateOf(false)
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+//        val profileViewModel:ProfileViewModel by viewModels()
+//        profileViewModel.initAuth()
         val authViewModel: AuthViewModel by viewModels()
         authViewModel.initAuth()
+        outputDirectory = getOutputDirectory()
+        cameraExecutor = Executors.newSingleThreadExecutor()
 
         setContent {
             NimkatTheme {
                 // A surface container using the 'background' color from the theme
                 Surface(
                     modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colors.background
+                    color = colorResource(R.color.background)
                 ) {
                     cameraScaffoldState = rememberScaffoldState()
                     coroutineScope = rememberCoroutineScope()
-                    Greeting(cameraScaffoldState!!, viewModel())
+                    Greeting(
+                        cameraScaffoldState!!,
+                        authViewModel,
+                        cameraExecutor,
+                        outputDirectory,
+                        onImageCaptured = ::handleImageCapture
+                    )
                 }
             }
         }
+        requestCameraPermission()
+
     }
 
     override fun onBackPressed() {
@@ -91,18 +114,101 @@ class MainActivity : ComponentActivity() {
         super.onBackPressed()
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        cameraExecutor.shutdown()
+    }
+
+    private fun getOutputDirectory(): File {
+        val mediaDir = externalMediaDirs.firstOrNull()?.let {
+            File(it, resources.getString(R.string.app_name)).apply { mkdirs() }
+        }
+
+        return if (mediaDir != null && mediaDir.exists()) mediaDir else filesDir
+    }
+
+
+    private val requestPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            Log.d("permission", "Permission granted")
+            shouldShowCamera.value = true
+        } else {
+            Log.d("permission", "Permission denied")
+        }
+    }
+
+    private fun requestCameraPermission() {
+        when {
+            ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.CAMERA
+            ) == PackageManager.PERMISSION_GRANTED -> {
+                Log.d("permission", "Permission previously granted")
+                shouldShowCamera.value = true
+            }
+
+            ActivityCompat.shouldShowRequestPermissionRationale(
+                this,
+                Manifest.permission.CAMERA
+            ) -> Log.d("permission", "Show camera permissions dialog")
+
+            else -> requestPermissionLauncher.launch(Manifest.permission.CAMERA)
+        }
+    }
+
+
+    private fun handleImageCapture(uri: Uri, mode: Int) {
+        Log.i("kilo", "Image captured: $uri")
+//        shouldShowCamera.value = false
+        val intent = Intent(this@MainActivity, QuestionCropActivity::class.java)
+        intent.putExtra("mode", mode)
+        intent.putExtra("URI", uri)
+        startActivityForResult(intent, CROP_IMAGE_CODE)
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        val x = this
+        when (requestCode) {
+            CROP_IMAGE_CODE -> {
+                if (resultCode == Activity.RESULT_OK) {
+                    data?.apply {
+                        val parcelableExtra = getParcelableExtra<Uri>("photouri")
+                        Log.d("kiloURI", "IMAGE CROPPING SUCCESSFULL. $parcelableExtra")
+                        Toast.makeText(x, "IMAGE CROPPING SUCCESSFULL.", Toast.LENGTH_SHORT).show()
+                        // now we should use this uri to load bitmap of the image and then send it to server
+                    }
+
+
+                } else {
+                    Log.d("kiloURI", "IMAGE CROPPING CANCELED.")
+                    Toast.makeText(this, "IMAGE CROPPING CANCELED.", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+        }
+    }
+
 
 }
 
 
 @OptIn(ExperimentalPagerApi::class)
 @Composable
-fun Greeting(cameraScaffoldState: ScaffoldState, authViewModel: AuthViewModel) {
+fun Greeting(
+    cameraScaffoldState: ScaffoldState,
+    authViewModel: AuthViewModel,
+    cameraExecutor: ExecutorService,
+    outputDirectory: File,
+    onImageCaptured: (Uri, Int) -> Unit
+) {
     val coroutineScope = rememberCoroutineScope()
 
     val pagerState = rememberPagerState(
         initialPage = 1,
-        pageCount = 3,
+        pageCount = 2,
         infiniteLoop = false
     )
 
@@ -128,10 +234,13 @@ fun Greeting(cameraScaffoldState: ScaffoldState, authViewModel: AuthViewModel) {
                                 TextQuestion()
                             }
                             1 -> {
-                                Camera(cameraScaffoldState, authViewModel)
-                            }
-                            2 -> {
-                                Gallery()
+                                Camera(
+                                    cameraScaffoldState,
+                                    cameraExecutor,
+                                    outputDirectory,
+                                    authViewModel,
+                                    onImageCaptured = onImageCaptured
+                                )
                             }
                         }
                     }
@@ -166,18 +275,6 @@ fun Greeting(cameraScaffoldState: ScaffoldState, authViewModel: AuthViewModel) {
                         .clickable {
                             coroutineScope.launch {
                                 pagerState.animateScrollToPage(1)
-                            }
-                        })
-                BnvItem(
-                    2,
-                    R.string.gallery,
-                    pagerState,
-                    Modifier
-                        .weight(1.0F)
-                        .fillMaxHeight()
-                        .clickable {
-                            coroutineScope.launch {
-                                pagerState.animateScrollToPage(2)
                             }
                         })
             }

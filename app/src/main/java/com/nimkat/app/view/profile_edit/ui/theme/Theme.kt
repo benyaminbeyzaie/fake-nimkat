@@ -1,13 +1,10 @@
-package com.nimkat.app.ui.theme
+package com.nimkat.app.view.profile_edit.ui.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.darkColors
 import androidx.compose.material.lightColors
-import androidx.compose.material.ripple.RippleAlpha
-import androidx.compose.material.ripple.RippleTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.graphics.Color
 
 private val DarkColorPalette = darkColors(
     primary = Purple200,
@@ -44,21 +41,4 @@ fun NimkatTheme(darkTheme: Boolean = isSystemInDarkTheme(), content: @Composable
         shapes = Shapes,
         content = content
     )
-}
-
-object RippleWhite: RippleTheme {
-
-    @Composable
-    override fun defaultColor() =
-        RippleTheme.defaultRippleColor(
-            Color.White,
-            lightTheme = true
-        )
-
-    @Composable
-    override fun rippleAlpha(): RippleAlpha =
-        RippleTheme.defaultRippleAlpha(
-            Color.Black,
-            lightTheme = true
-        )
 }

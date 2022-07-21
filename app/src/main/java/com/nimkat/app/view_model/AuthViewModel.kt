@@ -7,24 +7,42 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.nimkat.app.models.AuthModel
 import com.nimkat.app.models.DataHolder
+import com.nimkat.app.models.ProfileModel
 import com.nimkat.app.repository.AuthRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-import javax.inject.Singleton
 
 @HiltViewModel
-class AuthViewModel @Inject constructor(private val repository: AuthRepository) : ViewModel() {
+class AuthViewModel @Inject constructor(
+    private val repository: AuthRepository,
+) : ViewModel() {
 
     private val _authModel = MutableLiveData<DataHolder<AuthModel>>(DataHolder.pure())
     private val _isCodeSent = MutableLiveData<DataHolder<Int>>(DataHolder.pure())
     val isCodeSentLiveData: LiveData<DataHolder<Int>> = _isCodeSent
     val authModelLiveData: LiveData<DataHolder<AuthModel>> = _authModel
+    private val _profileModel = MutableLiveData<DataHolder<ProfileModel>>(DataHolder.pure())
 
-    fun initAuth() {
+
+    val profileModelLiveData: LiveData<DataHolder<ProfileModel>> = _profileModel
+
+    private fun initProfile() {
+        Log.d("Prof View Model", "init prof called")
+        val profileModel = repository.initProfile() ?: return
+        _profileModel.postValue(DataHolder.success(profileModel))
+    }
+
+
+    fun initAuth(shouldInitProfile: Boolean = true) {
         Log.d("Auth View Model", "init auth called")
+        if (_authModel.value?.data != null) return
         val authModel = repository.initAuth() ?: return
         _authModel.postValue(DataHolder.success(authModel))
+        Log.d("Auth View Model", "Auth Model is loaded")
+        if (shouldInitProfile) {
+            initProfile()
+        }
     }
 
     fun getCode(phoneNumber: String) {
@@ -33,7 +51,7 @@ class AuthViewModel @Inject constructor(private val repository: AuthRepository) 
             val response = repository.getCode(phoneNumber)
             if (response.isSuccessful && response.body() != null) {
                 _isCodeSent.postValue(DataHolder.success(response.body()!!.smsCode))
-            }else {
+            } else {
                 _isCodeSent.postValue(DataHolder.error())
             }
         }
@@ -44,18 +62,60 @@ class AuthViewModel @Inject constructor(private val repository: AuthRepository) 
         viewModelScope.launch {
             val response = repository.verifyCode(smsCode, id)
             if (response != null && response.isSuccessful && response.body() != null) {
-                _authModel.postValue(DataHolder.success(response.body()!!))
-            }else {
+                if (!response.body()!!.isProfileCompleted) {
+                    _authModel.postValue(DataHolder.needCompletion(response.body()!!))
+                    Log.d("AUTH NEED ", response.body()!!.toString())
+                } else {
+                    _profileModel.postValue(DataHolder.loading())
+                    val profileResponse = repository.getProfile(id)
+                    if (profileResponse != null && profileResponse.isSuccessful && profileResponse.body() != null) {
+                        Log.d("PROF", profileResponse.body()!!.toString())
+                        _profileModel.postValue(DataHolder.success(profileResponse.body()!!))
+                        Log.d("PROF", "LOAD Into Profile Model ")
+                    } else {
+                        _profileModel.postValue(DataHolder.error())
+                        Log.d("PROF", "COULD NOT LOAD ")
+                    }
+                    _authModel.postValue(DataHolder.success(response.body()!!))
+
+                }
+            } else {
                 _authModel.postValue(DataHolder.error())
             }
         }
     }
 
     fun clearAuth() {
-        _authModel.postValue(DataHolder.loading())
         viewModelScope.launch {
             repository.clearAuth()
             _authModel.postValue(DataHolder.pure())
+            _profileModel.postValue(DataHolder.pure())
         }
     }
+
+    fun update(name: String, gradeId: Int) {
+        _profileModel.postValue(DataHolder.loading())
+        viewModelScope.launch {
+            val response = repository.updateProfile(
+                name,
+                gradeId,
+            )
+            if (response != null && response.isSuccessful && response.body() != null) {
+                Log.d("update ", response.body()!!.toString())
+                _profileModel.postValue(DataHolder.success(response.body()!!))
+                Log.d("update ", "LOAD Into Profile Model ")
+            } else {
+                _profileModel.postValue(DataHolder.error())
+            }
+        }
+    }
+
+    fun delete() {
+        viewModelScope.launch {
+            repository.delete()
+            _authModel.postValue(DataHolder.pure())
+            _profileModel.postValue(DataHolder.pure())
+        }
+    }
+
 }

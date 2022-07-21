@@ -1,49 +1,66 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.nimkat.app">
+
     <uses-permission android:name="android.permission.INTERNET" />
 
+    <uses-feature android:name="android.hardware.camera.any" />
+
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+
     <application
+        android:name=".App"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:name = ".App"
         android:theme="@style/Theme.Nimkat">
         <activity
-            android:name="com.nimkat.app.view.question_crop.QuestionCropActivity"
+            android:name=".view.profile_edit.CompleteProfile"
+            android:exported="false"
+            android:label="@string/title_activity_complete_profile"
+            android:theme="@style/Theme.Nimkat" />
+        <activity
+            android:name=".view.profile_edit.WhatsYourNameActivity"
+            android:exported="false"
+            android:label="@string/title_activity_whats_your_name"
+            android:theme="@style/Theme.Nimkat" />
+        <activity
+            android:name=".view.question_crop.QuestionCropActivity"
             android:exported="false"
             android:label="@string/title_activity_question_crop"
             android:theme="@style/Theme.Nimkat" />
         <activity
-            android:name="com.nimkat.app.view.question_detail.QuestionDetailActivity"
+            android:name=".view.question_detail.QuestionDetailActivity"
             android:exported="false"
             android:label="@string/title_activity_question_detail"
             android:theme="@style/Theme.Nimkat" />
         <activity
-            android:name="com.nimkat.app.view.my_questions.MyQuestionsActivity"
+            android:name=".view.my_questions.MyQuestionsActivity"
             android:exported="false" />
         <activity
-            android:name="com.nimkat.app.view.profile_edit.grade.GradeActivity"
+            android:name=".view.profile_edit.grade.GradeActivity"
             android:exported="false"
             android:label="@string/title_activity_grade"
             android:theme="@style/Theme.Nimkat" />
         <activity
-            android:name="com.nimkat.app.view.profile_edit.ProfileEditActivity"
+            android:name=".view.profile_edit.ProfileEditActivity"
             android:exported="false" />
         <activity
-            android:name="com.nimkat.app.view.otp.OtpActivity"
+            android:name=".view.otp.OtpActivity"
             android:exported="false"
             android:label="@string/title_activity_otp"
             android:theme="@style/Theme.Nimkat" />
         <activity
-            android:name="com.nimkat.app.view.login.LoginActivity"
+            android:name=".view.login.LoginActivity"
             android:exported="false"
             android:label="@string/title_activity_login"
             android:theme="@style/Theme.Nimkat" />
         <activity
-            android:name="com.nimkat.app.view.main.MainActivity"
+            android:name=".view.main.MainActivity"
             android:exported="true"
             android:theme="@style/Theme.Nimkat">
             <intent-filter>
@@ -52,6 +69,9 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name="com.theartofdev.edmodo.cropper.CropImageActivity"
+            android:theme="@style/Base.Theme.AppCompat" />
     </application>
 
 </manifest>
