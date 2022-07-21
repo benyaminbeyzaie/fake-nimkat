@@ -57,7 +57,7 @@ class AuthRepository @Inject constructor(
         initAuth();
         if (authModel == null) return null
         val apiResponse = api.updateProfile(
-            authModel?.userId.toString(), ProfileInfo(name = name, grade = gradeID, username = "-"),
+            authModel?.userId.toString(), ProfileInfo(name = name, grade = gradeID),
             "Token ${authModel?.token}"
         )
         if (apiResponse.body() === null) return null;
