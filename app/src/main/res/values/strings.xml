@@ -42,4 +42,5 @@
     <string name="title_activity_whats_your_name">WhatsYourNameActivity</string>
     <string name="name">نام</string>
     <string name="title_activity_complete_profile">CompleteProfile</string>
+    <string name="darThemeTag">isDark</string>
 </resources>

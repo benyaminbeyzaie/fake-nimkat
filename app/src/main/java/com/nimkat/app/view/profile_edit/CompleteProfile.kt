@@ -8,6 +8,7 @@ import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.viewModels
+import androidx.appcompat.app.AppCompatActivity
 import com.nimkat.app.utils.ASK_GRADE_CODE
 import com.nimkat.app.utils.ASK_NAME_CODE
 import com.nimkat.app.view.main.MainActivity
@@ -16,7 +17,7 @@ import com.nimkat.app.view_model.AuthViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
-class CompleteProfile : ComponentActivity() {
+class CompleteProfile : AppCompatActivity() {
     private val authViewModel: AuthViewModel by viewModels()
 
     companion object {

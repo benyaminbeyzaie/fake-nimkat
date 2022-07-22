@@ -5,7 +5,6 @@
     <color name="blue">#1E88E5</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
-    <color name="color_back">#F8F8F8</color>
     <color name="color_hint">#878787</color>
     <color name="green">#00C766</color>
     <color name="camera_title_back">#23E0E0E0</color>
@@ -17,8 +16,8 @@
     <color name="primary_text"> #FFFFFFFF </color>
     <color name="primary_text_variant">#BABABA</color>
 
-    <color name="secondary_text">#FFFFFFFF</color>
-    <color name="secondary_text_variant">#BABABA</color>
+    <color name="secondary_text">#151515</color>
+    <color name="secondary_text_variant">#050505</color>
 
     <color name="textfield_background">#373737</color>
 

@@ -8,6 +8,7 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -44,7 +45,7 @@ import com.nimkat.app.view_model.MyQuestionsViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
-class MyQuestionsActivity : ComponentActivity() {
+class MyQuestionsActivity : AppCompatActivity() {
 
     companion object {
         fun sendIntent(context: Context) = Intent(context, MyQuestionsActivity::class.java).apply {
@@ -117,7 +118,7 @@ fun MyQuestionsContent(viewModel: MyQuestionsViewModel) {
                 )
             }
         },
-        backgroundColor = colorResource(R.color.color_back)
+        backgroundColor = colorResource(R.color.background)
     ) {
         val list = ArrayList<QuestionModel>()
         Log.d("My Question Activity", "new list created")

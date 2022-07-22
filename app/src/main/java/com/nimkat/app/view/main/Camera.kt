@@ -2,8 +2,11 @@ package com.nimkat.app.view.main
 
 import android.annotation.SuppressLint
 import android.content.Intent
+import android.content.SharedPreferences
 import android.net.Uri
+import android.preference.PreferenceManager
 import android.util.Log
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -144,13 +147,17 @@ fun Drawer(
     val isLoaded = profileModel.value?.data != null
     val isLogin = authModel.value?.data != null
 
-    Log.d("PROF" , profileModel.value?.data.toString())
-    if (profileModel.value?.data != null){
-        Log.d("PROF" , "load status changed to loaded")
-    }else{
-        Log.d("PROF" , "load status changed to unloaded")
+    Log.d("PROF", profileModel.value?.data.toString())
+    if (profileModel.value?.data != null) {
+        Log.d("PROF", "load status changed to loaded")
+    } else {
+        Log.d("PROF", "load status changed to unloaded")
     }
 
+    val prefs: SharedPreferences =
+        PreferenceManager.getDefaultSharedPreferences(LocalContext.current)
+    val isDark = prefs.getBoolean(stringResource(R.string.darThemeTag), false)
+    var darkTag = stringResource(id = R.string.darThemeTag)
 
     Column(
         modifier
@@ -282,8 +289,8 @@ fun Drawer(
                                 fontSize = 14.sp
                             )
                         }
-                    }else{
-                        Log.d("PROF" , "load status changed to unloaded")
+                    } else {
+                        Log.d("PROF", "load status changed to unloaded")
 
                         var name1 = "default"
                         var phone1 = "default"
@@ -468,13 +475,12 @@ fun Drawer(
             }
 
 
-
         }
 
         Spacer(modifier = Modifier.weight(1F))
 
 
-        val darkState = remember { mutableStateOf(false) }
+        val darkState = remember { mutableStateOf(isDark) }
 
 
         Row(
@@ -495,7 +501,17 @@ fun Drawer(
             )
             Switch(
                 checked = darkState.value,
-                onCheckedChange = { darkState.value = it },
+                onCheckedChange = {
+                    darkState.value = it
+                    prefs.edit()
+                        .putBoolean(darkTag, darkState.value)
+                        .apply()
+                    if (darkState.value) {
+                        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+                    } else {
+                        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+                    }
+                },
                 enabled = true,
                 modifier = Modifier.padding(6.dp, 0.dp, 6.dp, 0.dp)
             )

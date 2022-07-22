@@ -6,6 +6,7 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -44,7 +45,7 @@ import com.nimkat.app.ui.theme.secondFont
 import com.nimkat.app.view.profile_edit.grade.GradeActivity
 
 
-class ProfileEditActivity : ComponentActivity() {
+class ProfileEditActivity : AppCompatActivity() {
 
     companion object {
         fun sendIntent(context: Context) = Intent(context, ProfileEditActivity::class.java).apply {
@@ -84,7 +85,7 @@ fun ProfileEditContent() {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(colorResource(R.color.color_back))
+            .background(colorResource(R.color.background))
     ) {
         IconButton(
             onClick = {
