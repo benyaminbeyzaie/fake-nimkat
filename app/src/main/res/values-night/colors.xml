@@ -11,15 +11,17 @@
     <color name="red">#E53935</color>
     <color name="bnv_unselected_color">#78FFFFFF</color>
 
-    <color name="background">#1D1D1D</color>
+<!--    <color name="background">#1D1D1D</color>-->
+    <color name="background">#08091B</color>
+
 
     <color name="primary_text"> #FFFFFFFF </color>
     <color name="primary_text_variant">#BABABA</color>
 
     <color name="secondary_text">#151515</color>
-    <color name="secondary_text_variant">#050505</color>
+    <color name="secondary_text_variant">#0D1632</color>
 
-    <color name="textfield_background">#373737</color>
+    <color name="textfield_background">#0D1632</color>
 
     <color name="gray50">#FAFAFA</color>
     <color name="gray100">#F5F5F5</color>

@@ -130,7 +130,7 @@ fun QuestionDetailContent(text: String?, url: String?, viewModel: SingleQuestion
                     .fillMaxWidth()
                     .padding(16.dp, 16.dp, 16.dp, 0.dp),
                 shape = RoundedCornerShape(8.dp),
-                backgroundColor = colorResource(id = R.color.textfield_background)
+                backgroundColor = colorResource(id = R.color.secondary_text_variant)
             ) {
                 if (url != null) {
                     AsyncImage(

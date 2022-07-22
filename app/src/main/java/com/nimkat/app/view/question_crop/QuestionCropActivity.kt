@@ -11,6 +11,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
@@ -136,7 +137,8 @@ fun QuestionCropContent(photouri: Uri) {
         })
 
 
-    Column(Modifier.fillMaxSize()) {
+    Column(Modifier.fillMaxSize().
+    background(colorResource(R.color.background))) {
 
 //      we can load images with uri and Coil library
 
@@ -163,13 +165,13 @@ fun QuestionCropContent(photouri: Uri) {
             )
         }
 
-        Row(
-            Modifier
-                .fillMaxWidth()
-                .padding(16.dp, 0.dp)
-        ) {
-
-        }
+//        Row(
+//            Modifier
+//                .fillMaxWidth()
+//                .padding(16.dp, 0.dp)
+//        ) {
+//
+//        }
 
         CompositionLocalProvider(LocalRippleTheme provides RippleWhite) {
             Row(

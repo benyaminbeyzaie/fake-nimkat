@@ -64,7 +64,6 @@ class MyQuestionsActivity : AppCompatActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colors.background
                 ) {
-
                     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
                         MyQuestionsContent(viewModel)
                     }
@@ -87,8 +86,7 @@ fun MyQuestionsContent(viewModel: MyQuestionsViewModel) {
             Row(
                 modifier = Modifier
                     .background(colorResource(R.color.main_color))
-                    .padding(2.dp, 0.dp),
-                verticalAlignment = Alignment.CenterVertically
+,                verticalAlignment = Alignment.CenterVertically
             ) {
                 CompositionLocalProvider(LocalRippleTheme provides RippleWhite) {
                     IconButton(
@@ -100,7 +98,7 @@ fun MyQuestionsContent(viewModel: MyQuestionsViewModel) {
                     ) {
                         Icon(
                             painter = painterResource(R.drawable.ic_back), null,
-                            tint = colorResource(R.color.white),
+                            tint = colorResource(R.color.primary_text),
                             modifier = Modifier
                                 .size(24.dp)
                                 .rotate(180f)
@@ -111,7 +109,7 @@ fun MyQuestionsContent(viewModel: MyQuestionsViewModel) {
                     stringResource(R.string.my_questions),
                     modifier = Modifier
                         .fillMaxWidth(),
-                    color = colorResource(R.color.white),
+                    color = colorResource(R.color.primary_text),
                     fontFamily = mainFont,
                     fontWeight = FontWeight.Bold,
                     fontSize = 16.sp,
@@ -134,7 +132,8 @@ fun MyQuestionsContent(viewModel: MyQuestionsViewModel) {
                     Card(
                         modifier = Modifier
                             .padding(4.dp),
-                        shape = RoundedCornerShape(8.dp)
+                        shape = RoundedCornerShape(8.dp),
+                        backgroundColor = colorResource(id = R.color.secondary_text_variant)
                     ) {
                         Box(modifier = Modifier.clickable {
                             if (list[index].files.isEmpty()) {
@@ -153,7 +152,8 @@ fun MyQuestionsContent(viewModel: MyQuestionsViewModel) {
                                 Text(
                                     text = (list[index].text.toString()),
                                     modifier = Modifier.padding(12.dp),
-                                    fontSize = 14.sp
+                                    fontSize = 14.sp,
+                                    color = colorResource(id = R.color.primary_text)
                                 )
                             }
                         }
