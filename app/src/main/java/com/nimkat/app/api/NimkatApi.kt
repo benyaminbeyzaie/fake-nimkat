@@ -37,5 +37,13 @@ interface NimkatApi {
         @Query("page_size") pageSize: Int,
         @Query("type") type: String,
         @Query("user") user: String
-    ): Response<QuestionsApiResponse>
+    ): Response<PaginatedResponse<List<QuestionModel>>>
+
+    @GET("answers/")
+    suspend fun getAnswer(
+        @Header("Authorization") token: String,
+        @Query("page") page: Int,
+        @Query("page_size") pageSize: Int,
+        @Query("question") question: Int,
+    ): Response<PaginatedResponse<List<AnswerModel>>>
 }
