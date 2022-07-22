@@ -4,19 +4,23 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.GridCells
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyVerticalGrid
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.ripple.LocalRippleTheme
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
@@ -26,16 +30,20 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
 import com.nimkat.app.R
+import com.nimkat.app.models.QuestionModel
 import com.nimkat.app.ui.theme.NimkatTheme
 import com.nimkat.app.ui.theme.RippleWhite
 import com.nimkat.app.ui.theme.mainFont
 import com.nimkat.app.view.question_detail.QuestionDetailActivity
+import com.nimkat.app.view_model.MyQuestionsViewModel
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MyQuestionsActivity : ComponentActivity() {
 
     companion object {
@@ -46,6 +54,8 @@ class MyQuestionsActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val viewModel: MyQuestionsViewModel by viewModels()
+        viewModel.loadQuestions()
         setContent {
             NimkatTheme {
                 // A surface container using the 'background' color from the theme
@@ -55,7 +65,7 @@ class MyQuestionsActivity : ComponentActivity() {
                 ) {
 
                     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
-                        MyQuestionsContent()
+                        MyQuestionsContent(viewModel)
                     }
                 }
             }
@@ -65,11 +75,11 @@ class MyQuestionsActivity : ComponentActivity() {
 
 
 @OptIn(ExperimentalFoundationApi::class)
-@Preview
 @Composable
-fun MyQuestionsContent() {
+fun MyQuestionsContent(viewModel: MyQuestionsViewModel) {
 
     val context = LocalContext.current
+    val questions = viewModel.myQuestions.observeAsState()
 
     Scaffold(
         topBar = {
@@ -109,16 +119,15 @@ fun MyQuestionsContent() {
         },
         backgroundColor = colorResource(R.color.color_back)
     ) {
+        val list = ArrayList<QuestionModel>()
+        Log.d("My Question Activity", "new list created")
+        questions.value?.data?.forEach { questionModel -> list.add(questionModel) }
 
-
-        val list = ArrayList<String>()
-        for (i in 0..12) {
-            list.add("سوال ".plus(i))
-        }
-
+        val listState = rememberLazyListState()
         LazyVerticalGrid(
             cells = GridCells.Fixed(2),
             modifier = Modifier.padding(12.dp),
+            state = listState,
             content = {
                 items(list.size) { index ->
                     Card(
@@ -129,16 +138,48 @@ fun MyQuestionsContent() {
                         Box(modifier = Modifier.clickable {
                             QuestionDetailActivity.sendIntent(context)
                         }) {
-
-                            Text(
-                                text = list[index],
-                                modifier = Modifier.padding(12.dp),
-                                fontSize = 14.sp
-                            )
+                            if (list[index].files.isNotEmpty()  && list[index].files.first().file?.attachment != null) {
+                                AsyncImage(
+                                    model = list[index].files.first().file?.attachment,
+                                    contentDescription = null
+                                )
+                            }
+                            if (list[index].text != null) {
+                                Text(
+                                    text = (list[index].text.toString()),
+                                    modifier = Modifier.padding(12.dp),
+                                    fontSize = 14.sp
+                                )
+                            }
                         }
                     }
                 }
             })
 
+        listState.OnBottomReached {
+            viewModel.loadQuestions()
+            Log.d("MyQuestionActivity", "do on load more")
+        }
+
+    }
+}
+
+@Composable
+fun LazyListState.OnBottomReached(loadMore: () -> Unit) {
+    // state object which tells us if we should load more
+    val shouldLoadMore = remember {
+        derivedStateOf {
+            val lastVisibleItem = layoutInfo.visibleItemsInfo.lastOrNull()
+                ?:
+                return@derivedStateOf true
+            lastVisibleItem.index == layoutInfo.totalItemsCount - 1
+        }
+    }
+
+    LaunchedEffect(shouldLoadMore) {
+        snapshotFlow { shouldLoadMore.value }
+            .collect {
+                if (it) loadMore()
+            }
     }
 }

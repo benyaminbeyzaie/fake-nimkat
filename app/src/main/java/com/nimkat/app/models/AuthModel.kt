@@ -39,14 +39,12 @@ data class ProfileInfo(
     @SerializedName("educational_grade_id")
     var grade: Int,
     @SerializedName("username")
-    var username: String? = "",
+    var username: String? = null,
     @SerializedName("is_profile_completed")
     var isProfileCompleted: Boolean = true
-
 )
 
 data class ProfileModel(
-
     @SerializedName("first_name")
     var name: String,
     @SerializedName("educational_grade_id")

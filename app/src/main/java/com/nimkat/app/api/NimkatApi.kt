@@ -11,12 +11,31 @@ interface NimkatApi {
     @POST("users/{id}/verify_code/")
     suspend fun verifyCode(@Path("id") id: String, @Body body: VerifyCodeBody): Response<AuthModel>
 
-    @PUT("users/{id}/")
-    suspend fun updateProfile(@Path("id") id: String , @Body body: ProfileInfo , @Header("Authorization") token: String): Response<ProfileModel>
+    @PATCH("users/{id}/")
+    suspend fun updateProfile(
+        @Path("id") id: String,
+        @Body body: ProfileInfo,
+        @Header("Authorization") token: String
+    ): Response<ProfileModel>
 
     @GET("users/{id}/")
-    suspend fun getProfile(@Path("id") id: String  , @Header("Authorization") token: String): Response<ProfileModel>
+    suspend fun getProfile(
+        @Path("id") id: String,
+        @Header("Authorization") token: String
+    ): Response<ProfileModel>
 
     @DELETE("users/{id}/")
-    suspend fun deleteAccount(@Path("id") id: String  , @Header("Authorization") token: String): Response<Unit>
+    suspend fun deleteAccount(
+        @Path("id") id: String,
+        @Header("Authorization") token: String
+    ): Response<Unit>
+
+    @GET("questions/")
+    suspend fun getQuestions(
+        @Header("Authorization") token: String,
+        @Query("page") page: Int,
+        @Query("page_size") pageSize: Int,
+        @Query("type") type: String,
+        @Query("user") user: String
+    ): Response<QuestionsApiResponse>
 }
