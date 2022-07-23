@@ -5,3 +5,4 @@ const val IMAGE_PATH = "IMAGE_PATH"
 const val CROP_IMAGE_CODE = 1234
 const val ASK_NAME_CODE = 1235
 const val ASK_GRADE_CODE = 1236
+const val ASK_FOR_EDIT_PROFILE = 1237

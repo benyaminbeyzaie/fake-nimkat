@@ -44,6 +44,7 @@ import com.google.accompanist.pager.PagerState
 import com.google.accompanist.pager.rememberPagerState
 import com.nimkat.app.R
 import com.nimkat.app.ui.theme.NimkatTheme
+import com.nimkat.app.utils.ASK_FOR_EDIT_PROFILE
 import com.nimkat.app.utils.CROP_IMAGE_CODE
 import com.nimkat.app.view.question_crop.QuestionCropActivity
 import com.nimkat.app.view_model.AuthViewModel
@@ -73,16 +74,14 @@ class MainActivity : AppCompatActivity() {
 
     private var shouldShowCamera: MutableState<Boolean> = mutableStateOf(false)
 
-    val snackbarHost = SnackbarHostState()
-    val snackbarHostState = mutableStateOf(snackbarHost)
-
+    val authViewModel: AuthViewModel by viewModels()
 
     @OptIn(ExperimentalMaterialApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 //        val profileViewModel:ProfileViewModel by viewModels()
 //        profileViewModel.initAuth()
-        val authViewModel: AuthViewModel by viewModels()
+
         authViewModel.initAuth()
         outputDirectory = getOutputDirectory()
         cameraExecutor = Executors.newSingleThreadExecutor()
@@ -95,9 +94,6 @@ class MainActivity : AppCompatActivity() {
         }else{
             AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
         }
-
-
-
 
         setContent {
             NimkatTheme {
@@ -204,15 +200,19 @@ class MainActivity : AppCompatActivity() {
                     }
 
                 } else {
-                    lifecycleScope.launch{
-                        snackbarHost.showSnackbar(
-                            message = "متاسفانه مشکلی پیش اومده یا دستگاهت به اینترنت متصل نیست!",
-                            actionLabel = "RED",
-                            duration = SnackbarDuration.Short
-                        )
-                        Log.d("kiloURI", "IMAGE CROPPING CANCELED.")
+                    Toast.makeText(this, "IMAGE CROPPING CANCELED.", Toast.LENGTH_SHORT).show()
+                }
+            }
+            ASK_FOR_EDIT_PROFILE ->{
+                if (resultCode == RESULT_OK){
+                    data?.apply {
+                        val grade = getStringExtra("grade")
+                        val gradeID = getIntExtra("gradeID" , 0)
+                        val name = getStringExtra("name")
+                        authViewModel.update(name!! , gradeID)
+                        Toast.makeText(x, "profile changed .", Toast.LENGTH_SHORT).show()
+                        // now we should use this uri to load bitmap of the image and then send it to server
                     }
-//                    Toast.makeText(this, "IMAGE CROPPING CANCELED.", Toast.LENGTH_SHORT).show()
                 }
             }
 

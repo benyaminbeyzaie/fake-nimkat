@@ -1,9 +1,14 @@
 package com.nimkat.app.view
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
@@ -21,15 +26,17 @@ import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import com.nimkat.app.ui.theme.mainFont
 
+@OptIn(ExperimentalAnimationApi::class)
 @ExperimentalMaterialApi
 @Composable
 fun SnackBar(
     snackbarHostState: SnackbarHostState,
     color: Color,
-    ishowing : Boolean,
-    onHideSnackbar : () -> Unit
+    ishowing: Boolean,
+    onHideSnackbar: () -> Unit
 ) {
     ConstraintLayout(modifier = Modifier.fillMaxSize()) {
+
         SnackbarHost(
             modifier = Modifier
                 .padding(10.dp),

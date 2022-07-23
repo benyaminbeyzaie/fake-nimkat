@@ -8,12 +8,9 @@ import android.net.Uri
 import android.preference.PreferenceManager
 import android.util.Log
 import androidx.appcompat.app.AppCompatDelegate
-import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
-import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
-import androidx.camera.view.PreviewView
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -22,7 +19,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.CheckCircle
-import androidx.compose.material.icons.outlined.Collections
 import androidx.compose.material.icons.outlined.Menu
 import androidx.compose.material.ripple.LocalRippleTheme
 import androidx.compose.runtime.*
@@ -42,11 +38,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.core.content.ContextCompat.startActivity
 import androidx.lifecycle.lifecycleScope
 import com.nimkat.app.R
+import com.nimkat.app.models.DataStatus
 import com.nimkat.app.ui.theme.RippleWhite
 import com.nimkat.app.ui.theme.mainFont
 import com.nimkat.app.ui.theme.secondFont
@@ -77,6 +73,20 @@ fun Camera(
     onImageCaptured: (Uri, Int) -> Unit
 ) {
 
+    val lifecycleOwner = LocalLifecycleOwner.current
+    val errorSnackBar = remember { SnackbarHostState() }
+
+    val profileModel = authViewModel.profileModelLiveData.observeAsState()
+    if (profileModel.value?.status == DataStatus.ErrorWithData) {
+        LaunchedEffect(lifecycleOwner.lifecycleScope) {
+
+            errorSnackBar.showSnackbar(
+                message = "متاسفانه مشکلی پیش اومده یا دستگاهت به اینترنت متصل نیست!",
+                actionLabel = "RED",
+                duration = SnackbarDuration.Short
+            )
+        }
+    }
 
     val coroutineScope = rememberCoroutineScope()
 
@@ -98,8 +108,6 @@ fun Camera(
 
         Box {
 
-            val snackbarHostState = remember { SnackbarHostState() }
-
 
             // camera
             Spacer(
@@ -113,7 +121,7 @@ fun Camera(
                 executor = cameraExecutor,
                 onImageCaptured = onImageCaptured,
                 onError = { Log.e("kilo", "View error:", it) },
-                snackbarHostState
+                errorSnackBar
             )
 
             Card(
@@ -156,7 +164,7 @@ fun Camera(
                 }
             }
 
-            SnackBar(snackbarHostState = snackbarHostState , Color(5, 172, 0, 255) , true , {})
+            SnackBar(snackbarHostState = errorSnackBar, Color.Red, true, {})
 
         }
     }
@@ -168,6 +176,7 @@ fun Drawer(
 ) {
 
     val context = LocalContext.current
+
     val authModel = authViewModel.authModelLiveData.observeAsState()
     val profileModel = authViewModel.profileModelLiveData.observeAsState()
     val isLoaded = profileModel.value?.data != null
@@ -179,6 +188,7 @@ fun Drawer(
     } else {
         Log.d("PROF", "load status changed to unloaded")
     }
+
 
     val prefs: SharedPreferences =
         PreferenceManager.getDefaultSharedPreferences(LocalContext.current)
@@ -268,6 +278,11 @@ fun Drawer(
             }
         } else {
 
+            val name1 = remember { mutableStateOf("Default") }
+            val phone1 = remember { mutableStateOf("Default") }
+            val grade1 = remember { mutableStateOf(profileModel.value?.data?.educationalGrade!!) }
+
+
             Row(
                 Modifier
                     .fillMaxWidth()
@@ -287,81 +302,72 @@ fun Drawer(
                         .padding(12.dp, 6.dp)
                 ) {
                     if (isLoaded) {
+                        name1.value = profileModel.value?.data?.name!!
+                        phone1.value = profileModel.value?.data?.phone!!
+                        grade1.value = profileModel.value?.data?.educationalGrade!!
+                    }
+//                    else {
+//                        Log.d("PROF", "load status changed to unloaded")
+//
+//                        var name1 = "default"
+//                        var phone1 = "default"
+//                        Text(
+//                            name1,
+////                        "آنیتا علیخانی",
+//                            modifier = Modifier
+//                                .fillMaxWidth(),
+//                            color = colorResource(R.color.primary_text),
+//                            textAlign = TextAlign.Right,
+//                            fontFamily = mainFont,
+//                            fontWeight = FontWeight.Bold,
+//                            fontSize = 16.sp
+//                        )
+//                        Spacer(modifier = Modifier.height(4.dp))
+//                        CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
+//                            Text(
+//                                phone1,
+////                        "+989123456789",
+//                                modifier = Modifier
+//                                    .fillMaxWidth(),
+//                                color = colorResource(R.color.primary_text_variant),
+//                                textAlign = TextAlign.Right,
+//                                fontFamily = mainFont,
+//                                fontWeight = FontWeight.Normal,
+//                                fontSize = 14.sp
+//                            )
+//                        }
+//                    }
 
-                        var name1 = profileModel.value?.data?.name!!
-                        var phone1 = profileModel.value?.data?.phone!!
-                        Text(
-                            name1,
+                    Text(
+                        name1.value,
 //                        "آنیتا علیخانی",
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        color = colorResource(R.color.primary_text),
+                        textAlign = TextAlign.Right,
+                        fontFamily = mainFont,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 16.sp
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
+                        Text(
+                            phone1.value,
+//                        "+989123456789",
                             modifier = Modifier
                                 .fillMaxWidth(),
-                            color = colorResource(R.color.primary_text),
+                            color = colorResource(R.color.primary_text_variant),
                             textAlign = TextAlign.Right,
                             fontFamily = mainFont,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 16.sp
+                            fontWeight = FontWeight.Normal,
+                            fontSize = 14.sp
                         )
-                        Spacer(modifier = Modifier.height(4.dp))
-                        CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
-                            Text(
-                                phone1,
-//                        "+989123456789",
-                                modifier = Modifier
-                                    .fillMaxWidth(),
-                                color = colorResource(R.color.primary_text_variant),
-                                textAlign = TextAlign.Right,
-                                fontFamily = mainFont,
-                                fontWeight = FontWeight.Normal,
-                                fontSize = 14.sp
-                            )
-                        }
-                    } else {
-                        Log.d("PROF", "load status changed to unloaded")
-
-                        var name1 = "default"
-                        var phone1 = "default"
-                        Text(
-                            name1,
-//                        "آنیتا علیخانی",
-                            modifier = Modifier
-                                .fillMaxWidth(),
-                            color = colorResource(R.color.primary_text),
-                            textAlign = TextAlign.Right,
-                            fontFamily = mainFont,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 16.sp
-                        )
-                        Spacer(modifier = Modifier.height(4.dp))
-                        CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
-                            Text(
-                                phone1,
-//                        "+989123456789",
-                                modifier = Modifier
-                                    .fillMaxWidth(),
-                                color = colorResource(R.color.primary_text_variant),
-                                textAlign = TextAlign.Right,
-                                fontFamily = mainFont,
-                                fontWeight = FontWeight.Normal,
-                                fontSize = 14.sp
-                            )
-                        }
                     }
 
 
-//                    Text(
-//                        phone1,
-////                        "+989123456789",
-//                        modifier = Modifier
-//                            .fillMaxWidth(),
-//                        color = colorResource(R.color.primary_text_variant),
-//                        textAlign = TextAlign.Left,
-//                        fontFamily = mainFont,
-//                        fontWeight = FontWeight.Normal,
-//                        fontSize = 14.sp
-//                    )
                 }
                 IconButton(onClick = {
-                    ProfileEditActivity.sendIntent(context)
+                    ProfileEditActivity.sendIntent(context, name1.value, phone1.value, grade1.value)
                 }) {
                     Icon(
                         painter = painterResource(R.drawable.ic_edit),
@@ -553,12 +559,10 @@ fun Drawer(
 }
 
 
-
-
 private fun pickFromGallery(
-    onImageCaptured: (Uri , Int) -> Unit,
+    onImageCaptured: (Uri, Int) -> Unit,
 ) {
-    onImageCaptured(Uri.parse("") , 1)
+    onImageCaptured(Uri.parse(""), 1)
 }
 
 
@@ -566,7 +570,7 @@ private fun takePhoto(
     imageCapture: ImageCapture,
     outputDirectory: File,
     executor: Executor,
-    onImageCaptured: (Uri , Int) -> Unit,
+    onImageCaptured: (Uri, Int) -> Unit,
     onError: (ImageCaptureException) -> Unit
 ) {
 
@@ -578,7 +582,7 @@ private fun takePhoto(
 
     val outputOptions = ImageCapture.OutputFileOptions.Builder(photoFile).build()
 
-    imageCapture.takePicture(outputOptions, executor, object: ImageCapture.OnImageSavedCallback {
+    imageCapture.takePicture(outputOptions, executor, object : ImageCapture.OnImageSavedCallback {
         override fun onError(exception: ImageCaptureException) {
             Log.e("kilo", "Take photo error:", exception)
             onError(exception)
@@ -586,7 +590,7 @@ private fun takePhoto(
 
         override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
             val savedUri = Uri.fromFile(photoFile)
-            onImageCaptured(savedUri , 0)
+            onImageCaptured(savedUri, 0)
         }
     })
 

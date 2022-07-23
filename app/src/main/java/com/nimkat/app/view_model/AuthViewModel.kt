@@ -104,18 +104,23 @@ class AuthViewModel @Inject constructor(
     }
 
     fun update(name: String, gradeId: Int) {
+        var data = _profileModel.value?.data
         _profileModel.postValue(DataHolder.loading())
         viewModelScope.launch {
-            val response = repository.updateProfile(
-                name,
-                gradeId,
-            )
-            if (response != null && response.isSuccessful && response.body() != null) {
-                Log.d("update ", response.body()!!.toString())
-                _profileModel.postValue(DataHolder.success(response.body()!!))
-                Log.d("update ", "LOAD Into Profile Model ")
-            } else {
-                _profileModel.postValue(DataHolder.error())
+            try {
+                val response = repository.updateProfile(
+                    name,
+                    gradeId,
+                )
+                if (response != null && response.isSuccessful && response.body() != null) {
+                    Log.d("update ", response.body()!!.toString())
+                    _profileModel.postValue(DataHolder.success(response.body()!!))
+                    Log.d("update ", "LOAD Into Profile Model ")
+                } else {
+                    _profileModel.postValue(DataHolder.error())
+                }
+            }catch (e: Exception){
+                _profileModel.postValue(DataHolder.errorWithData(data = data!!))
             }
         }
     }

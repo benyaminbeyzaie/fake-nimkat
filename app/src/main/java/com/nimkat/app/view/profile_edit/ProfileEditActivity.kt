@@ -3,8 +3,10 @@ package com.nimkat.app.view.profile_edit
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
-import androidx.activity.ComponentActivity
+import android.util.Log
+import android.widget.Toast
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.BorderStroke
@@ -33,28 +35,56 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.text.style.TextDirection
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.lifecycleScope
 import com.nimkat.app.R
+import com.nimkat.app.models.EducationalGrade
 import com.nimkat.app.ui.theme.NimkatTheme
 import com.nimkat.app.ui.theme.RippleWhite
 import com.nimkat.app.ui.theme.mainFont
 import com.nimkat.app.ui.theme.secondFont
+import com.nimkat.app.utils.ASK_FOR_EDIT_PROFILE
+import com.nimkat.app.utils.ASK_GRADE_CODE
+import com.nimkat.app.utils.CROP_IMAGE_CODE
 import com.nimkat.app.view.profile_edit.grade.GradeActivity
+import kotlinx.coroutines.launch
+import kotlin.math.log
 
 
 class ProfileEditActivity : AppCompatActivity() {
 
     companion object {
-        fun sendIntent(context: Context) = Intent(context, ProfileEditActivity::class.java).apply {
-            context.startActivity(this)
-        }
+        fun sendIntent(context: Context, name: String, phone: String, grade: EducationalGrade) =
+            Intent(context, ProfileEditActivity::class.java).apply {
+                this.putExtra("name", name)
+                this.putExtra("phone", phone)
+                this.putExtra("grade", grade.name)
+                (context as Activity).startActivityForResult(this , ASK_FOR_EDIT_PROFILE)
+            }
     }
+
+    var name: String? = null
+    var phone: String? = null
+    var grade: String? = null
+    var gradeID: Int = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        name = intent.getStringExtra("name")
+        phone = intent.getStringExtra("phone")
+        grade = intent.getStringExtra("grade")
+
+        Log.d("grade", grade.toString())
+
+        contentSetter()
+    }
+
+
+    fun contentSetter(){
         setContent {
             NimkatTheme {
                 // A surface container using the 'background' color from the theme
@@ -64,23 +94,50 @@ class ProfileEditActivity : AppCompatActivity() {
                 ) {
 
                     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
-                        ProfileEditContent()
+                        ProfileEditContent(name, phone, grade , gradeID)
                     }
                 }
             }
         }
     }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        val x = this
+        when (requestCode) {
+            ASK_GRADE_CODE -> {
+                if (resultCode == Activity.RESULT_OK) {
+                    Log.d("GradeAct" , "result recieved")
+                    data?.apply {
+                        grade = getStringExtra("grade")!!
+                        gradeID = getIntExtra("gradeID" , 0)
+
+                    }
+                    contentSetter()
+                } else {
+                    Log.d("kiloURI", "IMAGE CROPPING CANCELED.")
+                    Toast.makeText(this, "IMAGE CROPPING CANCELED.", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+        }
+    }
+
 }
 
-@Preview
+//@Preview
 @Composable
-fun ProfileEditContent() {
+fun ProfileEditContent(name: String?, phone: String?, grade: String? , gradeID: Int) {
 
     val context = LocalContext.current
 
     val username = remember {
-        mutableStateOf("آنیتا علیخانی")
+        mutableStateOf(name)
     }
+    val phoneNumber = remember {
+        mutableStateOf(phone)
+    }
+
 
     Column(
         modifier = Modifier
@@ -96,7 +153,7 @@ fun ProfileEditContent() {
         ) {
             Icon(
                 painter = painterResource(R.drawable.ic_back), null,
-                tint = colorResource(R.color.black),
+                tint = colorResource(R.color.primary_text),
                 modifier = Modifier
                     .size(24.dp)
                     .rotate(180f)
@@ -110,7 +167,7 @@ fun ProfileEditContent() {
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(20.dp, 20.dp, 20.dp, 0.dp),
-            color = colorResource(R.color.black),
+            color = colorResource(R.color.primary_text),
             fontFamily = secondFont,
             fontSize = 32.sp
         )
@@ -121,7 +178,7 @@ fun ProfileEditContent() {
         ) {
 
             OutlinedTextField(
-                value = "9123456789",
+                value = phoneNumber.value?.substring(3) ?: "9171234567",
                 onValueChange = {
                 },
                 enabled = false,
@@ -133,7 +190,7 @@ fun ProfileEditContent() {
                         stringResource(id = R.string.mobile),
                         fontFamily = mainFont,
                         color = colorResource(
-                            R.color.color_hint
+                            R.color.primary_text_variant
                         ),
                         fontSize = 12.sp,
                         textAlign = TextAlign.Left
@@ -147,7 +204,7 @@ fun ProfileEditContent() {
                 textStyle = TextStyle(
                     fontSize = 14.sp,
                     fontFamily = mainFont,
-                    color = colorResource(R.color.black),
+                    color = colorResource(R.color.primary_text),
                     textAlign = TextAlign.Left
                 ),
                 keyboardOptions = KeyboardOptions.Default.copy(
@@ -156,35 +213,39 @@ fun ProfileEditContent() {
                 )
             )
             Spacer(modifier = Modifier.width(8.dp))
-            Card(
-                shape = RoundedCornerShape(6.dp),
+            OutlinedTextField(
+                value = "+98",
+                onValueChange = {
+                },
+                enabled = false,
                 modifier = Modifier
                     .width(67.dp)
                     .height(67.dp)
                     .align(Alignment.CenterVertically)
                     .padding(0.dp, 8.dp, 0.dp, 0.dp),
-                backgroundColor = Color.Transparent,
-                elevation = 0.dp,
-                border = BorderStroke(1.dp, colorResource(id = R.color.gray300)),
-            ) {
-                Box(
-                    contentAlignment = Alignment.Center, modifier = Modifier,
-                ) {
-                    Text(
-                        "+98",
-                        color = colorResource(R.color.black),
-                        modifier = Modifier
-                            .wrapContentSize(),
-                        fontSize = 14.sp
-                    )
-                }
-            }
+                shape = RoundedCornerShape(6.dp),
+                colors = TextFieldDefaults.outlinedTextFieldColors(
+                    focusedBorderColor = colorResource(R.color.main_color),
+                    unfocusedBorderColor = colorResource(R.color.gray500),
+                ),
+                textStyle = TextStyle(
+                    fontSize = 14.sp,
+                    fontFamily = mainFont,
+                    color = colorResource(R.color.primary_text),
+                    textAlign = TextAlign.Center,
+                    textDirection = TextDirection.Ltr
+                ),
+                keyboardOptions = KeyboardOptions.Default.copy(
+                    keyboardType = KeyboardType.Text,
+                    imeAction = ImeAction.Done
+                )
+            )
         }
 
         Spacer(modifier = Modifier.height(10.dp))
 
         OutlinedTextField(
-            value = username.value,
+            value = username.value ?: "آنیتا علیخانی",
             onValueChange = {
                 username.value = it
             },
@@ -196,20 +257,21 @@ fun ProfileEditContent() {
                     stringResource(id = R.string.username),
                     fontFamily = mainFont,
                     fontSize = 12.sp,
-                    textAlign = TextAlign.Left
+                    textAlign = TextAlign.Left,
+                    color = colorResource(id = R.color.primary_text_variant)
                 )
             },
             shape = RoundedCornerShape(6.dp),
             colors = TextFieldDefaults.outlinedTextFieldColors(
-                focusedBorderColor = colorResource(R.color.main_color),
-                focusedLabelColor = colorResource(R.color.main_color),
+                focusedBorderColor = colorResource(R.color.blue),
+                focusedLabelColor = colorResource(R.color.blue),
                 unfocusedLabelColor = colorResource(R.color.gray500),
                 unfocusedBorderColor = colorResource(R.color.gray500),
             ),
             textStyle = TextStyle(
                 fontSize = 14.sp,
                 fontFamily = mainFont,
-                color = colorResource(R.color.black),
+                color = colorResource(R.color.primary_text),
             ),
         )
 
@@ -220,7 +282,7 @@ fun ProfileEditContent() {
                 .padding(16.dp, 0.dp)
         ) {
             OutlinedTextField(
-                value = "چهارم",
+                value = grade ?: "اول",
                 onValueChange = {
                 },
                 enabled = false,
@@ -232,20 +294,20 @@ fun ProfileEditContent() {
                         stringResource(id = R.string.grade),
                         fontFamily = mainFont,
                         color = colorResource(
-                            R.color.color_hint
+                            R.color.primary_text_variant
                         ),
                         fontSize = 12.sp,
                     )
                 },
                 shape = RoundedCornerShape(6.dp),
                 colors = TextFieldDefaults.outlinedTextFieldColors(
-                    focusedBorderColor = colorResource(R.color.main_color),
+                    focusedBorderColor = colorResource(R.color.blue),
                     unfocusedBorderColor = colorResource(R.color.gray500),
                 ),
                 textStyle = TextStyle(
                     fontSize = 14.sp,
                     fontFamily = mainFont,
-                    color = colorResource(R.color.black),
+                    color = colorResource(R.color.primary_text),
                 ),
                 keyboardOptions = KeyboardOptions.Default.copy(
                     keyboardType = KeyboardType.Text,
@@ -263,7 +325,7 @@ fun ProfileEditContent() {
                     stringResource(R.string.change),
                     modifier = Modifier
                         .padding(12.dp, 6.dp),
-                    color = colorResource(R.color.main_color),
+                    color = colorResource(R.color.blue),
                     fontFamily = mainFont,
                     textAlign = TextAlign.Center,
                     fontWeight = FontWeight.Bold,
@@ -275,14 +337,22 @@ fun ProfileEditContent() {
         CompositionLocalProvider(LocalRippleTheme provides RippleWhite) {
             Button(
                 onClick = {
-
+                    val data = Intent().apply {
+                        putExtra("grade", grade)
+                        putExtra("gradeID" , gradeID)
+                        putExtra("name" , username.value)
+                    }
+                    if (context is Activity) {
+                        context.setResult(Activity.RESULT_OK, data)
+                        context.finish()
+                    }
                 },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(20.dp)
                     .height(60.dp),
                 shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.buttonColors(backgroundColor = colorResource(R.color.main_color)),
+                colors = ButtonDefaults.buttonColors(backgroundColor = colorResource(R.color.blue)),
             ) {
                 Row {
                     Text(

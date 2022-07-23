@@ -36,13 +36,14 @@ import com.nimkat.app.R
 import com.nimkat.app.ui.theme.NimkatTheme
 import com.nimkat.app.ui.theme.mainFont
 import com.nimkat.app.ui.theme.secondFont
+import com.nimkat.app.utils.ASK_GRADE_CODE
 
 class GradeActivity : AppCompatActivity() {
 
 
     companion object {
         fun sendIntent(context: Context) = Intent(context, GradeActivity::class.java).apply {
-            context.startActivity(this)
+            (context as Activity).startActivityForResult(this , ASK_GRADE_CODE)
         }
     }
 
