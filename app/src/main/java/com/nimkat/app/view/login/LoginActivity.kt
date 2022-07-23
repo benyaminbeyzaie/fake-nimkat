@@ -14,17 +14,15 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.material.ripple.LocalRippleTheme
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -35,6 +33,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.nimkat.app.R
 import com.nimkat.app.models.DataStatus
@@ -42,9 +41,11 @@ import com.nimkat.app.ui.theme.NimkatTheme
 import com.nimkat.app.ui.theme.RippleWhite
 import com.nimkat.app.ui.theme.mainFont
 import com.nimkat.app.ui.theme.secondFont
+import com.nimkat.app.view.SnackBar
 import com.nimkat.app.view.otp.OtpActivity
 import com.nimkat.app.view_model.AuthViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class LoginActivity : AppCompatActivity() {
@@ -74,16 +75,38 @@ class LoginActivity : AppCompatActivity() {
     }
 }
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun LoginContent(authViewModel: AuthViewModel) {
     val mobile = remember { mutableStateOf("") }
     val inviteCode = remember { mutableStateOf("") }
     val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
     val isCodeSent = authViewModel.isCodeSentLiveData.observeAsState()
+    val errorSnackBar = remember { SnackbarHostState() }
+
 
     if (isCodeSent.value?.status == DataStatus.Success) {
         Log.d("Login", "isCodeSent.value?.status == DataStatus.Success")
         OtpActivity.sendIntent(context, isCodeSent.value!!.data!!.toString())
+    }else if (isCodeSent.value?.status == DataStatus.Error){
+        Log.d("Login", "isCodeSent.value?.status == DataStatus.Error")
+
+        LaunchedEffect(lifecycleOwner.lifecycleScope) {
+            errorSnackBar.showSnackbar(
+                message = "متاسفانه مشکلی پیش اومده یا دستگاهت به اینترنت متصل نیست!",
+                actionLabel = "RED",
+                duration = SnackbarDuration.Short
+            )
+        }
+//
+//        lifecycleOwner.lifecycleScope.launch {
+//            errorSnackBar.showSnackbar(
+//                message = "متاسفانه مشکلی پیش اومده یا دستگاهت به اینترنت متصل نیست!",
+//                actionLabel = "RED",
+//                duration = SnackbarDuration.Short
+//            )
+//        }
     }
 
     Column(
@@ -270,4 +293,6 @@ fun LoginContent(authViewModel: AuthViewModel) {
             }
         }
     }
+    SnackBar(snackbarHostState = errorSnackBar , Color.Red , true , {})
+
 }

@@ -22,14 +22,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEvent
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onKeyEvent
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.ui.platform.SoftwareKeyboardController
+import androidx.compose.ui.platform.*
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -40,16 +38,19 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.nimkat.app.R
 import com.nimkat.app.models.DataStatus
 import com.nimkat.app.ui.theme.NimkatTheme
 import com.nimkat.app.ui.theme.mainFont
 import com.nimkat.app.ui.theme.secondFont
+import com.nimkat.app.view.SnackBar
 import com.nimkat.app.view.main.MainActivity
 import com.nimkat.app.view.profile_edit.CompleteProfile
 import com.nimkat.app.view_model.AuthViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class OtpActivity : AppCompatActivity() {
@@ -81,17 +82,35 @@ class OtpActivity : AppCompatActivity() {
     }
 }
 
-@OptIn(ExperimentalComposeUiApi::class)
+@OptIn(ExperimentalComposeUiApi::class, ExperimentalMaterialApi::class)
 @Composable
 fun OtpContent(id: String, authViewModel: AuthViewModel) {
     val context = LocalContext.current
+
+    val lifecycleOwner = LocalLifecycleOwner.current
+
+    val errorSnackBar = remember { SnackbarHostState() }
+
+
     val authState = authViewModel.authModelLiveData.observeAsState()
     Log.d("OptActivity", "auth state: ${authState.value?.status}")
     if (authState.value?.status === DataStatus.Success) {
         MainActivity.sendIntent(context)
+
     }
     if (authState.value?.status === DataStatus.NeedCompletion) {
         CompleteProfile.sendIntent(context)
+    }
+    if (authState.value?.status === DataStatus.Error){
+        Log.d("Login", "isCodeSent.value?.status == DataStatus.Error")
+
+        LaunchedEffect(lifecycleOwner.lifecycleScope) {
+            errorSnackBar.showSnackbar(
+                message = "متاسفانه مشکلی پیش اومده یا دستگاهت به اینترنت متصل نیست!",
+                actionLabel = "RED",
+                duration = SnackbarDuration.Short
+            )
+        }
     }
 
     Column(
@@ -165,6 +184,7 @@ fun OtpContent(id: String, authViewModel: AuthViewModel) {
             }
         }
     }
+    SnackBar(snackbarHostState = errorSnackBar , Color.Red , true , {})
 }
 
 @OptIn(ExperimentalComposeUiApi::class)

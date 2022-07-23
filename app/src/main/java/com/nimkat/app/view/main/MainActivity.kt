@@ -11,14 +11,12 @@ import android.os.Bundle
 import android.preference.PreferenceManager
 import android.util.Log
 import android.widget.Toast
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.annotation.StringRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
-import androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_YES
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.background
@@ -29,6 +27,7 @@ import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
@@ -38,6 +37,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.lifecycleScope
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.PagerState
@@ -73,7 +73,11 @@ class MainActivity : AppCompatActivity() {
 
     private var shouldShowCamera: MutableState<Boolean> = mutableStateOf(false)
 
+    val snackbarHost = SnackbarHostState()
+    val snackbarHostState = mutableStateOf(snackbarHost)
 
+
+    @OptIn(ExperimentalMaterialApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 //        val profileViewModel:ProfileViewModel by viewModels()
@@ -93,6 +97,8 @@ class MainActivity : AppCompatActivity() {
         }
 
 
+
+
         setContent {
             NimkatTheme {
                 // A surface container using the 'background' color from the theme
@@ -102,12 +108,13 @@ class MainActivity : AppCompatActivity() {
                 ) {
                     cameraScaffoldState = rememberScaffoldState()
                     coroutineScope = rememberCoroutineScope()
+
                     Greeting(
                         cameraScaffoldState!!,
                         authViewModel,
                         cameraExecutor,
                         outputDirectory,
-                        onImageCaptured = ::handleImageCapture
+                        onImageCaptured = ::handleImageCapture,
                     )
                 }
             }
@@ -196,10 +203,16 @@ class MainActivity : AppCompatActivity() {
                         // now we should use this uri to load bitmap of the image and then send it to server
                     }
 
-
                 } else {
-                    Log.d("kiloURI", "IMAGE CROPPING CANCELED.")
-                    Toast.makeText(this, "IMAGE CROPPING CANCELED.", Toast.LENGTH_SHORT).show()
+                    lifecycleScope.launch{
+                        snackbarHost.showSnackbar(
+                            message = "متاسفانه مشکلی پیش اومده یا دستگاهت به اینترنت متصل نیست!",
+                            actionLabel = "RED",
+                            duration = SnackbarDuration.Short
+                        )
+                        Log.d("kiloURI", "IMAGE CROPPING CANCELED.")
+                    }
+//                    Toast.makeText(this, "IMAGE CROPPING CANCELED.", Toast.LENGTH_SHORT).show()
                 }
             }
 
@@ -210,16 +223,18 @@ class MainActivity : AppCompatActivity() {
 }
 
 
-@OptIn(ExperimentalPagerApi::class)
+@OptIn(ExperimentalPagerApi::class, ExperimentalMaterialApi::class)
 @Composable
 fun Greeting(
     cameraScaffoldState: ScaffoldState,
     authViewModel: AuthViewModel,
     cameraExecutor: ExecutorService,
     outputDirectory: File,
-    onImageCaptured: (Uri, Int) -> Unit
+    onImageCaptured: (Uri, Int) -> Unit,
 ) {
     val coroutineScope = rememberCoroutineScope()
+
+
 
     val pagerState = rememberPagerState(
         initialPage = 1,

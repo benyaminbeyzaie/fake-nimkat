@@ -14,15 +14,13 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.FloatingActionButton
-import androidx.compose.material.Icon
+import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Collections
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.colorResource
@@ -30,7 +28,11 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.lifecycleScope
 import com.nimkat.app.R
+import com.nimkat.app.view.SnackBar
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
@@ -39,12 +41,14 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun CameraView(
     outputDirectory: File,
     executor: Executor,
     onImageCaptured: (Uri , Int) -> Unit,
-    onError: (ImageCaptureException) -> Unit
+    onError: (ImageCaptureException) -> Unit,
+    snackbarHostState: SnackbarHostState
 ) {
     // 1
     val lensFacing = CameraSelector.LENS_FACING_BACK
@@ -77,22 +81,24 @@ fun CameraView(
     Box(contentAlignment = Alignment.BottomCenter, modifier = Modifier.fillMaxSize()) {
         AndroidView({ previewView }, modifier = Modifier.fillMaxSize())
 
+
         FloatingActionButton(
             onClick = {
                 Log.i("kilo", "ON CLICK")
-                takePhoto(
-                    imageCapture = imageCapture,
-                    outputDirectory = outputDirectory,
-                    executor = executor,
-                    onImageCaptured = onImageCaptured,
-                    onError = onError,
-                )
-
-                val testImagePath =
-                    Environment.getExternalStorageDirectory().path.plus("/test.png")
-
-                Log.d("kilouri", testImagePath)
-
+                lifecycleOwner.lifecycleScope.launch {
+                    snackbarHostState.showSnackbar(
+                        message = "متاسفانه مشکلی پیش اومده یا دستگاهت به اینترنت متصل نیست!",
+                        actionLabel = "RED",
+                        duration = SnackbarDuration.Short
+                    )
+                }
+//                takePhoto(
+//                    imageCapture = imageCapture,
+//                    outputDirectory = outputDirectory,
+//                    executor = executor,
+//                    onImageCaptured = onImageCaptured,
+//                    onError = onError,
+//                )
             },
             modifier = Modifier
                 .align(alignment = Alignment.BottomCenter)
@@ -113,6 +119,7 @@ fun CameraView(
                 pickFromGallery(
                     onImageCaptured = onImageCaptured,
                 )
+
             },
             modifier = Modifier
                 .align(alignment = Alignment.BottomEnd)
@@ -126,6 +133,7 @@ fun CameraView(
                 tint = colorResource(R.color.white),
             )
         }
+        SnackBar(snackbarHostState = snackbarHostState , Color(5, 172, 0, 255) , true , {})
 
     }
 }
