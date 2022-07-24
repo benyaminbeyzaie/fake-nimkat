@@ -3,10 +3,12 @@ package com.nimkat.app.view.otp
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.os.Bundle
 import android.util.Log
-import androidx.activity.ComponentActivity
+import android.widget.Toast
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -40,17 +42,19 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.google.android.gms.auth.api.phone.SmsRetriever
 import com.nimkat.app.R
 import com.nimkat.app.models.DataStatus
 import com.nimkat.app.ui.theme.NimkatTheme
 import com.nimkat.app.ui.theme.mainFont
 import com.nimkat.app.ui.theme.secondFont
+import com.nimkat.app.utils.SMS.SmsReciever
 import com.nimkat.app.view.SnackBar
 import com.nimkat.app.view.main.MainActivity
 import com.nimkat.app.view.profile_edit.CompleteProfile
 import com.nimkat.app.view_model.AuthViewModel
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.launch
+import java.util.regex.Pattern
 
 @AndroidEntryPoint
 class OtpActivity : AppCompatActivity() {
@@ -63,9 +67,24 @@ class OtpActivity : AppCompatActivity() {
             }
     }
 
+    private var REQ_USER_CONSENT = 200
+    var smsBroadcastReciver: SmsReciever? = null
+    var smsCode = ""
+    var id:String = ""
+
+    val authViewModel: AuthViewModel by viewModels()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        startSmartUserConsent()
+
+        id = intent.getStringExtra("id").orEmpty()
+
+        contentSetter()
+    }
+
+    private fun contentSetter() {
         setContent {
             NimkatTheme {
                 // A surface container using the 'background' color from the theme
@@ -74,17 +93,76 @@ class OtpActivity : AppCompatActivity() {
                     color = MaterialTheme.colors.background
                 ) {
                     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
-                        OtpContent(intent.getStringExtra("id").orEmpty(), viewModel())
+                        OtpContent(id, authViewModel, smsCode)
                     }
                 }
             }
         }
     }
+
+    private fun startSmartUserConsent() {
+        val client = SmsRetriever.getClient(this)
+        client.startSmsUserConsent(null)
+
+    }
+
+    private fun registerBroadcastReceiver() {
+        smsBroadcastReciver = SmsReciever()
+        smsBroadcastReciver!!.smsBroadcastReciverListener =
+            object : SmsReciever.SmsBroadcastReciverListener {
+                override fun onSuccess(intent: Intent?) {
+                    startActivityForResult(intent, REQ_USER_CONSENT)
+                }
+
+                override fun onFailure() {
+                    Toast.makeText(this@OtpActivity,"Error", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+        val intentFilter = IntentFilter(SmsRetriever.SMS_RETRIEVED_ACTION)
+        registerReceiver(smsBroadcastReciver, intentFilter)
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == REQ_USER_CONSENT) {
+            if (resultCode == RESULT_OK && data != null) {
+                val message = data.getStringExtra(SmsRetriever.EXTRA_SMS_MESSAGE)
+                getOtpFromMessage(message)
+            }
+        }
+    }
+
+    private fun getOtpFromMessage(message: String?) {
+        val otpPatter = Pattern.compile("(|^)\\d{5}")
+        val matcher = otpPatter.matcher(message)
+        if (matcher.find()) {
+            Toast.makeText(this, matcher.group(0), Toast.LENGTH_SHORT).show()
+            smsCode = matcher.group(0)!!
+            contentSetter()
+
+            if (smsCode != null && smsCode != ""){
+                authViewModel.verifyCode(smsCode, id)
+            }
+
+        }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        registerBroadcastReceiver()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        unregisterReceiver(smsBroadcastReciver)
+    }
+
 }
 
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalMaterialApi::class)
 @Composable
-fun OtpContent(id: String, authViewModel: AuthViewModel) {
+fun OtpContent(id: String, authViewModel: AuthViewModel, smsCode: String) {
     val context = LocalContext.current
 
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -101,7 +179,7 @@ fun OtpContent(id: String, authViewModel: AuthViewModel) {
     if (authState.value?.status === DataStatus.NeedCompletion) {
         CompleteProfile.sendIntent(context)
     }
-    if (authState.value?.status === DataStatus.Error){
+    if (authState.value?.status === DataStatus.Error) {
         Log.d("Login", "isCodeSent.value?.status == DataStatus.Error")
 
         LaunchedEffect(lifecycleOwner.lifecycleScope) {
@@ -157,14 +235,24 @@ fun OtpContent(id: String, authViewModel: AuthViewModel) {
             fontSize = 14.sp
         )
 
-
-        val items = listOf(
-            remember { mutableStateOf("") },
-            remember { mutableStateOf("") },
-            remember { mutableStateOf("") },
-            remember { mutableStateOf("") },
-            remember { mutableStateOf("") },
-        )
+        val items: List<MutableState<String>>
+        if (smsCode == "") {
+            items = listOf(
+                remember { mutableStateOf("") },
+                remember { mutableStateOf("") },
+                remember { mutableStateOf("") },
+                remember { mutableStateOf("") },
+                remember { mutableStateOf("") },
+            )
+        } else {
+            items = listOf(
+                remember { mutableStateOf(smsCode[0].toString()) },
+                remember { mutableStateOf(smsCode[1].toString()) },
+                remember { mutableStateOf(smsCode[2].toString()) },
+                remember { mutableStateOf(smsCode[3].toString()) },
+                remember { mutableStateOf(smsCode[4].toString()) },
+            )
+        }
 
         val activates = listOf(
             remember { FocusRequester() },
@@ -184,7 +272,8 @@ fun OtpContent(id: String, authViewModel: AuthViewModel) {
             }
         }
     }
-    SnackBar(snackbarHostState = errorSnackBar , Color.Red , true , {})
+    SnackBar(snackbarHostState = errorSnackBar, Color.Red, true, {})
+
 }
 
 @OptIn(ExperimentalComposeUiApi::class)
