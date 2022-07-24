@@ -23,6 +23,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.res.booleanResource
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -41,6 +42,7 @@ import com.nimkat.app.ui.theme.NimkatTheme
 import com.nimkat.app.ui.theme.RippleWhite
 import com.nimkat.app.ui.theme.mainFont
 import com.nimkat.app.ui.theme.secondFont
+import com.nimkat.app.view.CircularIndeterminanteProgressBar
 import com.nimkat.app.view.SnackBar
 import com.nimkat.app.view.otp.OtpActivity
 import com.nimkat.app.view_model.AuthViewModel
@@ -84,12 +86,14 @@ fun LoginContent(authViewModel: AuthViewModel) {
     val lifecycleOwner = LocalLifecycleOwner.current
     val isCodeSent = authViewModel.isCodeSentLiveData.observeAsState()
     val errorSnackBar = remember { SnackbarHostState() }
+    val bool = remember { mutableStateOf(false) }
 
 
     if (isCodeSent.value?.status == DataStatus.Success) {
         Log.d("Login", "isCodeSent.value?.status == DataStatus.Success")
+//        bool.value = false
         OtpActivity.sendIntent(context, isCodeSent.value!!.data!!.toString())
-    }else if (isCodeSent.value?.status == DataStatus.Error){
+    } else if (isCodeSent.value?.status == DataStatus.Error) {
         Log.d("Login", "isCodeSent.value?.status == DataStatus.Error")
 
         LaunchedEffect(lifecycleOwner.lifecycleScope) {
@@ -99,14 +103,9 @@ fun LoginContent(authViewModel: AuthViewModel) {
                 duration = SnackbarDuration.Short
             )
         }
-//
-//        lifecycleOwner.lifecycleScope.launch {
-//            errorSnackBar.showSnackbar(
-//                message = "متاسفانه مشکلی پیش اومده یا دستگاهت به اینترنت متصل نیست!",
-//                actionLabel = "RED",
-//                duration = SnackbarDuration.Short
-//            )
-//        }
+        bool.value = false
+    }else if (isCodeSent.value?.status == DataStatus.Loading){
+        bool.value = true
     }
 
     Column(
@@ -272,6 +271,7 @@ fun LoginContent(authViewModel: AuthViewModel) {
                 onClick = {
                     Log.d("LoginActivity", "getting code with phone: +98" + mobile.value);
                     authViewModel.getCode("+98" + mobile.value);
+//                    bool.value = true
                 },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -279,20 +279,27 @@ fun LoginContent(authViewModel: AuthViewModel) {
                     .height(60.dp),
                 shape = RoundedCornerShape(12.dp),
                 colors = ButtonDefaults.buttonColors(backgroundColor = colorResource(R.color.blue)),
+                enabled = (!bool.value)
             ) {
-                Row {
-                    Text(
-                        text = stringResource(R.string.get_otp_code),
-                        style = TextStyle(
-                            fontFamily = secondFont
-                        ),
-                        color = colorResource(R.color.white),
-                        fontSize = 20.sp,
-                    )
+                if (!bool.value){
+                    Row {
+                        Text(
+                            text = stringResource(R.string.get_otp_code),
+                            style = TextStyle(
+                                fontFamily = secondFont
+                            ),
+                            color = colorResource(R.color.white),
+                            fontSize = 20.sp,
+                        )
+                    }
+                }else{
+                    CircularIndeterminanteProgressBar(true , 0)
                 }
+
             }
         }
     }
-    SnackBar(snackbarHostState = errorSnackBar , Color.Red , true , {})
+    SnackBar(snackbarHostState = errorSnackBar, Color.Red, true, {})
 
 }
+

@@ -49,6 +49,7 @@ import com.nimkat.app.ui.theme.NimkatTheme
 import com.nimkat.app.ui.theme.mainFont
 import com.nimkat.app.ui.theme.secondFont
 import com.nimkat.app.utils.SMS.SmsReciever
+import com.nimkat.app.view.CircularIndeterminanteProgressBar
 import com.nimkat.app.view.SnackBar
 import com.nimkat.app.view.main.MainActivity
 import com.nimkat.app.view.profile_edit.CompleteProfile
@@ -169,19 +170,17 @@ fun OtpContent(id: String, authViewModel: AuthViewModel, smsCode: String) {
 
     val errorSnackBar = remember { SnackbarHostState() }
 
+    val bool = remember { mutableStateOf(false) }
 
     val authState = authViewModel.authModelLiveData.observeAsState()
-    Log.d("OptActivity", "auth state: ${authState.value?.status}")
     if (authState.value?.status === DataStatus.Success) {
         MainActivity.sendIntent(context)
-
     }
     if (authState.value?.status === DataStatus.NeedCompletion) {
         CompleteProfile.sendIntent(context)
     }
     if (authState.value?.status === DataStatus.Error) {
         Log.d("Login", "isCodeSent.value?.status == DataStatus.Error")
-
         LaunchedEffect(lifecycleOwner.lifecycleScope) {
             errorSnackBar.showSnackbar(
                 message = "متاسفانه مشکلی پیش اومده یا دستگاهت به اینترنت متصل نیست!",
@@ -189,6 +188,10 @@ fun OtpContent(id: String, authViewModel: AuthViewModel, smsCode: String) {
                 duration = SnackbarDuration.Short
             )
         }
+        bool.value = false
+    }
+    if (authState.value?.status === DataStatus.Loading){
+        bool.value = true
     }
 
     Column(
@@ -201,7 +204,7 @@ fun OtpContent(id: String, authViewModel: AuthViewModel, smsCode: String) {
                 if (context is Activity) context.onBackPressed()
             },
             modifier = Modifier
-                .padding(4.dp, 12.dp)
+                .padding(4.dp, 0.dp)
         ) {
             Icon(
                 painter = painterResource(R.drawable.ic_back), null,
@@ -212,14 +215,19 @@ fun OtpContent(id: String, authViewModel: AuthViewModel, smsCode: String) {
             )
         }
 
-
-        Spacer(modifier = Modifier.height(4.dp))
+        if(bool.value) {
+            Row {
+                CircularIndeterminanteProgressBar(true , 20)
+            }
+        }else{
+            Spacer(modifier = Modifier.height(20.dp))
+        }
 
         Text(
             stringResource(R.string.otp_code),
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(20.dp, 20.dp, 20.dp, 0.dp),
+                .padding(20.dp, 0.dp, 20.dp, 0.dp),
             color = colorResource(R.color.primary_text),
             fontFamily = secondFont,
             fontSize = 32.sp
@@ -271,6 +279,7 @@ fun OtpContent(id: String, authViewModel: AuthViewModel, smsCode: String) {
                 }
             }
         }
+
     }
     SnackBar(snackbarHostState = errorSnackBar, Color.Red, true, {})
 

@@ -80,6 +80,11 @@ class QuestionCropActivity : AppCompatActivity() {
                 val resultUri = result.uri
                 Log.d("kiloURI", "copped image uri is: $resultUri")
                 a(resultUri);
+            }else{
+                    setResult(Activity.RESULT_CANCELED, Intent().apply {
+                    })
+                    finish()
+
             }
         }
     }
@@ -164,14 +169,6 @@ fun QuestionCropContent(photouri: Uri) {
                     .fillMaxWidth(),
             )
         }
-
-//        Row(
-//            Modifier
-//                .fillMaxWidth()
-//                .padding(16.dp, 0.dp)
-//        ) {
-//
-//        }
 
         CompositionLocalProvider(LocalRippleTheme provides RippleWhite) {
             Row(

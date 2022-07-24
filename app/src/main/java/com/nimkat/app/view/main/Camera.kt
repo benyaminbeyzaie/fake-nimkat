@@ -46,6 +46,7 @@ import com.nimkat.app.models.DataStatus
 import com.nimkat.app.ui.theme.RippleWhite
 import com.nimkat.app.ui.theme.mainFont
 import com.nimkat.app.ui.theme.secondFont
+import com.nimkat.app.view.CircularIndeterminanteProgressBar
 import com.nimkat.app.view.SnackBar
 import com.nimkat.app.view.login.LoginActivity
 import com.nimkat.app.view.my_questions.MyQuestionsActivity
@@ -510,8 +511,6 @@ fun Drawer(
         }
 
         Spacer(modifier = Modifier.weight(1F))
-
-
         val darkState = remember { mutableStateOf(isDark) }
 
 

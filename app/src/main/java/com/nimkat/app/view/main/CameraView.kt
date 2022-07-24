@@ -85,20 +85,13 @@ fun CameraView(
         FloatingActionButton(
             onClick = {
                 Log.i("kilo", "ON CLICK")
-                lifecycleOwner.lifecycleScope.launch {
-                    snackbarHostState.showSnackbar(
-                        message = "متاسفانه مشکلی پیش اومده یا دستگاهت به اینترنت متصل نیست!",
-                        actionLabel = "RED",
-                        duration = SnackbarDuration.Short
-                    )
-                }
-//                takePhoto(
-//                    imageCapture = imageCapture,
-//                    outputDirectory = outputDirectory,
-//                    executor = executor,
-//                    onImageCaptured = onImageCaptured,
-//                    onError = onError,
-//                )
+                takePhoto(
+                    imageCapture = imageCapture,
+                    outputDirectory = outputDirectory,
+                    executor = executor,
+                    onImageCaptured = onImageCaptured,
+                    onError = onError,
+                )
             },
             modifier = Modifier
                 .align(alignment = Alignment.BottomCenter)
