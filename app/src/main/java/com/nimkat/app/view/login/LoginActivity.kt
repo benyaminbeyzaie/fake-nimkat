@@ -218,55 +218,6 @@ fun LoginContent(authViewModel: AuthViewModel) {
 
         }
 
-        Text(
-            stringResource(R.string.login_invite_code),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(20.dp, 12.dp, 20.dp, 4.dp),
-            color = colorResource(R.color.primary_text_variant),
-            fontFamily = mainFont,
-            fontSize = 14.sp
-        )
-        TextField(
-            value = inviteCode.value,
-            onValueChange = {
-                inviteCode.value = it
-            },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(55.dp)
-                .padding(20.dp, 0.dp),
-            placeholder = {
-                Text(
-                    stringResource(id = R.string.invite_code),
-                    fontFamily = mainFont,
-                    color = colorResource(
-                        R.color.color_hint
-                    ),
-                    fontSize = 14.sp,
-                    textAlign = TextAlign.Left
-                )
-            },
-            shape = RoundedCornerShape(6.dp),
-            colors = TextFieldDefaults.textFieldColors(
-                backgroundColor = colorResource(R.color.textfield_background),
-                focusedIndicatorColor = Color.Transparent,
-                unfocusedIndicatorColor = Color.Transparent,
-                disabledIndicatorColor = Color.Transparent
-            ),
-            textStyle = TextStyle(
-                fontSize = 14.sp,
-                fontFamily = mainFont,
-                color = colorResource(R.color.primary_text),
-                textAlign = TextAlign.Left,
-                textDirection = TextDirection.Ltr
-            ),
-            keyboardOptions = KeyboardOptions.Default.copy(
-                keyboardType = KeyboardType.Number,
-                imeAction = ImeAction.Done
-            )
-        )
-
         CompositionLocalProvider(LocalRippleTheme provides RippleWhite) {
             Button(
                 onClick = {

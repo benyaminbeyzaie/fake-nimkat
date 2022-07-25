@@ -10,6 +10,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
@@ -33,6 +34,7 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -54,7 +56,9 @@ import com.nimkat.app.view.main.MainActivity
 import com.nimkat.app.view.profile_edit.CompleteProfile
 import com.nimkat.app.view_model.AuthViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.delay
 import java.util.regex.Pattern
+import kotlin.time.Duration.Companion.seconds
 
 @AndroidEntryPoint
 class OtpActivity : AppCompatActivity() {
@@ -196,6 +200,7 @@ fun OtpContent(id: String, authViewModel: AuthViewModel, smsCode: String, mobile
         bool.value = true
     }
 
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -292,8 +297,8 @@ fun OtpContent(id: String, authViewModel: AuthViewModel, smsCode: String, mobile
                 }
             }
         }
-
     }
+    
     SnackBar(snackbarHostState = errorSnackBar, Color.Red, true, {})
 
 }
