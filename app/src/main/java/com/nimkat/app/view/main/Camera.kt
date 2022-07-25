@@ -50,6 +50,7 @@ import com.nimkat.app.view.CircularIndeterminanteProgressBar
 import com.nimkat.app.view.SnackBar
 import com.nimkat.app.view.login.LoginActivity
 import com.nimkat.app.view.my_questions.MyQuestionsActivity
+import com.nimkat.app.view.profile_edit.CompleteProfile
 import com.nimkat.app.view.profile_edit.ProfileEditActivity
 import com.nimkat.app.view_model.AuthViewModel
 import kotlinx.coroutines.delay
@@ -182,10 +183,13 @@ fun Drawer(
     val profileModel = authViewModel.profileModelLiveData.observeAsState()
     val isLoaded = profileModel.value?.data != null
     val isLogin = authModel.value?.data != null
+    val isProfileCompleted = remember{ mutableStateOf(false)}
+
 
     Log.d("PROF", profileModel.value?.data.toString())
     if (profileModel.value?.data != null) {
         Log.d("PROF", "load status changed to loaded")
+        isProfileCompleted.value = true
     } else {
         Log.d("PROF", "load status changed to unloaded")
     }
@@ -279,238 +283,287 @@ fun Drawer(
             }
         } else {
 
-            val name1 = remember { mutableStateOf("Default") }
-            val phone1 = remember { mutableStateOf("Default") }
-            val grade1 = remember { mutableStateOf(profileModel.value?.data?.educationalGrade!!) }
+            if (isProfileCompleted.value) {
+                val name1 = remember { mutableStateOf("Default") }
+                val phone1 = remember { mutableStateOf("Default") }
+                val grade1 = remember { mutableStateOf(profileModel.value?.data?.educationalGrade!!) }
 
 
-            Row(
-                Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Image(
-                    painterResource(R.drawable.ic_profile),
-                    null,
+                Row(
                     Modifier
-                        .size(50.dp)
-                )
-
-                Column(
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(12.dp, 6.dp)
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    if (isLoaded) {
-                        name1.value = profileModel.value?.data?.name!!
-                        phone1.value = profileModel.value?.data?.phone!!
-                        grade1.value = profileModel.value?.data?.educationalGrade!!
-                    }
-//                    else {
-//                        Log.d("PROF", "load status changed to unloaded")
-//
-//                        var name1 = "default"
-//                        var phone1 = "default"
-//                        Text(
-//                            name1,
-////                        "آنیتا علیخانی",
-//                            modifier = Modifier
-//                                .fillMaxWidth(),
-//                            color = colorResource(R.color.primary_text),
-//                            textAlign = TextAlign.Right,
-//                            fontFamily = mainFont,
-//                            fontWeight = FontWeight.Bold,
-//                            fontSize = 16.sp
-//                        )
-//                        Spacer(modifier = Modifier.height(4.dp))
-//                        CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
-//                            Text(
-//                                phone1,
-////                        "+989123456789",
-//                                modifier = Modifier
-//                                    .fillMaxWidth(),
-//                                color = colorResource(R.color.primary_text_variant),
-//                                textAlign = TextAlign.Right,
-//                                fontFamily = mainFont,
-//                                fontWeight = FontWeight.Normal,
-//                                fontSize = 14.sp
-//                            )
-//                        }
-//                    }
+                    Image(
+                        painterResource(R.drawable.ic_profile),
+                        null,
+                        Modifier
+                            .size(50.dp)
+                    )
 
-                    Text(
-                        name1.value,
-//                        "آنیتا علیخانی",
+                    Column(
                         modifier = Modifier
+                            .weight(1f)
+                            .padding(12.dp, 6.dp)
+                    ) {
+                        if (isLoaded) {
+                            name1.value = profileModel.value?.data?.name!!
+                            phone1.value = profileModel.value?.data?.phone!!
+                            grade1.value = profileModel.value?.data?.educationalGrade!!
+                        }
+                        Text(
+                            name1.value,
+//                        "آنیتا علیخانی",
+                            modifier = Modifier
+                                .fillMaxWidth(),
+                            color = colorResource(R.color.primary_text),
+                            textAlign = TextAlign.Right,
+                            fontFamily = mainFont,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 16.sp
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
+                            Text(
+                                phone1.value,
+//                        "+989123456789",
+                                modifier = Modifier
+                                    .fillMaxWidth(),
+                                color = colorResource(R.color.primary_text_variant),
+                                textAlign = TextAlign.Right,
+                                fontFamily = mainFont,
+                                fontWeight = FontWeight.Normal,
+                                fontSize = 14.sp
+                            )
+                        }
+
+
+                    }
+                    IconButton(onClick = {
+                        ProfileEditActivity.sendIntent(context, name1.value, phone1.value, grade1.value)
+                    }) {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_edit),
+                            contentDescription = null,
+                            modifier = Modifier.size(24.dp),
+                            colorResource(R.color.primary_text)
+                        )
+                    }
+                }
+                Box(
+                    Modifier
+                        .padding(0.dp, 12.dp, 0.dp, 0.dp)
+                        .fillMaxWidth()
+                        .clickable {
+                            MyQuestionsActivity.sendIntent(context)
+                        }) {
+                    Row(
+                        Modifier
+                            .padding(24.dp, 12.dp)
                             .fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            stringResource(R.string.my_questions),
+                            modifier = Modifier
+                                .weight(1f),
+                            color = colorResource(R.color.blue),
+                            textAlign = TextAlign.Right,
+                            fontFamily = mainFont,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 17.sp
+                        )
+                        Icon(
+                            painter = painterResource(R.drawable.ic_my_questions),
+                            contentDescription = null,
+                            modifier = Modifier.size(20.dp),
+                            tint = colorResource(R.color.blue)
+                        )
+                    }
+                }
+                Box(
+                    Modifier
+                        .padding(0.dp, 4.dp, 0.dp, 0.dp)
+                        .fillMaxWidth()
+                        .clickable {
+                            val browserIntent =
+                                Intent(
+                                    Intent.ACTION_VIEW,
+                                    Uri.parse("https://t.me/benyamin_beyzaie")
+                                )
+                            startActivity(context, browserIntent, null)
+                        }) {
+                    Row(
+                        Modifier
+                            .padding(24.dp, 12.dp)
+                            .fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            stringResource(R.string.contact_us),
+                            modifier = Modifier
+                                .weight(1f),
+                            color = colorResource(R.color.blue),
+                            textAlign = TextAlign.Right,
+                            fontFamily = mainFont,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 17.sp
+                        )
+                        Icon(
+                            painter = painterResource(R.drawable.ic_back),
+                            contentDescription = null,
+                            modifier = Modifier.size(20.dp),
+                            tint = colorResource(R.color.blue)
+                        )
+                    }
+                }
+                Box(
+                    Modifier
+                        .padding(0.dp, 4.dp, 0.dp, 0.dp)
+                        .fillMaxWidth()
+                        .clickable {
+                            authViewModel.clearAuth()
+                        }) {
+                    Row(
+                        Modifier
+                            .padding(24.dp, 12.dp)
+                            .fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            stringResource(R.string.logout),
+                            modifier = Modifier
+                                .weight(1f),
+                            color = colorResource(R.color.red),
+                            textAlign = TextAlign.Right,
+                            fontFamily = mainFont,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 17.sp
+                        )
+                        Icon(
+                            painter = painterResource(R.drawable.ic_logout),
+                            contentDescription = null,
+                            modifier = Modifier.size(20.dp),
+                            tint = colorResource(R.color.red)
+                        )
+                    }
+                }
+
+                Box(
+                    Modifier
+                        .padding(0.dp, 4.dp, 0.dp, 0.dp)
+                        .fillMaxWidth()
+                        .clickable {
+                            authViewModel.delete()
+                            authViewModel.clearAuth()
+                        }) {
+                    Row(
+                        Modifier
+                            .padding(24.dp, 12.dp)
+                            .fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            "حذف اکانت",
+                            modifier = Modifier
+                                .weight(1f),
+                            color = colorResource(R.color.red),
+                            textAlign = TextAlign.Right,
+                            fontFamily = mainFont,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 17.sp
+                        )
+                        Icon(
+                            painter = painterResource(R.drawable.ic_logout),
+                            contentDescription = null,
+                            modifier = Modifier.size(20.dp),
+                            tint = colorResource(R.color.red)
+                        )
+                    }
+                }
+            }else{
+                Column(
+                    Modifier
+                        .padding(15.dp),
+                    verticalArrangement = Arrangement.spacedBy(7.dp)
+                ) {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        stringResource(id = R.string.drawer_title_incomplete_profile),
                         color = colorResource(R.color.primary_text),
                         textAlign = TextAlign.Right,
                         fontFamily = mainFont,
                         fontWeight = FontWeight.Bold,
-                        fontSize = 16.sp
+                        fontSize = 25.sp
                     )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
+                    Text(
+                        stringResource(id = R.string.drawer_desc_incomplete_profile),
+                        color = colorResource(R.color.primary_text_variant),
+                        textAlign = TextAlign.Right,
+                        fontFamily = mainFont,
+                        fontSize = 15.sp
+                    )
+                    Button(
+                        onClick = {
+                                  CompleteProfile.sendIntent(context)
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp)
+                            .height(60.dp),
+                        shape = RoundedCornerShape(20.dp),
+                        colors = ButtonDefaults.buttonColors(backgroundColor = colorResource(R.color.blue)),
+                    ) {
+                        Row {
+                            Text(
+                                text = stringResource(R.string.profile_completion),
+                                style = TextStyle(
+                                    fontFamily = secondFont
+                                ),
+                                color = colorResource(R.color.white),
+                                fontSize = 20.sp,
+                            )
+                        }
+                    }
+                }
+                Box(
+                    Modifier
+                        .padding(0.dp, 4.dp, 0.dp, 0.dp)
+                        .fillMaxWidth()
+                        .clickable {
+                            authViewModel.delete()
+                            authViewModel.clearAuth()
+                        }) {
+                    Row(
+                        Modifier
+                            .padding(24.dp, 12.dp)
+                            .fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
                         Text(
-                            phone1.value,
-//                        "+989123456789",
+                            "حذف اکانت",
                             modifier = Modifier
-                                .fillMaxWidth(),
-                            color = colorResource(R.color.primary_text_variant),
+                                .weight(1f),
+                            color = colorResource(R.color.red),
                             textAlign = TextAlign.Right,
                             fontFamily = mainFont,
-                            fontWeight = FontWeight.Normal,
-                            fontSize = 14.sp
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 17.sp
+                        )
+                        Icon(
+                            painter = painterResource(R.drawable.ic_logout),
+                            contentDescription = null,
+                            modifier = Modifier.size(20.dp),
+                            tint = colorResource(R.color.red)
                         )
                     }
-
-
-                }
-                IconButton(onClick = {
-                    ProfileEditActivity.sendIntent(context, name1.value, phone1.value, grade1.value)
-                }) {
-                    Icon(
-                        painter = painterResource(R.drawable.ic_edit),
-                        contentDescription = null,
-                        modifier = Modifier.size(24.dp),
-                        colorResource(R.color.primary_text)
-                    )
                 }
             }
-            Box(
-                Modifier
-                    .padding(0.dp, 12.dp, 0.dp, 0.dp)
-                    .fillMaxWidth()
-                    .clickable {
-                        MyQuestionsActivity.sendIntent(context)
-                    }) {
-                Row(
-                    Modifier
-                        .padding(24.dp, 12.dp)
-                        .fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        stringResource(R.string.my_questions),
-                        modifier = Modifier
-                            .weight(1f),
-                        color = colorResource(R.color.blue),
-                        textAlign = TextAlign.Right,
-                        fontFamily = mainFont,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 17.sp
-                    )
-                    Icon(
-                        painter = painterResource(R.drawable.ic_my_questions),
-                        contentDescription = null,
-                        modifier = Modifier.size(20.dp),
-                        tint = colorResource(R.color.blue)
-                    )
-                }
-            }
-            Box(
-                Modifier
-                    .padding(0.dp, 4.dp, 0.dp, 0.dp)
-                    .fillMaxWidth()
-                    .clickable {
-                        val browserIntent =
-                            Intent(Intent.ACTION_VIEW, Uri.parse("https://t.me/benyamin_beyzaie"))
-                        startActivity(context, browserIntent, null)
-                    }) {
-                Row(
-                    Modifier
-                        .padding(24.dp, 12.dp)
-                        .fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        stringResource(R.string.contact_us),
-                        modifier = Modifier
-                            .weight(1f),
-                        color = colorResource(R.color.blue),
-                        textAlign = TextAlign.Right,
-                        fontFamily = mainFont,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 17.sp
-                    )
-                    Icon(
-                        painter = painterResource(R.drawable.ic_back),
-                        contentDescription = null,
-                        modifier = Modifier.size(20.dp),
-                        tint = colorResource(R.color.blue)
-                    )
-                }
-            }
-            Box(
-                Modifier
-                    .padding(0.dp, 4.dp, 0.dp, 0.dp)
-                    .fillMaxWidth()
-                    .clickable {
-                        authViewModel.clearAuth()
-                    }) {
-                Row(
-                    Modifier
-                        .padding(24.dp, 12.dp)
-                        .fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        stringResource(R.string.logout),
-                        modifier = Modifier
-                            .weight(1f),
-                        color = colorResource(R.color.red),
-                        textAlign = TextAlign.Right,
-                        fontFamily = mainFont,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 17.sp
-                    )
-                    Icon(
-                        painter = painterResource(R.drawable.ic_logout),
-                        contentDescription = null,
-                        modifier = Modifier.size(20.dp),
-                        tint = colorResource(R.color.red)
-                    )
-                }
-            }
-
-            Box(
-                Modifier
-                    .padding(0.dp, 4.dp, 0.dp, 0.dp)
-                    .fillMaxWidth()
-                    .clickable {
-                        authViewModel.delete()
-                        authViewModel.clearAuth()
-                    }) {
-                Row(
-                    Modifier
-                        .padding(24.dp, 12.dp)
-                        .fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        "حذف اکانت",
-                        modifier = Modifier
-                            .weight(1f),
-                        color = colorResource(R.color.red),
-                        textAlign = TextAlign.Right,
-                        fontFamily = mainFont,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 17.sp
-                    )
-                    Icon(
-                        painter = painterResource(R.drawable.ic_logout),
-                        contentDescription = null,
-                        modifier = Modifier.size(20.dp),
-                        tint = colorResource(R.color.red)
-                    )
-                }
-            }
-
-
         }
 
         Spacer(modifier = Modifier.weight(1F))
+
         val darkState = remember { mutableStateOf(isDark) }
 
 

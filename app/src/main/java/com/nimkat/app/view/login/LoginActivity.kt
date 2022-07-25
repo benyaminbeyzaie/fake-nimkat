@@ -31,6 +31,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDirection
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -187,7 +188,8 @@ fun LoginContent(authViewModel: AuthViewModel) {
                     fontSize = 14.sp,
                     fontFamily = mainFont,
                     color = colorResource(R.color.primary_text),
-                    textAlign = TextAlign.Left
+                    textAlign = TextAlign.Left,
+                    textDirection = TextDirection.Ltr
                 ),
                 keyboardOptions = KeyboardOptions.Default.copy(
                     keyboardType = KeyboardType.Number,
@@ -211,7 +213,8 @@ fun LoginContent(authViewModel: AuthViewModel) {
                         color = colorResource(R.color.primary_text),
                         modifier = Modifier
                             .wrapContentSize(),
-                        fontSize = 14.sp
+                        fontSize = 14.sp,
+                        style = TextStyle(textDirection = TextDirection.Ltr)
                     )
                 }
             }
@@ -258,7 +261,8 @@ fun LoginContent(authViewModel: AuthViewModel) {
                 fontSize = 14.sp,
                 fontFamily = mainFont,
                 color = colorResource(R.color.primary_text),
-                textAlign = TextAlign.Left
+                textAlign = TextAlign.Left,
+                textDirection = TextDirection.Ltr
             ),
             keyboardOptions = KeyboardOptions.Default.copy(
                 keyboardType = KeyboardType.Number,

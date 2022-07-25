@@ -8,6 +8,9 @@
     <string name="cancel">دوباره</string>
     <string name="take_picture">از سوالت عکس بگیر</string>
     <string name="drawer_title">سلام هم نیمکتی 🖐</string>
+    <string name="drawer_title_incomplete_profile">آهای هم نیمکتی 🖐</string>
+    <string name="drawer_desc_incomplete_profile">برای اینکه بهتر بشناسیمت و بهتر کمکت کنیم، اطلاعات پروفایلت رو تکمیل کن 👇</string>
+    <string name="profile_completion">تکمیل اطلاعات</string>
     <string name="drawer_desc_1">دسترسی به  سابقه سوالاتی که می پرسی</string>
     <string name="drawer_desc_2">دریافت پاسخ های دقیق تر برای سوالات</string>
     <string name="drawer_desc_3">عضویت پایه رایگان</string>
