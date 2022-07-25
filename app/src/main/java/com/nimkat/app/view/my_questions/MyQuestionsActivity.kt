@@ -136,7 +136,11 @@ fun MyQuestionsContent(viewModel: MyQuestionsViewModel) {
                         shape = RoundedCornerShape(8.dp)
                     ) {
                         Box(modifier = Modifier.clickable {
-                            QuestionDetailActivity.sendIntent(context)
+                            if (list[index].files.isEmpty()) {
+                                QuestionDetailActivity.sendIntent(context, list[index].id!!, list[index].text, null)
+                            } else {
+                                QuestionDetailActivity.sendIntent(context, list[index].id!!, list[index].text, list[index].files.first().file?.attachment)
+                            }
                         }) {
                             if (list[index].files.isNotEmpty()  && list[index].files.first().file?.attachment != null) {
                                 AsyncImage(

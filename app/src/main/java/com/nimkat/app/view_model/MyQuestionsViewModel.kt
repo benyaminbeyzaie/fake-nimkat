@@ -32,7 +32,12 @@ class MyQuestionsViewModel @Inject constructor(
         viewModelScope.launch {
             val response = repository.getQuestions(page = page)
             if (response == null || !response.isSuccessful) {
-                _myQuestions.postValue(DataHolder.error())
+                // TODO: change this later to pass proper error and hold the data
+                if (_myQuestions.value != null && _myQuestions.value!!.data != null) {
+                    _myQuestions.postValue(DataHolder.success(_myQuestions.value!!.data!!))
+                } else {
+                    _myQuestions.postValue(DataHolder.error())
+                }
             } else {
                 if (response.body() == null || response.body()!!.results.isEmpty()) {
                     Log.d(
@@ -51,9 +56,11 @@ class MyQuestionsViewModel @Inject constructor(
                     }
                 } else if (_myQuestions.value!!.data == null) {
                     Log.d("My Question View Model", "_myQuestions.value!!.data == null")
+                    hasMore = response.body()!!.next != null
                     _myQuestions.postValue(DataHolder.success(response.body()!!.results.toMutableList()));
                 } else {
                     Log.d("My Question View Model", "else")
+                    hasMore = response.body()!!.next != null
                     _myQuestions.value!!.data!!.addAll(response.body()!!.results)
                     _myQuestions.postValue(DataHolder.success(_myQuestions.value!!.data!!))
                 }
