@@ -1,0 +1,150 @@
+{
+  "project_info": {
+    "project_number": "943452907177",
+    "project_id": "kashki-10679",
+    "storage_bucket": "kashki-10679.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:943452907177:android:4b7d09d4a68ac9c493ebb8",
+        "android_client_info": {
+          "package_name": "com.nimkat.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "943452907177-c45p165emkl27uk8urc8mlikf25cb21n.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB-hskpFqGocztQS6hnHu8shUczwtfSKrg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "943452907177-c45p165emkl27uk8urc8mlikf25cb21n.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "943452907177-8ccl26e9um931vtj4s2jqekj1vu07bjq.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "io.nimkat.client"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:943452907177:android:eb4407470090876893ebb8",
+        "android_client_info": {
+          "package_name": "io.qshoot.student"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "943452907177-77raqc9apu83udh44jtkea3kaeao4kb4.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "io.qshoot.student",
+            "certificate_hash": "70d5311ce1526c0e6f62b6b8f86d35eef5f7b0e8"
+          }
+        },
+        {
+          "client_id": "943452907177-r927du1l64jei782ksmse68d3tti0nkc.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "io.qshoot.student",
+            "certificate_hash": "b70aa26c7022a4483f082a952efbbef57b1b6d28"
+          }
+        },
+        {
+          "client_id": "943452907177-c45p165emkl27uk8urc8mlikf25cb21n.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB-hskpFqGocztQS6hnHu8shUczwtfSKrg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "943452907177-c45p165emkl27uk8urc8mlikf25cb21n.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "943452907177-8ccl26e9um931vtj4s2jqekj1vu07bjq.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "io.nimkat.client"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:943452907177:android:c2cfda74c9c368c493ebb8",
+        "android_client_info": {
+          "package_name": "ir.hezardastan.nimkat"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "943452907177-nbkh2fstbj1gqm5p6fkdn6iums6ia808.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "ir.hezardastan.nimkat",
+            "certificate_hash": "b70aa26c7022a4483f082a952efbbef57b1b6d28"
+          }
+        },
+        {
+          "client_id": "943452907177-vevmd6mrjmpsqa46atkrvj5nnk4l2o54.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "ir.hezardastan.nimkat",
+            "certificate_hash": "70d5311ce1526c0e6f62b6b8f86d35eef5f7b0e8"
+          }
+        },
+        {
+          "client_id": "943452907177-c45p165emkl27uk8urc8mlikf25cb21n.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB-hskpFqGocztQS6hnHu8shUczwtfSKrg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "943452907177-c45p165emkl27uk8urc8mlikf25cb21n.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "943452907177-8ccl26e9um931vtj4s2jqekj1vu07bjq.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "io.nimkat.client"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

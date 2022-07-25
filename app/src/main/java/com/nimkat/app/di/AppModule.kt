@@ -3,6 +3,7 @@ package com.nimkat.app.di
 import android.content.Context
 import com.nimkat.app.api.NimkatApi
 import com.nimkat.app.utils.AuthPrefs
+import com.nimkat.app.utils.FirebaseServices
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -18,8 +19,6 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object AppModule {
-
-
     @Provides
     @Singleton
     fun provideRetrofit(): Retrofit {
@@ -45,4 +44,8 @@ object AppModule {
     @Provides
     @Singleton
     fun provideAuthPrefs(@ApplicationContext context: Context): AuthPrefs = AuthPrefs(context)
+
+    @Provides
+    @Singleton
+    fun provideFirebaseServices(): FirebaseServices = FirebaseServices();
 }
