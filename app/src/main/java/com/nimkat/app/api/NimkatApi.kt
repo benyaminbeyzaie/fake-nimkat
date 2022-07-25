@@ -46,4 +46,10 @@ interface NimkatApi {
         @Query("page_size") pageSize: Int,
         @Query("question") question: Int,
     ): Response<PaginatedResponse<List<AnswerModel>>>
+
+    @POST("devices/")
+    suspend fun registerDevice(
+        @Header("Authorization") token: String,
+        @Body page: RegistrationModel,
+    ): Response<RegistrationModel>
 }
