@@ -282,6 +282,7 @@ fun Drawer(
                     }
                 }
             }
+            Spacer(modifier = Modifier.weight(1F))
         } else {
 
             if (isProfileCompleted.value) {
@@ -532,8 +533,6 @@ fun Drawer(
                 }
             }
         }
-
-//        Spacer(modifier = Modifier.weight(1F))
 
         val darkState = remember { mutableStateOf(isDark) }
 

@@ -6,7 +6,6 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.os.Bundle
 import android.util.Log
-import android.widget.Toast
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -37,11 +36,11 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDirection
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.android.gms.auth.api.phone.SmsRetriever
 import com.nimkat.app.R
 import com.nimkat.app.models.DataStatus
@@ -61,9 +60,10 @@ import java.util.regex.Pattern
 class OtpActivity : AppCompatActivity() {
 
     companion object {
-        fun sendIntent(context: Context, id: String) =
+        fun sendIntent(context: Context, id: String, mobile: String) =
             Intent(context, OtpActivity::class.java).apply {
                 putExtra("id", id)
+                putExtra("mobile" , mobile)
                 context.startActivity(this)
             }
     }
@@ -72,6 +72,7 @@ class OtpActivity : AppCompatActivity() {
     var smsBroadcastReciver: SmsReciever? = null
     var smsCode = ""
     var id:String = ""
+    var mobile: String = ""
 
     val authViewModel: AuthViewModel by viewModels()
 
@@ -81,6 +82,7 @@ class OtpActivity : AppCompatActivity() {
         startSmartUserConsent()
 
         id = intent.getStringExtra("id").orEmpty()
+        mobile = intent.getStringExtra("mobile").orEmpty()
 
         contentSetter()
     }
@@ -94,7 +96,7 @@ class OtpActivity : AppCompatActivity() {
                     color = MaterialTheme.colors.background
                 ) {
                     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
-                        OtpContent(id, authViewModel, smsCode)
+                        OtpContent(id, authViewModel, smsCode , mobile)
                     }
                 }
             }
@@ -163,7 +165,7 @@ class OtpActivity : AppCompatActivity() {
 
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalMaterialApi::class)
 @Composable
-fun OtpContent(id: String, authViewModel: AuthViewModel, smsCode: String) {
+fun OtpContent(id: String, authViewModel: AuthViewModel, smsCode: String, mobile: String) {
     val context = LocalContext.current
 
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -234,13 +236,24 @@ fun OtpContent(id: String, authViewModel: AuthViewModel, smsCode: String) {
         )
 
         Text(
-            stringResource(R.string.otp_desc).plus("\n").plus(""),
+            stringResource(R.string.otp_desc),
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(20.dp, 4.dp),
             color = colorResource(R.color.primary_text_variant),
             fontFamily = mainFont,
             fontSize = 14.sp
+        )
+        Text(
+            "+98$mobile",
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(20.dp, 4.dp),
+            color = colorResource(R.color.primary_text_variant),
+            fontFamily = mainFont,
+            fontSize = 14.sp,
+            textAlign = TextAlign.Right,
+            style = TextStyle(textDirection = TextDirection.Ltr)
         )
 
         val items: List<MutableState<String>>

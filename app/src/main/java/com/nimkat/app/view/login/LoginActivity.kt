@@ -5,7 +5,6 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.background
@@ -23,7 +22,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalLifecycleOwner
-import androidx.compose.ui.res.booleanResource
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -48,7 +46,6 @@ import com.nimkat.app.view.SnackBar
 import com.nimkat.app.view.otp.OtpActivity
 import com.nimkat.app.view_model.AuthViewModel
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class LoginActivity : AppCompatActivity() {
@@ -93,7 +90,7 @@ fun LoginContent(authViewModel: AuthViewModel) {
     if (isCodeSent.value?.status == DataStatus.Success) {
         Log.d("Login", "isCodeSent.value?.status == DataStatus.Success")
 //        bool.value = false
-        OtpActivity.sendIntent(context, isCodeSent.value!!.data!!.toString())
+        OtpActivity.sendIntent(context, isCodeSent.value!!.data!!.toString() , mobile.value)
     } else if (isCodeSent.value?.status == DataStatus.Error) {
         Log.d("Login", "isCodeSent.value?.status == DataStatus.Error")
 
