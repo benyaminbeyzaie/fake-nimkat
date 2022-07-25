@@ -116,7 +116,7 @@ class OtpActivity : AppCompatActivity() {
                 }
 
                 override fun onFailure() {
-                    Toast.makeText(this@OtpActivity,"Error", Toast.LENGTH_SHORT).show()
+
                 }
             }
 
@@ -138,7 +138,7 @@ class OtpActivity : AppCompatActivity() {
         val otpPatter = Pattern.compile("(|^)\\d{5}")
         val matcher = otpPatter.matcher(message)
         if (matcher.find()) {
-            Toast.makeText(this, matcher.group(0), Toast.LENGTH_SHORT).show()
+
             smsCode = matcher.group(0)!!
             contentSetter()
 

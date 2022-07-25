@@ -1,6 +1,7 @@
 package com.nimkat.app.view.main
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
@@ -418,70 +419,6 @@ fun Drawer(
                         )
                     }
                 }
-                Box(
-                    Modifier
-                        .padding(0.dp, 4.dp, 0.dp, 0.dp)
-                        .fillMaxWidth()
-                        .clickable {
-                            authViewModel.clearAuth()
-                        }) {
-                    Row(
-                        Modifier
-                            .padding(24.dp, 12.dp)
-                            .fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            stringResource(R.string.logout),
-                            modifier = Modifier
-                                .weight(1f),
-                            color = colorResource(R.color.red),
-                            textAlign = TextAlign.Right,
-                            fontFamily = mainFont,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 17.sp
-                        )
-                        Icon(
-                            painter = painterResource(R.drawable.ic_logout),
-                            contentDescription = null,
-                            modifier = Modifier.size(20.dp),
-                            tint = colorResource(R.color.red)
-                        )
-                    }
-                }
-
-                Box(
-                    Modifier
-                        .padding(0.dp, 4.dp, 0.dp, 0.dp)
-                        .fillMaxWidth()
-                        .clickable {
-                            authViewModel.delete()
-                            authViewModel.clearAuth()
-                        }) {
-                    Row(
-                        Modifier
-                            .padding(24.dp, 12.dp)
-                            .fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            "حذف اکانت",
-                            modifier = Modifier
-                                .weight(1f),
-                            color = colorResource(R.color.red),
-                            textAlign = TextAlign.Right,
-                            fontFamily = mainFont,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 17.sp
-                        )
-                        Icon(
-                            painter = painterResource(R.drawable.ic_logout),
-                            contentDescription = null,
-                            modifier = Modifier.size(20.dp),
-                            tint = colorResource(R.color.red)
-                        )
-                    }
-                }
             }else{
                 Column(
                     Modifier
@@ -506,7 +443,8 @@ fun Drawer(
                     )
                     Button(
                         onClick = {
-                                  CompleteProfile.sendIntent(context)
+                            CompleteProfile.sendIntent(context)
+                            (context as Activity).finish()
                         },
                         modifier = Modifier
                             .fillMaxWidth()
@@ -527,48 +465,81 @@ fun Drawer(
                         }
                     }
                 }
-                Box(
+            }
+            Spacer(modifier = Modifier.weight(1F))
+            Box(
+                Modifier
+                    .padding(0.dp, 4.dp, 0.dp, 0.dp)
+                    .fillMaxWidth()
+                    .clickable {
+                        authViewModel.clearAuth()
+                    }) {
+                Row(
                     Modifier
-                        .padding(0.dp, 4.dp, 0.dp, 0.dp)
-                        .fillMaxWidth()
-                        .clickable {
-                            authViewModel.delete()
-                            authViewModel.clearAuth()
-                        }) {
-                    Row(
-                        Modifier
-                            .padding(24.dp, 12.dp)
-                            .fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            "حذف اکانت",
-                            modifier = Modifier
-                                .weight(1f),
-                            color = colorResource(R.color.red),
-                            textAlign = TextAlign.Right,
-                            fontFamily = mainFont,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 17.sp
-                        )
-                        Icon(
-                            painter = painterResource(R.drawable.ic_logout),
-                            contentDescription = null,
-                            modifier = Modifier.size(20.dp),
-                            tint = colorResource(R.color.red)
-                        )
-                    }
+                        .padding(24.dp, 5.dp)
+                        .fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        stringResource(R.string.logout),
+                        modifier = Modifier
+                            .weight(1f),
+                        color = colorResource(R.color.red),
+                        textAlign = TextAlign.Right,
+                        fontFamily = mainFont,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 17.sp
+                    )
+                    Icon(
+                        painter = painterResource(R.drawable.ic_logout),
+                        contentDescription = null,
+                        modifier = Modifier.size(20.dp),
+                        tint = colorResource(R.color.red)
+                    )
+                }
+            }
+
+            Box(
+                Modifier
+                    .padding(0.dp, 4.dp, 0.dp, 0.dp)
+                    .fillMaxWidth()
+                    .clickable {
+                        authViewModel.delete()
+                        authViewModel.clearAuth()
+                    }) {
+                Row(
+                    Modifier
+                        .padding(24.dp, 5.dp)
+                        .fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        "حذف اکانت",
+                        modifier = Modifier
+                            .weight(1f),
+                        color = colorResource(R.color.red),
+                        textAlign = TextAlign.Right,
+                        fontFamily = mainFont,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 17.sp
+                    )
+                    Icon(
+                        painter = painterResource(R.drawable.ic_logout),
+                        contentDescription = null,
+                        modifier = Modifier.size(20.dp),
+                        tint = colorResource(R.color.red)
+                    )
                 }
             }
         }
 
-        Spacer(modifier = Modifier.weight(1F))
+//        Spacer(modifier = Modifier.weight(1F))
 
         val darkState = remember { mutableStateOf(isDark) }
 
 
         Row(
-            modifier = Modifier.padding(20.dp, 20.dp, 20.dp, 20.dp),
+            modifier = Modifier.padding(20.dp, 5.dp, 20.dp, 20.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
