@@ -33,7 +33,7 @@ import com.nimkat.app.R
 import com.nimkat.app.ui.theme.RippleWhite
 import com.nimkat.app.ui.theme.mainFont
 import com.nimkat.app.ui.theme.secondFont
-import com.nimkat.app.view.profile_edit.ui.theme.NimkatTheme
+import com.nimkat.app.ui.theme.NimkatTheme
 
 class WhatsYourNameActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

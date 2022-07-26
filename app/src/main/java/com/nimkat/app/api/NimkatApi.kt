@@ -1,5 +1,7 @@
 package com.nimkat.app.api
 
+import com.nimkat.app.callbacks.TextQuestionBody
+import com.nimkat.app.callbacks.TextQuestionCallback
 import com.nimkat.app.models.*
 import retrofit2.Response
 import retrofit2.http.*
@@ -38,6 +40,19 @@ interface NimkatApi {
         @Query("type") type: String,
         @Query("user") user: String
     ): Response<PaginatedResponse<List<QuestionModel>>>
+
+
+    @POST("questions/")
+    suspend fun getTextQuestions(
+        @Header("Authorization") token: String,
+        @Body body: TextQuestionBody,
+    ): Response<TextQuestionCallback>
+
+    @POST("questions/")
+    suspend fun sendTextQuestions(
+        @Header("Authorization") token: String,
+        @Body body: TextQuestionBody,
+    ): Response<TextQuestionCallback>
 
     @GET("answers/")
     suspend fun getAnswer(

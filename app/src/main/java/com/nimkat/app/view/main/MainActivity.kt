@@ -33,6 +33,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.LifecycleOwner
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.PagerState
@@ -42,6 +43,7 @@ import com.nimkat.app.ui.theme.NimkatTheme
 import com.nimkat.app.utils.CROP_IMAGE_CODE
 import com.nimkat.app.view.question_crop.QuestionCropActivity
 import com.nimkat.app.view_model.AuthViewModel
+import com.nimkat.app.view_model.TextQuestionViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -75,6 +77,7 @@ class MainActivity : ComponentActivity() {
 //        profileViewModel.initAuth()
         val authViewModel: AuthViewModel by viewModels()
         authViewModel.initAuth()
+        val textQuestionViewModel: TextQuestionViewModel by viewModels()
         outputDirectory = getOutputDirectory()
         cameraExecutor = Executors.newSingleThreadExecutor()
 
@@ -90,8 +93,10 @@ class MainActivity : ComponentActivity() {
                     Greeting(
                         cameraScaffoldState!!,
                         authViewModel,
+                        textQuestionViewModel,
                         cameraExecutor,
                         outputDirectory,
+                        this,
                         onImageCaptured = ::handleImageCapture
                     )
                 }
@@ -200,8 +205,10 @@ class MainActivity : ComponentActivity() {
 fun Greeting(
     cameraScaffoldState: ScaffoldState,
     authViewModel: AuthViewModel,
+    textQuestionViewModel: TextQuestionViewModel,
     cameraExecutor: ExecutorService,
     outputDirectory: File,
+    lifecycleOwner: LifecycleOwner,
     onImageCaptured: (Uri, Int) -> Unit
 ) {
     val coroutineScope = rememberCoroutineScope()
@@ -231,7 +238,7 @@ fun Greeting(
                     ) { index ->
                         when (index) {
                             0 -> {
-                                TextQuestion()
+                                TextQuestion(textQuestionViewModel , lifecycleOwner)
                             }
                             1 -> {
                                 Camera(
