@@ -45,6 +45,7 @@ import com.nimkat.app.ui.theme.mainFont
 import com.nimkat.app.ui.theme.secondFont
 import com.nimkat.app.view.CircularIndeterminanteProgressBar
 import com.nimkat.app.view.SnackBar
+import com.nimkat.app.view.main.MainActivity
 import com.nimkat.app.view.otp.OtpActivity
 import com.nimkat.app.view_model.AuthViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -53,13 +54,15 @@ import dagger.hilt.android.AndroidEntryPoint
 class LoginActivity : AppCompatActivity() {
 
     companion object {
-        fun sendIntent(context: Context) = Intent(context, LoginActivity::class.java).apply {
+        fun sendIntent(context: Context , phone:String = "") = Intent(context, LoginActivity::class.java).apply {
+            putExtra("phone" , phone)
             context.startActivity(this)
         }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        var phone = intent.getStringExtra("phone")?: ""
         setContent {
             NimkatTheme {
                 // A surface container using the 'background' color from the theme
@@ -69,7 +72,7 @@ class LoginActivity : AppCompatActivity() {
                 ) {
 
                     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
-                        LoginContent(viewModel())
+                        LoginContent(viewModel() , phone)
                     }
                 }
             }
@@ -79,8 +82,8 @@ class LoginActivity : AppCompatActivity() {
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun LoginContent(authViewModel: AuthViewModel) {
-    val mobile = remember { mutableStateOf("") }
+fun LoginContent(authViewModel: AuthViewModel, phone: String) {
+    val mobile = remember { mutableStateOf(phone) }
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val isCodeSent = authViewModel.isCodeSentLiveData.observeAsState()
@@ -92,8 +95,9 @@ fun LoginContent(authViewModel: AuthViewModel) {
     when (isCodeSent.value?.status) {
         DataStatus.Success -> {
             Log.d("Login", "isCodeSent.value?.status == DataStatus.Success")
-            OtpActivity.sendIntent(context, isCodeSent.value!!.data!!.toString(), mobile.value)
             bool.value = false
+            OtpActivity.sendIntent(context, isCodeSent.value!!.data!!.toString(), mobile.value)
+            (context as Activity).finish()
         }
         DataStatus.Error -> {
             Log.d("Login", "isCodeSent.value?.status == DataStatus.Error")
@@ -119,7 +123,8 @@ fun LoginContent(authViewModel: AuthViewModel) {
     ) {
         IconButton(
             onClick = {
-                if (context is Activity) context.onBackPressed()
+                MainActivity.sendIntent(context)
+                (context as Activity).finish()
             },
             modifier = Modifier
                 .padding(4.dp, 12.dp)

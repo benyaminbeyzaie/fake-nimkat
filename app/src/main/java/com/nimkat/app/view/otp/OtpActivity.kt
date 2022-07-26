@@ -55,6 +55,7 @@ import com.nimkat.app.ui.theme.secondFont
 import com.nimkat.app.utils.SMS.SmsReciever
 import com.nimkat.app.view.CircularIndeterminanteProgressBar
 import com.nimkat.app.view.SnackBar
+import com.nimkat.app.view.login.LoginActivity
 import com.nimkat.app.view.main.MainActivity
 import com.nimkat.app.view.profile_edit.CompleteProfile
 import com.nimkat.app.view_model.AuthViewModel
@@ -201,6 +202,7 @@ fun OtpContent(id: String, authViewModel: AuthViewModel, smsCode: String, mobile
     val authState = authViewModel.authModelLiveData.observeAsState()
     if (authState.value?.status === DataStatus.Success) {
         MainActivity.sendIntent(context)
+        (context as Activity).finish()
     }
     if (authState.value?.status === DataStatus.NeedCompletion) {
         CompleteProfile.sendIntent(context)
@@ -228,7 +230,8 @@ fun OtpContent(id: String, authViewModel: AuthViewModel, smsCode: String, mobile
     ) {
         IconButton(
             onClick = {
-                if (context is Activity) context.onBackPressed()
+                LoginActivity.sendIntent(context , phone = mobile)
+                (context as Activity).finish()
             },
             modifier = Modifier
                 .padding(4.dp, 0.dp)

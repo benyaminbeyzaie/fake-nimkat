@@ -128,8 +128,7 @@ class MainActivity : AppCompatActivity() {
                 return
             }
         }
-
-        super.onBackPressed()
+        finish()
     }
 
     override fun onDestroy() {

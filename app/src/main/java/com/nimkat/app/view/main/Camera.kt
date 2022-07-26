@@ -262,6 +262,7 @@ fun Drawer(
                 Button(
                     onClick = {
                         LoginActivity.sendIntent(context)
+                        (context as Activity).finish()
                     },
                     modifier = Modifier
                         .fillMaxWidth()
