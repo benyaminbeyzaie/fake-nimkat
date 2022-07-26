@@ -12,6 +12,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.ripple.LocalRippleTheme
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
@@ -85,12 +87,13 @@ fun LoginContent(authViewModel: AuthViewModel) {
     val isCodeSent = authViewModel.isCodeSentLiveData.observeAsState()
     val errorSnackBar = remember { SnackbarHostState() }
     val bool = remember { mutableStateOf(false) }
+    val isError = remember { mutableStateOf(false) }
 
 
     if (isCodeSent.value?.status == DataStatus.Success) {
         Log.d("Login", "isCodeSent.value?.status == DataStatus.Success")
 //        bool.value = false
-        OtpActivity.sendIntent(context, isCodeSent.value!!.data!!.toString() , mobile.value)
+        OtpActivity.sendIntent(context, isCodeSent.value!!.data!!.toString(), mobile.value)
     } else if (isCodeSent.value?.status == DataStatus.Error) {
         Log.d("Login", "isCodeSent.value?.status == DataStatus.Error")
 
@@ -102,7 +105,7 @@ fun LoginContent(authViewModel: AuthViewModel) {
             )
         }
         bool.value = false
-    }else if (isCodeSent.value?.status == DataStatus.Loading){
+    } else if (isCodeSent.value?.status == DataStatus.Loading) {
         bool.value = true
     }
 
@@ -153,11 +156,15 @@ fun LoginContent(authViewModel: AuthViewModel) {
         Row(
             modifier = Modifier.padding(20.dp, 20.dp, 20.dp, 0.dp)
         ) {
-
             TextField(
                 value = mobile.value,
                 onValueChange = {
                     mobile.value = it
+                    isError.value = false
+                },
+                leadingIcon = {
+                    if (isError.value)
+                        Icon(Icons.Filled.Error, "error", tint = colorResource(R.color.red))
                 },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -177,9 +184,10 @@ fun LoginContent(authViewModel: AuthViewModel) {
                 shape = RoundedCornerShape(6.dp),
                 colors = TextFieldDefaults.textFieldColors(
                     backgroundColor = colorResource(R.color.textfield_background),
-                    focusedIndicatorColor = Color.Transparent,
-                    unfocusedIndicatorColor = Color.Transparent,
+                    focusedIndicatorColor = if (isError.value) colorResource(R.color.red) else Color.Transparent,
+                    unfocusedIndicatorColor = if (isError.value) colorResource(R.color.red) else Color.Transparent,
                     disabledIndicatorColor = Color.Transparent,
+                    cursorColor = colorResource(R.color.blue)
                 ),
                 textStyle = TextStyle(
                     fontSize = 14.sp,
@@ -193,7 +201,6 @@ fun LoginContent(authViewModel: AuthViewModel) {
                     imeAction = ImeAction.Done
                 )
             )
-
             Spacer(modifier = Modifier.width(8.dp))
             Card(
                 shape = RoundedCornerShape(6.dp),
@@ -215,14 +222,29 @@ fun LoginContent(authViewModel: AuthViewModel) {
                     )
                 }
             }
+        }
 
+        if (isError.value) {
+            Text(
+                text = "این قسمت خالی است!",
+                color = colorResource(R.color.red),
+                fontFamily = mainFont,
+                style = MaterialTheme.typography.caption,
+                modifier = Modifier.padding(start = 20.dp , top = 10.dp)
+            )
+        }else{
+            Spacer(modifier = Modifier.padding(start = 20.dp , top = 5.dp))
         }
 
         CompositionLocalProvider(LocalRippleTheme provides RippleWhite) {
             Button(
                 onClick = {
-                    Log.d("LoginActivity", "getting code with phone: +98" + mobile.value);
-                    authViewModel.getCode("+98" + mobile.value);
+                    if (mobile.value != "") {
+                        Log.d("LoginActivity", "getting code with phone: +98" + mobile.value);
+                        authViewModel.getCode("+98" + mobile.value);
+                    } else {
+                        isError.value = true
+                    }
 //                    bool.value = true
                 },
                 modifier = Modifier
@@ -233,7 +255,7 @@ fun LoginContent(authViewModel: AuthViewModel) {
                 colors = ButtonDefaults.buttonColors(backgroundColor = colorResource(R.color.blue)),
                 enabled = (!bool.value)
             ) {
-                if (!bool.value){
+                if (!bool.value) {
                     Row {
                         Text(
                             text = stringResource(R.string.get_otp_code),
@@ -244,8 +266,8 @@ fun LoginContent(authViewModel: AuthViewModel) {
                             fontSize = 20.sp,
                         )
                     }
-                }else{
-                    CircularIndeterminanteProgressBar(true , 0)
+                } else {
+                    CircularIndeterminanteProgressBar(true, 0)
                 }
 
             }
@@ -254,4 +276,5 @@ fun LoginContent(authViewModel: AuthViewModel) {
     SnackBar(snackbarHostState = errorSnackBar, Color.Red, true, {})
 
 }
+
 
