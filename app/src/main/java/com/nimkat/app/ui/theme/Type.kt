@@ -10,12 +10,12 @@ import com.nimkat.app.R
 
 
 val mainFont = FontFamily(
-    Font(R.font.vazir),
-    Font(R.font.vazir , weight = FontWeight.Bold),
+    Font(R.font.iransans),
+    Font(R.font.iransans_bold , weight = FontWeight.Bold),
 )
 
 val secondFont = FontFamily(
-    Font(R.font.vazir),
+    Font(R.font.iransans_bold),
 )
 
 // Set of Material typography styles to start with
