@@ -4,13 +4,17 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.graphics.Rect
 import android.os.Bundle
 import android.util.Log
+import android.view.MotionEvent
+import android.view.View
+import android.view.inputmethod.InputMethodManager
+import android.widget.EditText
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
@@ -34,7 +38,6 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -56,9 +59,7 @@ import com.nimkat.app.view.main.MainActivity
 import com.nimkat.app.view.profile_edit.CompleteProfile
 import com.nimkat.app.view_model.AuthViewModel
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.delay
 import java.util.regex.Pattern
-import kotlin.time.Duration.Companion.seconds
 
 @AndroidEntryPoint
 class OtpActivity : AppCompatActivity() {
@@ -164,6 +165,25 @@ class OtpActivity : AppCompatActivity() {
         super.onStop()
         unregisterReceiver(smsBroadcastReciver)
     }
+
+
+    override fun dispatchTouchEvent(event: MotionEvent): Boolean {
+        if (event.action == MotionEvent.ACTION_DOWN) {
+            val v: View? = getCurrentFocus()
+            if (v is EditText) {
+                val outRect = Rect()
+                v.getGlobalVisibleRect(outRect)
+                if (!outRect.contains(event.rawX.toInt(), event.rawY.toInt())) {
+                    v.clearFocus()
+                    val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                    imm.hideSoftInputFromWindow(v.getWindowToken(), 0)
+                }
+            }
+        }
+        return super.dispatchTouchEvent(event)
+    }
+
+
 
 }
 
@@ -288,12 +308,21 @@ fun OtpContent(id: String, authViewModel: AuthViewModel, smsCode: String, mobile
             remember { FocusRequester() },
         )
 
+        val errors = listOf(
+            remember { mutableStateOf(false)},
+            remember { mutableStateOf(false)},
+            remember { mutableStateOf(false)},
+            remember { mutableStateOf(false)},
+            remember { mutableStateOf(false)}
+        )
+
+
         val keyboardController = LocalSoftwareKeyboardController.current
 
         CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
             Row(modifier = Modifier.align(Alignment.CenterHorizontally)) {
                 for (i in 0..4) {
-                    CodeItem(i, items, activates, keyboardController, authViewModel, id)
+                    CodeItem(i, items, activates, keyboardController, authViewModel, id , errors)
                 }
             }
         }
@@ -312,6 +341,7 @@ fun CodeItem(
     keyboardController: SoftwareKeyboardController?,
     authViewModel: AuthViewModel,
     id: String,
+    errors: List<MutableState<Boolean>>,
 ) {
     OutlinedTextField(
         singleLine = true,
@@ -323,7 +353,7 @@ fun CodeItem(
                 return@OutlinedTextField
             }
             states[index].value = it
-
+            errors[index].value = false
 
             if (it.length == 1) {
                 if (index < 4)
@@ -345,8 +375,9 @@ fun CodeItem(
         shape = RoundedCornerShape(6.dp),
         colors = TextFieldDefaults.outlinedTextFieldColors(
             backgroundColor = colorResource(R.color.textfield_background),
-            focusedBorderColor = colorResource(R.color.blue),
-            unfocusedBorderColor = colorResource(R.color.textfield_background),
+            focusedBorderColor = if (errors[index].value) colorResource(R.color.red) else colorResource(R.color.blue),
+            unfocusedBorderColor = if (errors[index].value) colorResource(R.color.red) else colorResource(R.color.textfield_background),
+            cursorColor = colorResource(id = R.color.blue)
         ),
         textStyle = TextStyle(
             fontSize = 16.sp,
@@ -362,13 +393,22 @@ fun CodeItem(
             onDone = {
                 keyboardController?.hide()
                 var enteredCode = "";
+                var ind = 0
                 for (state in states) {
                     enteredCode += state.value
+                    if (state.value == ""){
+                        errors[ind].value = true
+                    }
+                    ind++
                 }
-                Log.d("Opt", "keyboardActions: Done ---> $enteredCode");
-
-                authViewModel.verifyCode(enteredCode, id)
+                if (enteredCode.length == 5) {
+                    authViewModel.verifyCode(enteredCode, id)
+                    Log.d("Opt", "keyboardActions: Done ---> $enteredCode")
+                }
             }
         )
     )
 }
+
+
+//if (isError.value) colorResource(R.color.red) else Color.Transparent

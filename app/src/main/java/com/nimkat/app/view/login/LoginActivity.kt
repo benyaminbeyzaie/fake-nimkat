@@ -81,7 +81,6 @@ class LoginActivity : AppCompatActivity() {
 @Composable
 fun LoginContent(authViewModel: AuthViewModel) {
     val mobile = remember { mutableStateOf("") }
-    val inviteCode = remember { mutableStateOf("") }
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val isCodeSent = authViewModel.isCodeSentLiveData.observeAsState()
@@ -90,23 +89,27 @@ fun LoginContent(authViewModel: AuthViewModel) {
     val isError = remember { mutableStateOf(false) }
 
 
-    if (isCodeSent.value?.status == DataStatus.Success) {
-        Log.d("Login", "isCodeSent.value?.status == DataStatus.Success")
-//        bool.value = false
-        OtpActivity.sendIntent(context, isCodeSent.value!!.data!!.toString(), mobile.value)
-    } else if (isCodeSent.value?.status == DataStatus.Error) {
-        Log.d("Login", "isCodeSent.value?.status == DataStatus.Error")
-
-        LaunchedEffect(lifecycleOwner.lifecycleScope) {
-            errorSnackBar.showSnackbar(
-                message = "متاسفانه مشکلی پیش اومده یا دستگاهت به اینترنت متصل نیست!",
-                actionLabel = "RED",
-                duration = SnackbarDuration.Short
-            )
+    when (isCodeSent.value?.status) {
+        DataStatus.Success -> {
+            Log.d("Login", "isCodeSent.value?.status == DataStatus.Success")
+            OtpActivity.sendIntent(context, isCodeSent.value!!.data!!.toString(), mobile.value)
+            bool.value = false
         }
-        bool.value = false
-    } else if (isCodeSent.value?.status == DataStatus.Loading) {
-        bool.value = true
+        DataStatus.Error -> {
+            Log.d("Login", "isCodeSent.value?.status == DataStatus.Error")
+            LaunchedEffect(lifecycleOwner.lifecycleScope) {
+                errorSnackBar.showSnackbar(
+                    message = "متاسفانه مشکلی پیش اومده یا دستگاهت به اینترنت متصل نیست!",
+                    actionLabel = "RED",
+                    duration = SnackbarDuration.Short
+                )
+            }
+            bool.value = false
+        }
+        DataStatus.Loading -> {
+            bool.value = true
+        }
+        else -> {}
     }
 
     Column(
@@ -230,22 +233,21 @@ fun LoginContent(authViewModel: AuthViewModel) {
                 color = colorResource(R.color.red),
                 fontFamily = mainFont,
                 style = MaterialTheme.typography.caption,
-                modifier = Modifier.padding(start = 20.dp , top = 10.dp)
+                modifier = Modifier.padding(start = 20.dp, top = 10.dp)
             )
-        }else{
-            Spacer(modifier = Modifier.padding(start = 20.dp , top = 5.dp))
+        } else {
+            Spacer(modifier = Modifier.padding(start = 20.dp, top = 5.dp))
         }
 
         CompositionLocalProvider(LocalRippleTheme provides RippleWhite) {
             Button(
                 onClick = {
                     if (mobile.value != "") {
-                        Log.d("LoginActivity", "getting code with phone: +98" + mobile.value);
-                        authViewModel.getCode("+98" + mobile.value);
+                        Log.d("LoginActivity", "getting code with phone: +98" + mobile.value)
+                        authViewModel.getCode("+98" + mobile.value)
                     } else {
                         isError.value = true
                     }
-//                    bool.value = true
                 },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -273,7 +275,7 @@ fun LoginContent(authViewModel: AuthViewModel) {
             }
         }
     }
-    SnackBar(snackbarHostState = errorSnackBar, Color.Red, true, {})
+    SnackBar(snackbarHostState = errorSnackBar, Color.Red, true) {}
 
 }
 
