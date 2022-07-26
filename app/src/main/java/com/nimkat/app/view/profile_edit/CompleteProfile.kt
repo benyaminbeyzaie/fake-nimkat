@@ -57,9 +57,6 @@ class CompleteProfile : AppCompatActivity() {
                         name = getStringExtra("name")!!
                         askForGrade()
                     }
-                } else {
-                    Log.d("kiloURI", "IMAGE CROPPING CANCELED.")
-                    Toast.makeText(this, "IMAGE CROPPING CANCELED.", Toast.LENGTH_SHORT).show()
                 }
             }
             ASK_GRADE_CODE -> {
@@ -70,9 +67,6 @@ class CompleteProfile : AppCompatActivity() {
                         authViewModel.initAuth()
                         authViewModel.update(name , gradeID)
                     }
-                } else {
-                    Log.d("kiloURI", "IMAGE CROPPING CANCELED.")
-                    Toast.makeText(this, "IMAGE CROPPING CANCELED.", Toast.LENGTH_SHORT).show()
                 }
             }
 

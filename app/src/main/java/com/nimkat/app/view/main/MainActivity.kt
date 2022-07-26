@@ -210,7 +210,6 @@ class MainActivity : AppCompatActivity() {
                         val name = getStringExtra("name")
                         authViewModel.update(name!! , gradeID)
                         Toast.makeText(x, "profile changed .", Toast.LENGTH_SHORT).show()
-                        // now we should use this uri to load bitmap of the image and then send it to server
                     }
                 }
             }

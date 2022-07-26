@@ -78,6 +78,11 @@ class LoginActivity : AppCompatActivity() {
             }
         }
     }
+
+    override fun onBackPressed() {
+        MainActivity.sendIntent(this)
+        finish()
+    }
 }
 
 @OptIn(ExperimentalMaterialApi::class)

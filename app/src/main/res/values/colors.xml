@@ -14,7 +14,7 @@
     <color name="background">#FFFFFFFF</color>
 
     <color name="secondary_text">#FFFFFFFF</color>
-    <color name="secondary_text_variant">#FCFCFC</color>
+    <color name="secondary_text_variant">#F9F9F9</color>
 
     <color name="primary_text"> #151515 </color>
     <color name="primary_text_variant">#3A3A3A</color>

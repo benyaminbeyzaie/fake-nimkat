@@ -78,6 +78,25 @@ class ProfileEditActivity : AppCompatActivity() {
         phone = intent.getStringExtra("phone")
         grade = intent.getStringExtra("grade")
 
+
+        val map: HashMap<String, Int> = HashMap<String, Int>()
+        map.put("اول", 1)
+        map.put("دوم", 2)
+        map.put("سوم", 3)
+        map.put("چهارم", 4)
+        map.put("پنجم", 5)
+        map.put("ششم", 6)
+        map.put("هفتم", 7)
+        map.put("هشتم", 8)
+        map.put("نهم", 9)
+        map.put("دهم", 10)
+        map.put("یازدهم", 11)
+        map.put("دوازدهم", 12)
+
+        gradeID = map.get(grade)!!
+
+
+
         Log.d("grade", grade.toString())
 
         contentSetter()
@@ -114,9 +133,6 @@ class ProfileEditActivity : AppCompatActivity() {
 
                     }
                     contentSetter()
-                } else {
-                    Log.d("kiloURI", "IMAGE CROPPING CANCELED.")
-                    Toast.makeText(this, "IMAGE CROPPING CANCELED.", Toast.LENGTH_SHORT).show()
                 }
             }
 
@@ -267,6 +283,7 @@ fun ProfileEditContent(name: String?, phone: String?, grade: String? , gradeID: 
                 focusedLabelColor = colorResource(R.color.blue),
                 unfocusedLabelColor = colorResource(R.color.gray500),
                 unfocusedBorderColor = colorResource(R.color.gray500),
+                cursorColor = colorResource(R.color.blue),
             ),
             textStyle = TextStyle(
                 fontSize = 14.sp,
@@ -338,6 +355,9 @@ fun ProfileEditContent(name: String?, phone: String?, grade: String? , gradeID: 
             Button(
                 onClick = {
                     val data = Intent().apply {
+                        Log.d("update" ,
+                            "Edited profile grade = $grade gradeID = $gradeID name = $name"
+                        )
                         putExtra("grade", grade)
                         putExtra("gradeID" , gradeID)
                         putExtra("name" , username.value)

@@ -35,7 +35,7 @@ class AuthViewModel @Inject constructor(
 
 
     fun initAuth(shouldInitProfile: Boolean = true) {
-        Log.d("Auth View Model", "init auth called")
+        Log.d("Auth View Model", "init auth called " + _authModel.value?.data.toString())
         if (_authModel.value?.data != null) return
         val authModel = repository.initAuth() ?: return
         _authModel.postValue(DataHolder.success(authModel))
@@ -97,9 +97,9 @@ class AuthViewModel @Inject constructor(
 
     fun clearAuth() {
         viewModelScope.launch {
-            repository.clearAuth()
             _authModel.postValue(DataHolder.pure())
             _profileModel.postValue(DataHolder.pure())
+            repository.clearAuth()
         }
     }
 
@@ -117,10 +117,12 @@ class AuthViewModel @Inject constructor(
                     _profileModel.postValue(DataHolder.success(response.body()!!))
                     Log.d("update ", "LOAD Into Profile Model ")
                 } else {
+                    Log.d("update ", "update error" + response.toString())
                     _profileModel.postValue(DataHolder.error())
                 }
             }catch (e: Exception){
                 _profileModel.postValue(DataHolder.errorWithData(data = data!!))
+                Log.d("update ", "update more error ")
             }
         }
     }

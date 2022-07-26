@@ -93,6 +93,11 @@ class OtpActivity : AppCompatActivity() {
         contentSetter()
     }
 
+    override fun onBackPressed() {
+        LoginActivity.sendIntent(this , phone = mobile)
+        finish()
+    }
+
     private fun contentSetter() {
         setContent {
             NimkatTheme {

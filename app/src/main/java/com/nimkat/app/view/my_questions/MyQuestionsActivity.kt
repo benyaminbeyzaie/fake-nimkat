@@ -25,8 +25,10 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -34,12 +36,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.lifecycleScope
 import coil.compose.AsyncImage
 import com.nimkat.app.R
+import com.nimkat.app.models.DataStatus
 import com.nimkat.app.models.QuestionModel
 import com.nimkat.app.ui.theme.NimkatTheme
 import com.nimkat.app.ui.theme.RippleWhite
 import com.nimkat.app.ui.theme.mainFont
+import com.nimkat.app.view.SnackBar
+import com.nimkat.app.view.otp.OtpActivity
 import com.nimkat.app.view.question_detail.QuestionDetailActivity
 import com.nimkat.app.view_model.MyQuestionsViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -74,12 +80,29 @@ class MyQuestionsActivity : AppCompatActivity() {
 }
 
 
-@OptIn(ExperimentalFoundationApi::class)
+@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterialApi::class)
 @Composable
 fun MyQuestionsContent(viewModel: MyQuestionsViewModel) {
 
     val context = LocalContext.current
     val questions = viewModel.myQuestions.observeAsState()
+    val lifecycleOwner = LocalLifecycleOwner.current
+    val errorSnackBar = remember { SnackbarHostState() }
+
+    when (questions.value?.status) {
+        DataStatus.Error -> {
+            LaunchedEffect(lifecycleOwner.lifecycleScope) {
+                errorSnackBar.showSnackbar(
+                    message = "متاسفانه مشکلی پیش اومده یا دستگاهت به اینترنت متصل نیست!",
+                    actionLabel = "RED",
+                    duration = SnackbarDuration.Short
+                )
+            }
+        }
+        else -> {}
+    }
+
+
 
     Scaffold(
         topBar = {
@@ -167,6 +190,7 @@ fun MyQuestionsContent(viewModel: MyQuestionsViewModel) {
         }
 
     }
+    SnackBar(snackbarHostState = errorSnackBar, Color.Red, true) {}
 }
 
 @Composable

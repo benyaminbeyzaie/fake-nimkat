@@ -195,7 +195,8 @@ fun Drawer(
         Log.d("PROF", "load status changed to unloaded")
     }
 
-
+    Log.d("status" , "is loaded = " + isLoaded + " isLogin = " + isLogin + " completed = " + isProfileCompleted)
+    Log.d("status2" , "status is " + authModel.value?.data.toString())
     val prefs: SharedPreferences =
         PreferenceManager.getDefaultSharedPreferences(LocalContext.current)
     val isDark = prefs.getBoolean(stringResource(R.string.darThemeTag), false)
@@ -619,12 +620,3 @@ private fun takePhoto(
 
 
 }
-
-private suspend fun Context.getCameraProvider(): ProcessCameraProvider =
-    suspendCoroutine { continuation ->
-        ProcessCameraProvider.getInstance(this).also { cameraProvider ->
-            cameraProvider.addListener({
-                continuation.resume(cameraProvider.get())
-            }, ContextCompat.getMainExecutor(this))
-        }
-    }
