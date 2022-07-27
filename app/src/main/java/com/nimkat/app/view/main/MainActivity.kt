@@ -40,6 +40,7 @@ import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.PagerState
 import com.google.accompanist.pager.rememberPagerState
+import com.google.firebase.FirebaseApp
 import com.nimkat.app.R
 import com.nimkat.app.ui.theme.NimkatTheme
 import com.nimkat.app.utils.ASK_FOR_EDIT_PROFILE
@@ -76,7 +77,6 @@ class MainActivity : AppCompatActivity() {
     @OptIn(ExperimentalMaterialApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         authViewModel.initAuth()
         outputDirectory = getOutputDirectory()
         cameraExecutor = Executors.newSingleThreadExecutor()

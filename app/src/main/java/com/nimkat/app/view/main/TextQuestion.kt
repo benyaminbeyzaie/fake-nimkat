@@ -58,18 +58,23 @@ fun TextQuestion(viewModel: TextQuestionViewModel) {
             loading.value = true
         }
         DataStatus.NeedLogin -> {
+            loading.value = false
             LoginActivity.sendIntent(context)
         }
         DataStatus.Success -> {
+            loading.value = false
             discoveryAnswers.value?.data?.let { list ->
                 QuestionSearchActivity.sendIntent(context, text.value, list)
             }
         }
         DataStatus.Error -> {
+            loading.value = false
             context.toast("Error : ".plus(discoveryAnswers.value?.message.toString()))
         }
 
-        else -> {}
+        else -> {
+            loading.value = false
+        }
     }
 
 

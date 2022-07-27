@@ -76,8 +76,6 @@ class QuestionSearchActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val viewModel: TextQuestionViewModel by viewModels()
-
         val question = intent.getStringExtra(QUESTION).orEmpty()
         val questions: ArrayList<DiscoveryAnswers>? = intent.getParcelableArrayListExtra(LIST)
 
@@ -89,7 +87,7 @@ class QuestionSearchActivity : ComponentActivity() {
                     color = MaterialTheme.colors.background
                 ) {
                     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
-                        QuestionSearchContent(question, questions, viewModel , this)
+                        QuestionSearchContent(question, questions)
                     }
                 }
             }
@@ -102,8 +100,6 @@ class QuestionSearchActivity : ComponentActivity() {
 fun QuestionSearchContent(
     question: String,
     questions: List<DiscoveryAnswers>?,
-    viewModel: TextQuestionViewModel,
-    lifecycleOwner: LifecycleOwner
 ) {
 
     val context = LocalContext.current
@@ -144,7 +140,7 @@ fun QuestionSearchContent(
                 )
             }
         },
-        backgroundColor = colorResource(R.color.color_back)
+        backgroundColor = colorResource(R.color.background)
     ) {
 
 
@@ -241,24 +237,6 @@ fun QuestionSearchContent(
             }
 
 
-            viewModel.sendQuestion.removeObservers(lifecycleOwner)
-            viewModel.reCreate()
-            viewModel.myQuestions.observe(lifecycleOwner) {
-                loading.value = it.status == DataStatus.Loading
-
-                when (it.status) {
-                    DataStatus.NeedLogin -> {
-                        LoginActivity.sendIntent(context)
-                    }
-                    DataStatus.Success -> {
-                        context.toast("Success")
-                    }
-                    DataStatus.Error -> {
-                        context.toast("Error : ".plus(it.message.toString()))
-                    }
-                }
-            }
-
             Text(
                 text = stringResource(R.string.not_found_answer),
                 modifier = Modifier
@@ -289,7 +267,7 @@ fun QuestionSearchContent(
                 } else {
                     Button(
                         onClick = {
-                            viewModel.sendQuestion(question)
+                            // viewModel.sendQuestion(question)
                         },
                         modifier = Modifier
                             .fillMaxWidth()

@@ -121,7 +121,7 @@ fun FullImageContent(imageUrl: String) {
                 )
             }
         },
-        backgroundColor = colorResource(R.color.color_back)
+        backgroundColor = colorResource(R.color.black)
     ) {
         AndroidView(
             factory = { context ->

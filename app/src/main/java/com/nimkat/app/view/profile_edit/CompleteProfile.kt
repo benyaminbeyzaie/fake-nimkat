@@ -9,12 +9,15 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import com.google.firebase.messaging.FirebaseMessaging
 import com.nimkat.app.utils.ASK_GRADE_CODE
 import com.nimkat.app.utils.ASK_NAME_CODE
 import com.nimkat.app.view.main.MainActivity
 import com.nimkat.app.view.profile_edit.grade.GradeActivity
 import com.nimkat.app.view_model.AuthViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class CompleteProfile : AppCompatActivity() {
@@ -60,12 +63,21 @@ class CompleteProfile : AppCompatActivity() {
                 }
             }
             ASK_GRADE_CODE -> {
+
                 if (resultCode == Activity.RESULT_OK) {
                     data?.apply {
-                        grade = getStringExtra("grade")!!
-                        gradeID = getIntExtra("gradeID", 0)
-                        authViewModel.initAuth()
-                        authViewModel.update(name , gradeID)
+                        FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
+                            if (task.isSuccessful && task.result != null) {
+                                val token = task.result
+                                GlobalScope.launch {
+                                    grade = getStringExtra("grade")!!
+                                    gradeID = getIntExtra("gradeID", 0)
+                                    authViewModel.initAuth(firebaseToken = token)
+                                    authViewModel.update(name , gradeID)
+                                }
+                            }
+                        }
+
                     }
                 }
             }
