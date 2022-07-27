@@ -167,8 +167,9 @@ fun MyQuestionsContent(viewModel: MyQuestionsViewModel) {
                         }) {
                             if (list[index].files.isNotEmpty()  && list[index].files.first().file?.attachment != null) {
                                 AsyncImage(
+                                    modifier = Modifier.fillMaxWidth(),
                                     model = list[index].files.first().file?.attachment,
-                                    contentDescription = null
+                                    contentDescription = null,
                                 )
                             }
                             if (list[index].text != null) {
