@@ -2,7 +2,6 @@ package com.nimkat.app.view.main
 
 import android.annotation.SuppressLint
 import android.app.Activity
-import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.net.Uri
@@ -11,7 +10,6 @@ import android.util.Log
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
-import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -39,7 +37,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.content.ContextCompat
 import androidx.core.content.ContextCompat.startActivity
 import androidx.lifecycle.lifecycleScope
 import com.nimkat.app.R
@@ -47,7 +44,6 @@ import com.nimkat.app.models.DataStatus
 import com.nimkat.app.ui.theme.RippleWhite
 import com.nimkat.app.ui.theme.mainFont
 import com.nimkat.app.ui.theme.secondFont
-import com.nimkat.app.view.CircularIndeterminanteProgressBar
 import com.nimkat.app.view.SnackBar
 import com.nimkat.app.view.login.LoginActivity
 import com.nimkat.app.view.my_questions.MyQuestionsActivity
@@ -61,8 +57,6 @@ import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.Executor
 import java.util.concurrent.ExecutorService
-import kotlin.coroutines.resume
-import kotlin.coroutines.suspendCoroutine
 
 
 @OptIn(ExperimentalMaterialApi::class)
@@ -73,6 +67,7 @@ fun Camera(
     cameraExecutor: ExecutorService,
     outputDirectory: File,
     authViewModel: AuthViewModel,
+    shouldShowCamera: MutableState<Boolean>,
     onImageCaptured: (Uri, Int) -> Unit
 ) {
 
@@ -118,14 +113,15 @@ fun Camera(
                     .fillMaxSize()
                     .background(colorResource(R.color.background))
             )
+                CameraView(
+                    outputDirectory = outputDirectory,
+                    executor = cameraExecutor,
+                    onImageCaptured = onImageCaptured,
+                    onError = { Log.e("kilo", "View error:", it) },
+                    errorSnackBar,
+                    shouldShowCamera
+                )
 
-            CameraView(
-                outputDirectory = outputDirectory,
-                executor = cameraExecutor,
-                onImageCaptured = onImageCaptured,
-                onError = { Log.e("kilo", "View error:", it) },
-                errorSnackBar
-            )
 
             Card(
                 Modifier

@@ -1,9 +1,14 @@
 package com.nimkat.app.view.main
 
+import android.Manifest
+import android.app.Activity
 import android.content.Context
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Environment
 import android.util.Log
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
@@ -27,6 +32,7 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import com.nimkat.app.R
@@ -46,9 +52,10 @@ import kotlin.coroutines.suspendCoroutine
 fun CameraView(
     outputDirectory: File,
     executor: Executor,
-    onImageCaptured: (Uri , Int) -> Unit,
+    onImageCaptured: (Uri, Int) -> Unit,
     onError: (ImageCaptureException) -> Unit,
-    snackbarHostState: SnackbarHostState
+    snackbarHostState: SnackbarHostState,
+    shouldShowCamera: MutableState<Boolean>
 ) {
     // 1
     val lensFacing = CameraSelector.LENS_FACING_BACK
@@ -77,21 +84,57 @@ fun CameraView(
         preview.setSurfaceProvider(previewView.surfaceProvider)
     }
 
+
+    val canTakePicture = remember{ mutableStateOf(shouldShowCamera.value)}
+
+    val requestPermissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            Log.d("permission", "Permission granted")
+            canTakePicture.value = true
+        } else {
+            Log.d("permission", "Permission denied")
+        }
+    }
+
+
+    fun requestCameraPermission() {
+        when {
+            ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.CAMERA
+            ) == PackageManager.PERMISSION_GRANTED -> {
+                Log.d("permission", "Permission previously granted")
+                canTakePicture.value = true
+            }
+
+            else -> requestPermissionLauncher.launch(Manifest.permission.CAMERA)
+        }
+    }
+
+
     // 3
     Box(contentAlignment = Alignment.BottomCenter, modifier = Modifier.fillMaxSize()) {
-        AndroidView({ previewView }, modifier = Modifier.fillMaxSize())
+        if (canTakePicture.value) {
+            AndroidView({ previewView }, modifier = Modifier.fillMaxSize())
+        }
 
 
         FloatingActionButton(
             onClick = {
                 Log.i("kilo", "ON CLICK")
-                takePhoto(
-                    imageCapture = imageCapture,
-                    outputDirectory = outputDirectory,
-                    executor = executor,
-                    onImageCaptured = onImageCaptured,
-                    onError = onError,
-                )
+                if (canTakePicture.value) {
+                    takePhoto(
+                        imageCapture = imageCapture,
+                        outputDirectory = outputDirectory,
+                        executor = executor,
+                        onImageCaptured = onImageCaptured,
+                        onError = onError,
+                    )
+                }else{
+                    requestCameraPermission()
+                }
             },
             modifier = Modifier
                 .align(alignment = Alignment.BottomCenter)
@@ -126,18 +169,16 @@ fun CameraView(
                 tint = colorResource(R.color.white),
             )
         }
-        SnackBar(snackbarHostState = snackbarHostState , Color(5, 172, 0, 255) , true , {})
+        SnackBar(snackbarHostState = snackbarHostState, Color(5, 172, 0, 255), true, {})
 
     }
 }
 
 
-
-
 private fun pickFromGallery(
-    onImageCaptured: (Uri , Int) -> Unit,
+    onImageCaptured: (Uri, Int) -> Unit,
 ) {
-    onImageCaptured(Uri.parse("") , 1)
+    onImageCaptured(Uri.parse(""), 1)
 }
 
 
@@ -145,7 +186,7 @@ private fun takePhoto(
     imageCapture: ImageCapture,
     outputDirectory: File,
     executor: Executor,
-    onImageCaptured: (Uri , Int) -> Unit,
+    onImageCaptured: (Uri, Int) -> Unit,
     onError: (ImageCaptureException) -> Unit
 ) {
 
@@ -157,7 +198,7 @@ private fun takePhoto(
 
     val outputOptions = ImageCapture.OutputFileOptions.Builder(photoFile).build()
 
-    imageCapture.takePicture(outputOptions, executor, object: ImageCapture.OnImageSavedCallback {
+    imageCapture.takePicture(outputOptions, executor, object : ImageCapture.OnImageSavedCallback {
         override fun onError(exception: ImageCaptureException) {
             Log.e("kilo", "Take photo error:", exception)
             onError(exception)
@@ -165,7 +206,7 @@ private fun takePhoto(
 
         override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
             val savedUri = Uri.fromFile(photoFile)
-            onImageCaptured(savedUri , 0)
+            onImageCaptured(savedUri, 0)
         }
     })
 

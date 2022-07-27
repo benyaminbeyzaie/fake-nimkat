@@ -27,7 +27,6 @@ import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
@@ -37,7 +36,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.lifecycleScope
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.PagerState
@@ -72,7 +70,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var outputDirectory: File
     private lateinit var cameraExecutor: ExecutorService
 
-    private var shouldShowCamera: MutableState<Boolean> = mutableStateOf(false)
+    var shouldShowCamera: MutableState<Boolean> = mutableStateOf(false)
 
     val authViewModel: AuthViewModel by viewModels()
 
@@ -95,6 +93,8 @@ class MainActivity : AppCompatActivity() {
             AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
         }
 
+        requestCameraPermission()
+
         setContent {
             NimkatTheme {
                 // A surface container using the 'background' color from the theme
@@ -110,12 +110,13 @@ class MainActivity : AppCompatActivity() {
                         authViewModel,
                         cameraExecutor,
                         outputDirectory,
+                        shouldShowCamera,
                         onImageCaptured = ::handleImageCapture,
                     )
                 }
             }
         }
-        requestCameraPermission()
+
 
     }
 
@@ -228,6 +229,7 @@ fun Greeting(
     authViewModel: AuthViewModel,
     cameraExecutor: ExecutorService,
     outputDirectory: File,
+    shouldShowCamera: MutableState<Boolean>,
     onImageCaptured: (Uri, Int) -> Unit,
 ) {
     val coroutineScope = rememberCoroutineScope()
@@ -267,6 +269,7 @@ fun Greeting(
                                     cameraExecutor,
                                     outputDirectory,
                                     authViewModel,
+                                    shouldShowCamera,
                                     onImageCaptured = onImageCaptured
                                 )
                             }
