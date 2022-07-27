@@ -11,6 +11,7 @@ import android.os.Bundle
 import android.preference.PreferenceManager
 import android.util.Log
 import android.widget.Toast
+import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
@@ -36,6 +37,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.LifecycleOwner
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.PagerState
@@ -46,6 +48,7 @@ import com.nimkat.app.utils.ASK_FOR_EDIT_PROFILE
 import com.nimkat.app.utils.CROP_IMAGE_CODE
 import com.nimkat.app.view.question_crop.QuestionCropActivity
 import com.nimkat.app.view_model.AuthViewModel
+import com.nimkat.app.view_model.TextQuestionViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -79,8 +82,9 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 //        val profileViewModel:ProfileViewModel by viewModels()
 //        profileViewModel.initAuth()
-
+        val authViewModel: AuthViewModel by viewModels()
         authViewModel.initAuth()
+        val textQuestionViewModel: TextQuestionViewModel by viewModels()
         outputDirectory = getOutputDirectory()
         cameraExecutor = Executors.newSingleThreadExecutor()
 
@@ -108,15 +112,17 @@ class MainActivity : AppCompatActivity() {
                     Greeting(
                         cameraScaffoldState!!,
                         authViewModel,
+                        textQuestionViewModel,
                         cameraExecutor,
                         outputDirectory,
+                        this,
                         shouldShowCamera,
                         onImageCaptured = ::handleImageCapture,
                     )
                 }
             }
         }
-
+        requestCameraPermission()
 
     }
 
@@ -129,7 +135,8 @@ class MainActivity : AppCompatActivity() {
                 return
             }
         }
-        finish()
+
+        super.onBackPressed()
     }
 
     override fun onDestroy() {
@@ -227,10 +234,12 @@ class MainActivity : AppCompatActivity() {
 fun Greeting(
     cameraScaffoldState: ScaffoldState,
     authViewModel: AuthViewModel,
+    textQuestionViewModel: TextQuestionViewModel,
     cameraExecutor: ExecutorService,
     outputDirectory: File,
+    lifecycleOwner: LifecycleOwner,
     shouldShowCamera: MutableState<Boolean>,
-    onImageCaptured: (Uri, Int) -> Unit,
+    onImageCaptured: (Uri, Int) -> Unit
 ) {
     val coroutineScope = rememberCoroutineScope()
 
@@ -261,7 +270,7 @@ fun Greeting(
                     ) { index ->
                         when (index) {
                             0 -> {
-                                TextQuestion()
+                                TextQuestion(textQuestionViewModel , lifecycleOwner)
                             }
                             1 -> {
                                 Camera(

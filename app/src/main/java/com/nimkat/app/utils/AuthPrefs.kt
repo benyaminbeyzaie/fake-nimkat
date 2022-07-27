@@ -4,6 +4,8 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.preference.PreferenceManager
 import android.util.Log
+import com.google.gson.Gson
+import com.nimkat.app.models.AuthModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -34,12 +36,15 @@ class AuthPrefs @Inject constructor(@ApplicationContext context : Context){
         prefs.edit().putString(profileTag , query).apply()
     }
 
+    fun initAuth(): AuthModel? {
+        val authString = getAuthString()
+        if (authString === null) return null
+        val gson = Gson()
+        return gson.fromJson(authString, AuthModel::class.java)
+    }
+
     fun clearAuth() {
-        val authString = prefs.getString(authPrefTag, "");
-        Log.d("prefs" , authString!!)
         prefs.edit().remove(authPrefTag).apply()
         prefs.edit().remove(profileTag).apply()
-
-
     }
 }

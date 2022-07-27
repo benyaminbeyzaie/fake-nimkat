@@ -45,5 +45,17 @@
     <string name="title_activity_whats_your_name">WhatsYourNameActivity</string>
     <string name="name">نام</string>
     <string name="title_activity_complete_profile">CompleteProfile</string>
+    <string name="search_result">نتایج جستجو</string>
+    <string name="ask_from_teachers">از معلم ها بپرس</string>
+    <string name="not_found_answer">جواب سوالت رو پیدا نکردی ؟</string>
+    <string name="question">پرسش</string>
+    <string name="answer">پاسخ</string>
+    <string name="title_activity_full_image">FullImageActivity</string>
+    <string name="image">تصویر</string>
+    <string name="question_search_desc_0">به خاطر یکی از دلایل زیر نتونستیم پاسخ مناسبی برای سوالت پیدا کنیم</string>
+    <string name="question_search_desc_1">سوالت دستنویس بود و یا خوانا نبود.</string>
+    <string name="question_search_desc_2">فقط یک سوال رو کراپ نکردی.</string>
+    <string name="question_search_desc_3">سوالت شامل اشکال هندسی یا معادلات پیچیده بود.</string>
+    <string name="question_search_desc_4">توی بانک سوالمون سوال مشابهی پیدا نشده.</string>
     <string name="darThemeTag">isDark</string>
 </resources>
