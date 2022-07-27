@@ -90,8 +90,8 @@ class AuthRepository @Inject constructor(
     suspend fun delete() {
         initAuth()
         if (authModel == null) return
-        authPrefs.clearAuth()
         api.deleteAccount(authModel!!.userId.toString(), "Token ${authModel!!.token}")
+        authPrefs.clearAuth()
         authModel = null
     }
 

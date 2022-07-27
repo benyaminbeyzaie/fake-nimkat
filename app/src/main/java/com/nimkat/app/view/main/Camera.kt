@@ -494,7 +494,6 @@ fun Drawer(
                     .fillMaxWidth()
                     .clickable {
                         authViewModel.delete()
-                        authViewModel.clearAuth()
                     }) {
                 Row(
                     Modifier

@@ -57,8 +57,8 @@ class AuthViewModel @Inject constructor(
                 } else {
                     _isCodeSent.postValue(DataHolder.error())
                 }
-            }catch (e: Exception){
-                Log.d("Response" , "an error Occurred")
+            } catch (e: Exception) {
+                Log.d("Response", "an error Occurred")
                 _isCodeSent.postValue(DataHolder.error())
             }
         }
@@ -86,7 +86,7 @@ class AuthViewModel @Inject constructor(
                 } else {
                     _authModel.postValue(DataHolder.error())
                 }
-            }catch (e: Exception){
+            } catch (e: Exception) {
                 _authModel.postValue(DataHolder.error())
             }
         }
@@ -118,7 +118,7 @@ class AuthViewModel @Inject constructor(
                     Log.d("update ", "update error" + response.toString())
                     _profileModel.postValue(DataHolder.error())
                 }
-            }catch (e: Exception){
+            } catch (e: Exception) {
                 _profileModel.postValue(DataHolder.error(data = data!!))
                 Log.d("update ", "update error with exception")
             }
@@ -126,10 +126,19 @@ class AuthViewModel @Inject constructor(
     }
 
     fun delete() {
+
         viewModelScope.launch {
-            repository.delete()
-            _authModel.postValue(DataHolder.pure())
-            _profileModel.postValue(DataHolder.pure())
+            val data = _profileModel.value?.data
+            try {
+                repository.delete()
+                _authModel.postValue(DataHolder.pure())
+                _profileModel.postValue(DataHolder.pure())
+                clearAuth()
+            } catch (e: Exception) {
+                _profileModel.postValue(DataHolder.error(data = data!!))
+                delay(3000)
+                _profileModel.postValue(DataHolder.success(data = data))
+            }
         }
     }
 }
