@@ -1,9 +1,15 @@
 package com.nimkat.app.view.main
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.content.Intent
+import android.content.SharedPreferences
 import android.net.Uri
+import android.preference.PreferenceManager
 import android.util.Log
+import androidx.appcompat.app.AppCompatDelegate
+import androidx.camera.core.ImageCapture
+import androidx.camera.core.ImageCaptureException
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -18,8 +24,10 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -30,20 +38,28 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat.startActivity
+import androidx.lifecycle.lifecycleScope
 import com.nimkat.app.R
+import com.nimkat.app.models.DataStatus
 import com.nimkat.app.ui.theme.RippleWhite
 import com.nimkat.app.ui.theme.mainFont
 import com.nimkat.app.ui.theme.secondFont
+import com.nimkat.app.view.SnackBar
 import com.nimkat.app.view.login.LoginActivity
 import com.nimkat.app.view.my_questions.MyQuestionsActivity
+import com.nimkat.app.view.profile_edit.CompleteProfile
 import com.nimkat.app.view.profile_edit.ProfileEditActivity
 import com.nimkat.app.view_model.AuthViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.io.File
+import java.text.SimpleDateFormat
+import java.util.*
+import java.util.concurrent.Executor
 import java.util.concurrent.ExecutorService
 
 
+@OptIn(ExperimentalMaterialApi::class)
 @SuppressLint("RememberReturnType")
 @Composable
 fun Camera(
@@ -51,9 +67,24 @@ fun Camera(
     cameraExecutor: ExecutorService,
     outputDirectory: File,
     authViewModel: AuthViewModel,
+    shouldShowCamera: MutableState<Boolean>,
     onImageCaptured: (Uri, Int) -> Unit
 ) {
 
+    val lifecycleOwner = LocalLifecycleOwner.current
+    val errorSnackBar = remember { SnackbarHostState() }
+
+    val profileModel = authViewModel.profileModelLiveData.observeAsState()
+    if (profileModel.value?.status == DataStatus.ErrorWithData) {
+        LaunchedEffect(lifecycleOwner.lifecycleScope) {
+
+            errorSnackBar.showSnackbar(
+                message = "متاسفانه مشکلی پیش اومده یا دستگاهت به اینترنت متصل نیست!",
+                actionLabel = "RED",
+                duration = SnackbarDuration.Short
+            )
+        }
+    }
 
     val coroutineScope = rememberCoroutineScope()
 
@@ -75,19 +106,22 @@ fun Camera(
 
         Box {
 
+
             // camera
             Spacer(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(colorResource(R.color.background))
             )
+                CameraView(
+                    outputDirectory = outputDirectory,
+                    executor = cameraExecutor,
+                    onImageCaptured = onImageCaptured,
+                    onError = { Log.e("kilo", "View error:", it) },
+                    errorSnackBar,
+                    shouldShowCamera
+                )
 
-            CameraView(
-                outputDirectory = outputDirectory,
-                executor = cameraExecutor,
-                onImageCaptured = onImageCaptured,
-                onError = { Log.e("kilo", "View error:", it) }
-            )
 
             Card(
                 Modifier
@@ -129,6 +163,8 @@ fun Camera(
                 }
             }
 
+            SnackBar(snackbarHostState = errorSnackBar, Color.Red, true, {})
+
         }
     }
 }
@@ -139,18 +175,28 @@ fun Drawer(
 ) {
 
     val context = LocalContext.current
+
     val authModel = authViewModel.authModelLiveData.observeAsState()
     val profileModel = authViewModel.profileModelLiveData.observeAsState()
     val isLoaded = profileModel.value?.data != null
     val isLogin = authModel.value?.data != null
+    val isProfileCompleted = remember{ mutableStateOf(false)}
 
-    Log.d("PROF" , profileModel.value?.data.toString())
-    if (profileModel.value?.data != null){
-        Log.d("PROF" , "load status changed to loaded")
-    }else{
-        Log.d("PROF" , "load status changed to unloaded")
+
+    Log.d("PROF", profileModel.value?.data.toString())
+    if (profileModel.value?.data != null) {
+        Log.d("PROF", "load status changed to loaded")
+        isProfileCompleted.value = true
+    } else {
+        Log.d("PROF", "load status changed to unloaded")
     }
 
+    Log.d("status" , "is loaded = " + isLoaded + " isLogin = " + isLogin + " completed = " + isProfileCompleted)
+    Log.d("status2" , "status is " + authModel.value?.data.toString())
+    val prefs: SharedPreferences =
+        PreferenceManager.getDefaultSharedPreferences(LocalContext.current)
+    val isDark = prefs.getBoolean(stringResource(R.string.darThemeTag), false)
+    var darkTag = stringResource(id = R.string.darThemeTag)
 
     Column(
         modifier
@@ -213,6 +259,7 @@ fun Drawer(
                 Button(
                     onClick = {
                         LoginActivity.sendIntent(context)
+                        (context as Activity).finish()
                     },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -233,32 +280,40 @@ fun Drawer(
                     }
                 }
             }
+            Spacer(modifier = Modifier.weight(1F))
         } else {
 
-            Row(
-                Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Image(
-                    painterResource(R.drawable.ic_profile),
-                    null,
+            if (isProfileCompleted.value) {
+                val name1 = remember { mutableStateOf("Default") }
+                val phone1 = remember { mutableStateOf("Default") }
+                val grade1 = remember { mutableStateOf(profileModel.value?.data?.educationalGrade!!) }
+
+
+                Row(
                     Modifier
-                        .size(50.dp)
-                )
-
-                Column(
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(12.dp, 6.dp)
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    if (isLoaded) {
+                    Image(
+                        painterResource(R.drawable.ic_profile),
+                        null,
+                        Modifier
+                            .size(50.dp)
+                    )
 
-                        var name1 = profileModel.value?.data?.name!!
-                        var phone1 = profileModel.value?.data?.phone!!
+                    Column(
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(12.dp, 6.dp)
+                    ) {
+                        if (isLoaded) {
+                            name1.value = profileModel.value?.data?.name!!
+                            phone1.value = profileModel.value?.data?.phone!!
+                            grade1.value = profileModel.value?.data?.educationalGrade!!
+                        }
                         Text(
-                            name1,
+                            name1.value,
 //                        "آنیتا علیخانی",
                             modifier = Modifier
                                 .fillMaxWidth(),
@@ -271,7 +326,7 @@ fun Drawer(
                         Spacer(modifier = Modifier.height(4.dp))
                         CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
                             Text(
-                                phone1,
+                                phone1.value,
 //                        "+989123456789",
                                 modifier = Modifier
                                     .fillMaxWidth(),
@@ -282,126 +337,135 @@ fun Drawer(
                                 fontSize = 14.sp
                             )
                         }
-                    }else{
-                        Log.d("PROF" , "load status changed to unloaded")
 
-                        var name1 = "default"
-                        var phone1 = "default"
+
+                    }
+                    IconButton(onClick = {
+                        ProfileEditActivity.sendIntent(context, name1.value, phone1.value, grade1.value)
+                    }) {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_edit),
+                            contentDescription = null,
+                            modifier = Modifier.size(24.dp),
+                            colorResource(R.color.primary_text)
+                        )
+                    }
+                }
+                Box(
+                    Modifier
+                        .padding(0.dp, 12.dp, 0.dp, 0.dp)
+                        .fillMaxWidth()
+                        .clickable {
+                            MyQuestionsActivity.sendIntent(context)
+                        }) {
+                    Row(
+                        Modifier
+                            .padding(24.dp, 12.dp)
+                            .fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
                         Text(
-                            name1,
-//                        "آنیتا علیخانی",
+                            stringResource(R.string.my_questions),
                             modifier = Modifier
-                                .fillMaxWidth(),
-                            color = colorResource(R.color.primary_text),
+                                .weight(1f),
+                            color = colorResource(R.color.blue),
                             textAlign = TextAlign.Right,
                             fontFamily = mainFont,
                             fontWeight = FontWeight.Bold,
-                            fontSize = 16.sp
+                            fontSize = 17.sp
                         )
-                        Spacer(modifier = Modifier.height(4.dp))
-                        CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_my_questions),
+                            contentDescription = null,
+                            modifier = Modifier.size(20.dp),
+                            tint = colorResource(R.color.blue)
+                        )
+                    }
+                }
+                Box(
+                    Modifier
+                        .padding(0.dp, 4.dp, 0.dp, 0.dp)
+                        .fillMaxWidth()
+                        .clickable {
+                            val browserIntent =
+                                Intent(
+                                    Intent.ACTION_VIEW,
+                                    Uri.parse("https://t.me/benyamin_beyzaie")
+                                )
+                            startActivity(context, browserIntent, null)
+                        }) {
+                    Row(
+                        Modifier
+                            .padding(24.dp, 12.dp)
+                            .fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            stringResource(R.string.contact_us),
+                            modifier = Modifier
+                                .weight(1f),
+                            color = colorResource(R.color.blue),
+                            textAlign = TextAlign.Right,
+                            fontFamily = mainFont,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 17.sp
+                        )
+                        Icon(
+                            painter = painterResource(R.drawable.ic_back),
+                            contentDescription = null,
+                            modifier = Modifier.size(20.dp),
+                            tint = colorResource(R.color.blue)
+                        )
+                    }
+                }
+            }else{
+                Column(
+                    Modifier
+                        .padding(15.dp),
+                    verticalArrangement = Arrangement.spacedBy(7.dp)
+                ) {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        stringResource(id = R.string.drawer_title_incomplete_profile),
+                        color = colorResource(R.color.primary_text),
+                        textAlign = TextAlign.Right,
+                        fontFamily = mainFont,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 25.sp
+                    )
+                    Text(
+                        stringResource(id = R.string.drawer_desc_incomplete_profile),
+                        color = colorResource(R.color.primary_text_variant),
+                        textAlign = TextAlign.Right,
+                        fontFamily = mainFont,
+                        fontSize = 15.sp
+                    )
+                    Button(
+                        onClick = {
+                            CompleteProfile.sendIntent(context)
+                            (context as Activity).finish()
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp)
+                            .height(60.dp),
+                        shape = RoundedCornerShape(20.dp),
+                        colors = ButtonDefaults.buttonColors(backgroundColor = colorResource(R.color.blue)),
+                    ) {
+                        Row {
                             Text(
-                                phone1,
-//                        "+989123456789",
-                                modifier = Modifier
-                                    .fillMaxWidth(),
-                                color = colorResource(R.color.primary_text_variant),
-                                textAlign = TextAlign.Right,
-                                fontFamily = mainFont,
-                                fontWeight = FontWeight.Normal,
-                                fontSize = 14.sp
+                                text = stringResource(R.string.profile_completion),
+                                style = TextStyle(
+                                    fontFamily = secondFont
+                                ),
+                                color = colorResource(R.color.white),
+                                fontSize = 20.sp,
                             )
                         }
                     }
-
-
-//                    Text(
-//                        phone1,
-////                        "+989123456789",
-//                        modifier = Modifier
-//                            .fillMaxWidth(),
-//                        color = colorResource(R.color.primary_text_variant),
-//                        textAlign = TextAlign.Left,
-//                        fontFamily = mainFont,
-//                        fontWeight = FontWeight.Normal,
-//                        fontSize = 14.sp
-//                    )
-                }
-                IconButton(onClick = {
-                    ProfileEditActivity.sendIntent(context)
-                }) {
-                    Icon(
-                        painter = painterResource(R.drawable.ic_edit),
-                        contentDescription = null,
-                        modifier = Modifier.size(24.dp),
-                        colorResource(R.color.primary_text)
-                    )
                 }
             }
-            Box(
-                Modifier
-                    .padding(0.dp, 12.dp, 0.dp, 0.dp)
-                    .fillMaxWidth()
-                    .clickable {
-                        MyQuestionsActivity.sendIntent(context)
-                    }) {
-                Row(
-                    Modifier
-                        .padding(24.dp, 12.dp)
-                        .fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        stringResource(R.string.my_questions),
-                        modifier = Modifier
-                            .weight(1f),
-                        color = colorResource(R.color.blue),
-                        textAlign = TextAlign.Right,
-                        fontFamily = mainFont,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 17.sp
-                    )
-                    Icon(
-                        painter = painterResource(R.drawable.ic_my_questions),
-                        contentDescription = null,
-                        modifier = Modifier.size(20.dp),
-                        tint = colorResource(R.color.blue)
-                    )
-                }
-            }
-            Box(
-                Modifier
-                    .padding(0.dp, 4.dp, 0.dp, 0.dp)
-                    .fillMaxWidth()
-                    .clickable {
-                        val browserIntent =
-                            Intent(Intent.ACTION_VIEW, Uri.parse("https://t.me/benyamin_beyzaie"))
-                        startActivity(context, browserIntent, null)
-                    }) {
-                Row(
-                    Modifier
-                        .padding(24.dp, 12.dp)
-                        .fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        stringResource(R.string.contact_us),
-                        modifier = Modifier
-                            .weight(1f),
-                        color = colorResource(R.color.blue),
-                        textAlign = TextAlign.Right,
-                        fontFamily = mainFont,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 17.sp
-                    )
-                    Icon(
-                        painter = painterResource(R.drawable.ic_back),
-                        contentDescription = null,
-                        modifier = Modifier.size(20.dp),
-                        tint = colorResource(R.color.blue)
-                    )
-                }
-            }
+            Spacer(modifier = Modifier.weight(1F))
             Box(
                 Modifier
                     .padding(0.dp, 4.dp, 0.dp, 0.dp)
@@ -411,7 +475,7 @@ fun Drawer(
                     }) {
                 Row(
                     Modifier
-                        .padding(24.dp, 12.dp)
+                        .padding(24.dp, 5.dp)
                         .fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -444,7 +508,7 @@ fun Drawer(
                     }) {
                 Row(
                     Modifier
-                        .padding(24.dp, 12.dp)
+                        .padding(24.dp, 5.dp)
                         .fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -466,19 +530,13 @@ fun Drawer(
                     )
                 }
             }
-
-
-
         }
 
-        Spacer(modifier = Modifier.weight(1F))
-
-
-        val darkState = remember { mutableStateOf(false) }
+        val darkState = remember { mutableStateOf(isDark) }
 
 
         Row(
-            modifier = Modifier.padding(20.dp, 20.dp, 20.dp, 20.dp),
+            modifier = Modifier.padding(20.dp, 5.dp, 20.dp, 20.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
@@ -495,7 +553,17 @@ fun Drawer(
             )
             Switch(
                 checked = darkState.value,
-                onCheckedChange = { darkState.value = it },
+                onCheckedChange = {
+                    darkState.value = it
+                    prefs.edit()
+                        .putBoolean(darkTag, darkState.value)
+                        .apply()
+                    if (darkState.value) {
+                        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+                    } else {
+                        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+                    }
+                },
                 enabled = true,
                 modifier = Modifier.padding(6.dp, 0.dp, 6.dp, 0.dp)
             )
@@ -508,4 +576,43 @@ fun Drawer(
 
 
     }
+}
+
+
+private fun pickFromGallery(
+    onImageCaptured: (Uri, Int) -> Unit,
+) {
+    onImageCaptured(Uri.parse(""), 1)
+}
+
+
+private fun takePhoto(
+    imageCapture: ImageCapture,
+    outputDirectory: File,
+    executor: Executor,
+    onImageCaptured: (Uri, Int) -> Unit,
+    onError: (ImageCaptureException) -> Unit
+) {
+
+    val filenameFormat = "yyyy-MM-dd-HH-mm-ss-SSS"
+    val photoFile = File(
+        outputDirectory,
+        SimpleDateFormat(filenameFormat, Locale.US).format(System.currentTimeMillis()) + ".jpg"
+    )
+
+    val outputOptions = ImageCapture.OutputFileOptions.Builder(photoFile).build()
+
+    imageCapture.takePicture(outputOptions, executor, object : ImageCapture.OnImageSavedCallback {
+        override fun onError(exception: ImageCaptureException) {
+            Log.e("kilo", "Take photo error:", exception)
+            onError(exception)
+        }
+
+        override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
+            val savedUri = Uri.fromFile(photoFile)
+            onImageCaptured(savedUri, 0)
+        }
+    })
+
+
 }

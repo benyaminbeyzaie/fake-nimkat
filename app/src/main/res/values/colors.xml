@@ -4,7 +4,7 @@
     <color name="blue">#1E88E5</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
-    <color name="color_back">#F8F8F8</color>
+<!--    <color name="color_back">#F8F8F8</color>-->
     <color name="color_hint">#6C6C6C</color>
     <color name="green">#00C766</color>
     <color name="camera_title_back">#4DE0E0E0</color>
@@ -14,7 +14,7 @@
     <color name="background">#FFFFFFFF</color>
 
     <color name="secondary_text">#FFFFFFFF</color>
-    <color name="secondary_text_variant">#BABABA</color>
+    <color name="secondary_text_variant">#F9F9F9</color>
 
     <color name="primary_text"> #151515 </color>
     <color name="primary_text_variant">#3A3A3A</color>

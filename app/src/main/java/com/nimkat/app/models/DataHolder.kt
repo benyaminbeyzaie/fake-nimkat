@@ -9,9 +9,10 @@ class DataHolder<T>(val data: T?, val message: String?, val status: DataStatus) 
         fun <T> loading(message: String? = "Loading..."): DataHolder<T> = DataHolder(null, message, DataStatus.Loading)
         fun <T> pure(): DataHolder<T> = DataHolder(null, null, DataStatus.Pure)
         fun <T> needCompletion(data: T): DataHolder<T> = DataHolder(data, null, DataStatus.NeedCompletion)
+        fun <T> errorWithData(message: String? = "Error!" , data: T): DataHolder<T> = DataHolder(data, message, DataStatus.ErrorWithData)
     }
 }
 
 enum class DataStatus {
-    Pure, Error, Loading, LoadingNext, Success , NeedCompletion
+    Pure, Error, Loading, LoadingNext, Success , NeedCompletion, ErrorWithData
 }

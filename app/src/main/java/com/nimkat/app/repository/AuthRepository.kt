@@ -23,6 +23,7 @@ class AuthRepository @Inject constructor(
     fun initAuth(): AuthModel? {
         if (authModel != null) return authModel
         val authString = authPrefs.getAuthString()
+        Log.d("AUTHSTRING" , "Auth string is " + authString)
         if (authString === null) return null
         val gson = Gson()
         authModel = gson.fromJson(authString, AuthModel::class.java)
@@ -49,6 +50,7 @@ class AuthRepository @Inject constructor(
 
     fun clearAuth() {
         authPrefs.clearAuth()
+        authModel = null
     }
 
     fun initProfile(): ProfileModel? {

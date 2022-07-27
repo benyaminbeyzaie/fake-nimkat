@@ -22,7 +22,7 @@ fun Gallery() {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(colorResource(R.color.color_back))
+            .background(colorResource(R.color.background))
     ) {
 
         val list = ArrayList<Int>()

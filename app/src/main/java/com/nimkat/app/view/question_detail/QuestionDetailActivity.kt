@@ -8,6 +8,7 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -41,7 +42,7 @@ import com.nimkat.app.view_model.SingleQuestionViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
-class QuestionDetailActivity : ComponentActivity() {
+class QuestionDetailActivity : AppCompatActivity() {
 
     companion object {
         fun sendIntent(context: Context, id: Int, text: String?, url: String?) =
@@ -102,7 +103,7 @@ fun QuestionDetailContent(text: String?, url: String?, viewModel: SingleQuestion
                     ) {
                         Icon(
                             painter = painterResource(R.drawable.ic_back), null,
-                            tint = colorResource(R.color.white),
+                            tint = colorResource(R.color.primary_text),
                             modifier = Modifier
                                 .size(24.dp)
                                 .rotate(180f)
@@ -113,14 +114,14 @@ fun QuestionDetailContent(text: String?, url: String?, viewModel: SingleQuestion
                     stringResource(R.string.question_and_answer),
                     modifier = Modifier
                         .fillMaxWidth(),
-                    color = colorResource(R.color.white),
+                    color = colorResource(R.color.primary_text),
                     fontFamily = mainFont,
                     fontWeight = FontWeight.Bold,
                     fontSize = 16.sp,
                 )
             }
         },
-        backgroundColor = colorResource(R.color.color_back)
+        backgroundColor = colorResource(R.color.background)
     ) {
 
         Column(modifier = Modifier.fillMaxSize()) {
@@ -128,7 +129,8 @@ fun QuestionDetailContent(text: String?, url: String?, viewModel: SingleQuestion
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp, 16.dp, 16.dp, 0.dp),
-                shape = RoundedCornerShape(8.dp)
+                shape = RoundedCornerShape(8.dp),
+                backgroundColor = colorResource(id = R.color.secondary_text_variant)
             ) {
                 if (url != null) {
                     AsyncImage(
@@ -140,7 +142,8 @@ fun QuestionDetailContent(text: String?, url: String?, viewModel: SingleQuestion
                     Text(
                         text = (text.toString()),
                         modifier = Modifier.padding(12.dp),
-                        fontSize = 14.sp
+                        fontSize = 14.sp,
+                        color = colorResource(id = R.color.primary_text)
                     )
                 }
             }
@@ -153,7 +156,8 @@ fun QuestionDetailContent(text: String?, url: String?, viewModel: SingleQuestion
                         .fillMaxWidth(),
                     fontSize = 14.sp,
                     fontFamily = mainFont,
-                    textAlign = TextAlign.Center
+                    textAlign = TextAlign.Center,
+                    color = colorResource(id = R.color.primary_text)
                 )
             } else {
                 Column {
@@ -162,7 +166,8 @@ fun QuestionDetailContent(text: String?, url: String?, viewModel: SingleQuestion
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(16.dp, 16.dp, 16.dp, 0.dp),
-                            shape = RoundedCornerShape(8.dp)
+                            shape = RoundedCornerShape(8.dp),
+                            backgroundColor = colorResource(id = R.color.secondary_text_variant)
                         ) {
                             if (answer.files.isNotEmpty()  && answer.files.first().file?.attachment != null) {
                                 AsyncImage(

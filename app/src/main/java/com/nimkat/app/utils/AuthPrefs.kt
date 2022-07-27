@@ -3,6 +3,7 @@ package com.nimkat.app.utils
 import android.content.Context
 import android.content.SharedPreferences
 import android.preference.PreferenceManager
+import android.util.Log
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -34,7 +35,11 @@ class AuthPrefs @Inject constructor(@ApplicationContext context : Context){
     }
 
     fun clearAuth() {
+        val authString = prefs.getString(authPrefTag, "");
+        Log.d("prefs" , authString!!)
         prefs.edit().remove(authPrefTag).apply()
         prefs.edit().remove(profileTag).apply()
+
+
     }
 }
