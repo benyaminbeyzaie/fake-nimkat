@@ -42,9 +42,8 @@ import com.nimkat.app.view.profile_edit.grade.ExpandableState
 import com.nimkat.app.view.search.QuestionSearchActivity
 import com.nimkat.app.view_model.TextQuestionViewModel
 
-@Preview
 @Composable
-fun TextQuestion(viewModel: TextQuestionViewModel, lifecycleOwner: LifecycleOwner) {
+fun TextQuestion(viewModel: TextQuestionViewModel) {
 
     val context = LocalContext.current
 
@@ -52,126 +51,127 @@ fun TextQuestion(viewModel: TextQuestionViewModel, lifecycleOwner: LifecycleOwne
     val loading = remember {
         mutableStateOf(false)
     }
+    val discoveryAnswers = viewModel.discoveryAnswers.observeAsState()
 
-    viewModel.myQuestions.removeObservers(lifecycleOwner)
-    viewModel.reCreate()
-    viewModel.myQuestions.observe(lifecycleOwner) {
-        loading.value = it.status == DataStatus.Loading
-
-        when (it.status) {
-            DataStatus.NeedLogin -> {
-                LoginActivity.sendIntent(context)
-            }
-            DataStatus.Success -> {
-                it.data?.let { list ->
-                    QuestionSearchActivity.sendIntent(context, text.value, list)
-                }
-            }
-            DataStatus.Error -> {
-                context.toast("Error : ".plus(it.message.toString()))
+    when (discoveryAnswers.value?.status) {
+        DataStatus.Loading -> {
+            loading.value = true
+        }
+        DataStatus.NeedLogin -> {
+            LoginActivity.sendIntent(context)
+        }
+        DataStatus.Success -> {
+            discoveryAnswers.value?.data?.let { list ->
+                QuestionSearchActivity.sendIntent(context, text.value, list)
             }
         }
+        DataStatus.Error -> {
+            context.toast("Error : ".plus(discoveryAnswers.value?.message.toString()))
+        }
+
+        else -> {}
     }
 
 
 
-    Column(
+
+Column(
+modifier = Modifier
+.fillMaxSize()
+.background(colorResource(R.color.background))
+) {
+
+    val text = remember { mutableStateOf("") }
+
+    TextField(
+        value = text.value,
+        maxLines = 10,
+        onValueChange = {
+            text.value = it
+        },
         modifier = Modifier
-            .fillMaxSize()
-            .background(colorResource(R.color.background))
-    ) {
+            .fillMaxWidth()
+            .defaultMinSize(minHeight = 170.dp)
+            .padding(16.dp, 16.dp, 16.dp, 0.dp),
+        placeholder = {
+            Text(
+                stringResource(id = R.string.enter_your_question),
+                fontFamily = mainFont,
+                color = colorResource(
+                    R.color.color_hint
+                ),
+                fontSize = 14.sp
+            )
+        },
+        shape = RoundedCornerShape(24.dp),
+        colors = TextFieldDefaults.textFieldColors(
+            backgroundColor = colorResource(R.color.textfield_background),
+            focusedIndicatorColor = Color.Transparent,
+            unfocusedIndicatorColor = Color.Transparent,
+            disabledIndicatorColor = Color.Transparent,
+            cursorColor = colorResource(id = R.color.blue)
+        ),
+        textStyle = TextStyle(
+            fontSize = 14.sp,
+            fontFamily = mainFont,
+            color = colorResource(R.color.primary_text)
+        )
+    )
 
-        val text = remember { mutableStateOf("") }
-
-        TextField(
-            value = text.value,
-            maxLines = 10,
-            onValueChange = {
-                text.value = it
+    CompositionLocalProvider(LocalRippleTheme provides RippleWhite) {
+        Button(
+            onClick = {
+                if (text.value.isEmpty()) return@Button
+                viewModel.sendQuestion(text.value)
             },
             modifier = Modifier
                 .fillMaxWidth()
-                .defaultMinSize(minHeight = 170.dp)
-                .padding(16.dp, 16.dp, 16.dp, 0.dp),
-            placeholder = {
-                Text(
-                    stringResource(id = R.string.enter_your_question),
-                    fontFamily = mainFont,
-                    color = colorResource(
-                        R.color.color_hint
-                    ),
-                    fontSize = 14.sp
+                .padding(16.dp)
+                .height(60.dp),
+            enabled = !loading.value,
+            shape = RoundedCornerShape(20.dp),
+            colors = ButtonDefaults.buttonColors(backgroundColor = colorResource(R.color.green)),
+        ) {
+
+            if (loading.value) {
+                AndroidView(
+                    factory = { context ->
+                        SpinKitView(
+                            ContextThemeWrapper(
+                                context,
+                                com.github.ybq.android.spinkit.R.style.SpinKitView_ThreeBounce
+                            )
+                        ).apply {
+
+                        }
+                    },
+                    update = {
+
+
+                    },
                 )
-            },
-            shape = RoundedCornerShape(24.dp),
-            colors = TextFieldDefaults.textFieldColors(
-                backgroundColor = colorResource(R.color.textfield_background),
-                focusedIndicatorColor = Color.Transparent,
-                unfocusedIndicatorColor = Color.Transparent,
-                disabledIndicatorColor = Color.Transparent,
-                cursorColor = colorResource(id = R.color.blue)
-            ),
-            textStyle = TextStyle(
-                fontSize = 14.sp,
-                fontFamily = mainFont,
-                color = colorResource(R.color.primary_text)
-            )
-        )
 
-        CompositionLocalProvider(LocalRippleTheme provides RippleWhite) {
-            Button(
-                onClick = {
-                    if (text.value.isEmpty()) return@Button
-                    viewModel.loadQuestions(text.value)
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp)
-                    .height(60.dp),
-                enabled = !loading.value,
-                shape = RoundedCornerShape(20.dp),
-                colors = ButtonDefaults.buttonColors(backgroundColor = colorResource(R.color.green)),
-            ) {
-
-                if (loading.value) {
-                    AndroidView(
-                        factory = { context ->
-                            SpinKitView(
-                                ContextThemeWrapper(
-                                    context,
-                                    com.github.ybq.android.spinkit.R.style.SpinKitView_ThreeBounce
-                                )
-                            ).apply {
-
-                            }
-                        },
-                        update = {
-
-
-                        },
+            } else {
+                Row {
+                    Text(
+                        text = stringResource(R.string.ok),
+                        style = TextStyle(
+                            fontFamily = secondFont
+                        ),
+                        color = colorResource(R.color.white),
+                        fontSize = 20.sp,
                     )
-
-                } else {
-                    Row {
-                        Text(
-                            text = stringResource(R.string.ok),
-                            style = TextStyle(
-                                fontFamily = secondFont
-                            ),
-                            color = colorResource(R.color.white),
-                            fontSize = 20.sp,
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Icon(
-                            Icons.Outlined.CheckCircle,
-                            null,
-                            tint = colorResource(R.color.white),
-                            modifier = Modifier.padding(0.dp, 6.dp, 0.dp, 0.dp)
-                        )
-                    }
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Icon(
+                        Icons.Outlined.CheckCircle,
+                        null,
+                        tint = colorResource(R.color.white),
+                        modifier = Modifier.padding(0.dp, 6.dp, 0.dp, 0.dp)
+                    )
                 }
             }
         }
-
     }
+
+}
 }

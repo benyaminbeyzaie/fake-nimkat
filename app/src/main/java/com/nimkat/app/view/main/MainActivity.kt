@@ -42,9 +42,11 @@ import com.google.accompanist.pager.PagerState
 import com.google.accompanist.pager.rememberPagerState
 import com.nimkat.app.R
 import com.nimkat.app.ui.theme.NimkatTheme
+import com.nimkat.app.utils.ASK_FOR_EDIT_PROFILE
 import com.nimkat.app.utils.CROP_IMAGE_CODE
 import com.nimkat.app.view.question_crop.QuestionCropActivity
 import com.nimkat.app.view_model.AuthViewModel
+import com.nimkat.app.view_model.TextQuestionViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -54,11 +56,6 @@ import java.util.concurrent.Executors
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
-    private var cameraScaffoldState: ScaffoldState? = null
-    private var coroutineScope: CoroutineScope? = null
-
-
-
     companion object {
         fun sendIntent(context: Context) =
             Intent(context, MainActivity::class.java).apply {
@@ -66,18 +63,19 @@ class MainActivity : AppCompatActivity() {
             }
     }
 
+
+    private var cameraScaffoldState: ScaffoldState? = null
+    private var coroutineScope: CoroutineScope? = null
     private lateinit var outputDirectory: File
     private lateinit var cameraExecutor: ExecutorService
-
     var shouldShowCamera: MutableState<Boolean> = mutableStateOf(false)
 
-    val authViewModel: AuthViewModel by viewModels()
+    private val authViewModel: AuthViewModel by viewModels()
+    private val textQuestionsViewModel: TextQuestionViewModel by viewModels()
 
     @OptIn(ExperimentalMaterialApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-//        val profileViewModel:ProfileViewModel by viewModels()
-//        profileViewModel.initAuth()
 
         authViewModel.initAuth()
         outputDirectory = getOutputDirectory()
@@ -108,13 +106,13 @@ class MainActivity : AppCompatActivity() {
                         authViewModel,
                         cameraExecutor,
                         outputDirectory,
-                        onImageCaptured = ::handleImageCapture
+                        onImageCaptured = ::handleImageCapture,
+                        shouldShowCamera = shouldShowCamera,
+                        textQuestionViewModel = textQuestionsViewModel,
                     )
                 }
             }
         }
-
-
     }
 
     override fun onBackPressed() {
@@ -175,8 +173,6 @@ class MainActivity : AppCompatActivity() {
 
 
     private fun handleImageCapture(uri: Uri, mode: Int) {
-        Log.i("kilo", "Image captured: $uri")
-//        shouldShowCamera.value = false
         val intent = Intent(this@MainActivity, QuestionCropActivity::class.java)
         intent.putExtra("mode", mode)
         intent.putExtra("URI", uri)
@@ -230,6 +226,7 @@ fun Greeting(
     outputDirectory: File,
     shouldShowCamera: MutableState<Boolean>,
     onImageCaptured: (Uri, Int) -> Unit,
+    textQuestionViewModel: TextQuestionViewModel
 ) {
     val coroutineScope = rememberCoroutineScope()
 
@@ -260,7 +257,7 @@ fun Greeting(
                     ) { index ->
                         when (index) {
                             0 -> {
-                                TextQuestion()
+                                TextQuestion(textQuestionViewModel)
                             }
                             1 -> {
                                 Camera(

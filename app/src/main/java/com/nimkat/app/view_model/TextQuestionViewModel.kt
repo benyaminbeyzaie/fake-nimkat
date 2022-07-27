@@ -15,98 +15,42 @@ import javax.inject.Inject
 class TextQuestionViewModel @Inject constructor(
     private val repository: TextQuestionRepository,
 ) : ViewModel() {
-    private var _myQuestions =
+    private var _discoveryAnswers =
         MutableLiveData<DataHolder<ArrayList<DiscoveryAnswers>>>(DataHolder.pure())
-    var myQuestions: LiveData<DataHolder<ArrayList<DiscoveryAnswers>>> = _myQuestions
-
-    private var _sendQuestion =
-        MutableLiveData<DataHolder<ArrayList<DiscoveryAnswers>>>(DataHolder.pure())
-    var sendQuestion: LiveData<DataHolder<ArrayList<DiscoveryAnswers>>> = _sendQuestion
-
-    fun reCreate(){
-        _myQuestions =
-            MutableLiveData<DataHolder<ArrayList<DiscoveryAnswers>>>(DataHolder.pure())
-        myQuestions = _myQuestions
-    }
-
-    fun loadQuestions(question: String) {
-
-        _myQuestions.postValue(DataHolder.loading())
-
-
-        viewModelScope.launch {
-
-
-            if (repository.isAuth() == null){
-                _myQuestions.postValue(DataHolder.needLogin())
-                return@launch
-            }
-
-            val response = repository.getQuestions(question)
-            if (response == null || !response.isSuccessful) {
-                if (_myQuestions.value != null && _myQuestions.value!!.data != null) {
-                    _myQuestions.postValue(DataHolder.success(_myQuestions.value!!.data!!))
-                } else {
-                    _myQuestions.postValue(DataHolder.error())
-                }
-            } else {
-                if (response.body() == null || response.body()!!.discovery_answers.isNullOrEmpty()) {
-                    if (_myQuestions.value == null || _myQuestions.value!!.data == null) {
-                        _myQuestions.postValue(
-                            DataHolder.pure()
-                        )
-                    } else {
-                        _myQuestions.postValue(
-                            DataHolder.success(_myQuestions.value!!.data!!)
-                        )
-                    }
-                } else if (_myQuestions.value != null && _myQuestions.value!!.data == null) {
-                    _myQuestions.postValue(DataHolder.success(response.body()!!.discovery_answers!!));
-                } else if (_myQuestions.value != null) {
-                    _myQuestions.value!!.data!!.addAll(response.body()!!.discovery_answers!!)
-                    _myQuestions.postValue(DataHolder.success(_myQuestions.value!!.data!!))
-                }
-            }
-
-        }
-    }
+    var discoveryAnswers: LiveData<DataHolder<ArrayList<DiscoveryAnswers>>> = _discoveryAnswers
 
     fun sendQuestion(question: String) {
-
-        _sendQuestion.postValue(DataHolder.loading())
-
+        _discoveryAnswers.postValue(DataHolder.loading())
 
         viewModelScope.launch {
-
-
             if (repository.isAuth() == null){
-                _sendQuestion.postValue(DataHolder.needLogin())
+                _discoveryAnswers.postValue(DataHolder.needLogin())
                 return@launch
             }
 
             val response = repository.sendQuestion(question)
             if (response == null || !response.isSuccessful) {
-                if (_sendQuestion.value != null && _sendQuestion.value!!.data != null) {
-                    _sendQuestion.postValue(DataHolder.success(_sendQuestion.value!!.data!!))
+                if (_discoveryAnswers.value != null && _discoveryAnswers.value!!.data != null) {
+                    _discoveryAnswers.postValue(DataHolder.success(_discoveryAnswers.value!!.data!!))
                 } else {
-                    _sendQuestion.postValue(DataHolder.error())
+                    _discoveryAnswers.postValue(DataHolder.error())
                 }
             } else {
                 if (response.body() == null || response.body()!!.discovery_answers.isNullOrEmpty()) {
-                    if (_sendQuestion.value == null || _sendQuestion.value!!.data == null) {
-                        _sendQuestion.postValue(
+                    if (_discoveryAnswers.value == null || _discoveryAnswers.value!!.data == null) {
+                        _discoveryAnswers.postValue(
                             DataHolder.pure()
                         )
                     } else {
-                        _sendQuestion.postValue(
-                            DataHolder.success(_sendQuestion.value!!.data!!)
+                        _discoveryAnswers.postValue(
+                            DataHolder.success(_discoveryAnswers.value!!.data!!)
                         )
                     }
-                } else if (_sendQuestion.value != null && _sendQuestion.value!!.data == null) {
-                    _sendQuestion.postValue(DataHolder.success(response.body()!!.discovery_answers!!));
-                } else if (_sendQuestion.value != null) {
-                    _sendQuestion.value!!.data!!.addAll(response.body()!!.discovery_answers!!)
-                    _sendQuestion.postValue(DataHolder.success(_sendQuestion.value!!.data!!))
+                } else if (_discoveryAnswers.value != null && _discoveryAnswers.value!!.data == null) {
+                    _discoveryAnswers.postValue(DataHolder.success(response.body()!!.discovery_answers!!));
+                } else if (_discoveryAnswers.value != null) {
+                    _discoveryAnswers.value!!.data!!.addAll(response.body()!!.discovery_answers!!)
+                    _discoveryAnswers.postValue(DataHolder.success(_discoveryAnswers.value!!.data!!))
                 }
             }
 

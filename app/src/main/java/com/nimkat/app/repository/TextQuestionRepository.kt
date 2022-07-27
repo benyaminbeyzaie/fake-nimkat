@@ -16,19 +16,10 @@ class TextQuestionRepository @Inject constructor(
 
     fun isAuth() = authPrefs.initAuth()
 
-    suspend fun getQuestions(question: String): Response<TextQuestionCallback>? {
-        val authModel = authPrefs.initAuth() ?: return null
-        val apiResponse = api.getTextQuestions(
-            "Token ${authModel.token}", TextQuestionBody(question, listOf(), "DS", "v2")
-        )
-        if (apiResponse.body() === null) return null
-        return apiResponse
-    }
-
     suspend fun sendQuestion(question: String): Response<TextQuestionCallback>? {
         val authModel = authPrefs.initAuth() ?: return null
         val apiResponse = api.sendTextQuestions(
-            "Token ${authModel.token}", TextQuestionBody(question, listOf(), "DS", "v2")
+            "Token ${authModel.token}", TextQuestionBody(question, listOf(), "DS", "v1")
         )
         if (apiResponse.body() === null) return null
         return apiResponse
