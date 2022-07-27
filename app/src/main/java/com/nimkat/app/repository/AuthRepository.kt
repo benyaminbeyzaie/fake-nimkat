@@ -73,7 +73,7 @@ class AuthRepository @Inject constructor(
         if (apiResponse.body() === null) return null;
         authModel!!.isProfileCompleted = apiResponse.body()!!.isProfileCompleted
         val gson = Gson()
-        authPrefs.setAuthString(gson.toJson(apiResponse.body()))
+        authPrefs.setAuthString(gson.toJson(authModel!!))
         Log.d("Auth", "profile status " + apiResponse.body()!!.isProfileCompleted)
         authPrefs.setProfileString(gson.toJson(apiResponse.body()))
         Log.d("Auth", "json is: " + gson.toJson(apiResponse.body()))
