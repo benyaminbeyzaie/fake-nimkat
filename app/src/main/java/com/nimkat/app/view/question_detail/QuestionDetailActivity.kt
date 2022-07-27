@@ -31,12 +31,14 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
+import coil.compose.SubcomposeAsyncImage
 import com.nimkat.app.R
 import com.nimkat.app.models.AnswerModel
 import com.nimkat.app.models.QuestionModel
 import com.nimkat.app.ui.theme.NimkatTheme
 import com.nimkat.app.ui.theme.RippleWhite
 import com.nimkat.app.ui.theme.mainFont
+import com.nimkat.app.view.CircularIndeterminanteProgressBar
 import com.nimkat.app.view_model.MyQuestionsViewModel
 import com.nimkat.app.view_model.SingleQuestionViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -133,9 +135,12 @@ fun QuestionDetailContent(text: String?, url: String?, viewModel: SingleQuestion
                 backgroundColor = colorResource(id = R.color.secondary_text_variant)
             ) {
                 if (url != null) {
-                    AsyncImage(
+                    SubcomposeAsyncImage(
                         model = url,
-                        contentDescription = null
+                        contentDescription = null,
+                        loading = {
+                            CircularIndeterminanteProgressBar(true)
+                        }
                     )
                 }
                 if (text != null) {

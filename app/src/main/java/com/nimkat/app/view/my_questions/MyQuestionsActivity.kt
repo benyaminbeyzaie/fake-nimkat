@@ -38,12 +38,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.lifecycleScope
 import coil.compose.AsyncImage
+import coil.compose.SubcomposeAsyncImage
 import com.nimkat.app.R
 import com.nimkat.app.models.DataStatus
 import com.nimkat.app.models.QuestionModel
 import com.nimkat.app.ui.theme.NimkatTheme
 import com.nimkat.app.ui.theme.RippleWhite
 import com.nimkat.app.ui.theme.mainFont
+import com.nimkat.app.view.CircularIndeterminanteProgressBar
 import com.nimkat.app.view.SnackBar
 import com.nimkat.app.view.otp.OtpActivity
 import com.nimkat.app.view.question_detail.QuestionDetailActivity
@@ -88,9 +90,11 @@ fun MyQuestionsContent(viewModel: MyQuestionsViewModel) {
     val questions = viewModel.myQuestions.observeAsState()
     val lifecycleOwner = LocalLifecycleOwner.current
     val errorSnackBar = remember { SnackbarHostState() }
+    val isLoading = remember { mutableStateOf(false) }
 
     when (questions.value?.status) {
         DataStatus.Error -> {
+            isLoading.value = false
             LaunchedEffect(lifecycleOwner.lifecycleScope) {
                 errorSnackBar.showSnackbar(
                     message = context.getString(R.string.errorMessage),
@@ -99,7 +103,12 @@ fun MyQuestionsContent(viewModel: MyQuestionsViewModel) {
                 )
             }
         }
-        else -> {}
+        DataStatus.Loading -> {
+            isLoading.value = true
+        }
+        else -> {
+            isLoading.value = false
+        }
     }
 
 
@@ -108,8 +117,8 @@ fun MyQuestionsContent(viewModel: MyQuestionsViewModel) {
         topBar = {
             Row(
                 modifier = Modifier
-                    .background(colorResource(R.color.main_color))
-,                verticalAlignment = Alignment.CenterVertically
+                    .background(colorResource(R.color.main_color)),
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 CompositionLocalProvider(LocalRippleTheme provides RippleWhite) {
                     IconButton(
@@ -141,52 +150,70 @@ fun MyQuestionsContent(viewModel: MyQuestionsViewModel) {
         },
         backgroundColor = colorResource(R.color.background)
     ) {
-        val list = ArrayList<QuestionModel>()
-        Log.d("My Question Activity", "new list created")
-        questions.value?.data?.forEach { questionModel -> list.add(questionModel) }
+        if (isLoading.value) {
+            CircularIndeterminanteProgressBar(true, space = 20)
+        } else {
 
-        val listState = rememberLazyListState()
-        LazyVerticalGrid(
-            cells = GridCells.Fixed(2),
-            modifier = Modifier.padding(12.dp),
-            state = listState,
-            content = {
-                items(list.size) { index ->
-                    Card(
-                        modifier = Modifier
-                            .padding(4.dp),
-                        shape = RoundedCornerShape(8.dp),
-                        backgroundColor = colorResource(id = R.color.secondary_text_variant)
-                    ) {
-                        Box(modifier = Modifier.clickable {
-                            if (list[index].files.isEmpty()) {
-                                QuestionDetailActivity.sendIntent(context, list[index].id!!, list[index].text, null)
-                            } else {
-                                QuestionDetailActivity.sendIntent(context, list[index].id!!, list[index].text, list[index].files.first().file?.attachment)
-                            }
-                        }) {
-                            if (list[index].files.isNotEmpty()  && list[index].files.first().file?.attachment != null) {
-                                AsyncImage(
-                                    model = list[index].files.first().file?.attachment,
-                                    contentDescription = null
-                                )
-                            }
-                            if (list[index].text != null) {
-                                Text(
-                                    text = (list[index].text.toString()),
-                                    modifier = Modifier.padding(12.dp),
-                                    fontSize = 14.sp,
-                                    color = colorResource(id = R.color.primary_text)
-                                )
+            val list = ArrayList<QuestionModel>()
+            Log.d("My Question Activity", "new list created")
+            questions.value?.data?.forEach { questionModel -> list.add(questionModel) }
+
+            val listState = rememberLazyListState()
+            LazyVerticalGrid(
+                cells = GridCells.Fixed(2),
+                modifier = Modifier.padding(12.dp),
+                state = listState,
+                content = {
+                    items(list.size) { index ->
+                        Card(
+                            modifier = Modifier
+                                .padding(4.dp),
+                            shape = RoundedCornerShape(8.dp),
+                            backgroundColor = colorResource(id = R.color.secondary_text_variant)
+                        ) {
+                            Box(modifier = Modifier.clickable {
+                                if (list[index].files.isEmpty()) {
+                                    QuestionDetailActivity.sendIntent(
+                                        context,
+                                        list[index].id!!,
+                                        list[index].text,
+                                        null
+                                    )
+                                } else {
+                                    QuestionDetailActivity.sendIntent(
+                                        context,
+                                        list[index].id!!,
+                                        list[index].text,
+                                        list[index].files.first().file?.attachment
+                                    )
+                                }
+                            }) {
+                                if (list[index].files.isNotEmpty() && list[index].files.first().file?.attachment != null) {
+                                    SubcomposeAsyncImage(
+                                        model = list[index].files.first().file?.attachment,
+                                        contentDescription = null,
+                                        loading = {
+                                            CircularIndeterminanteProgressBar(true)
+                                        }
+                                    )
+                                }
+                                if (list[index].text != null) {
+                                    Text(
+                                        text = (list[index].text.toString()),
+                                        modifier = Modifier.padding(12.dp),
+                                        fontSize = 14.sp,
+                                        color = colorResource(id = R.color.primary_text)
+                                    )
+                                }
                             }
                         }
                     }
-                }
-            })
+                })
 
-        listState.OnBottomReached {
-            viewModel.loadQuestions()
-            Log.d("MyQuestionActivity", "do on load more")
+            listState.OnBottomReached {
+                viewModel.loadQuestions()
+                Log.d("MyQuestionActivity", "do on load more")
+            }
         }
 
     }
@@ -199,8 +226,7 @@ fun LazyListState.OnBottomReached(loadMore: () -> Unit) {
     val shouldLoadMore = remember {
         derivedStateOf {
             val lastVisibleItem = layoutInfo.visibleItemsInfo.lastOrNull()
-                ?:
-                return@derivedStateOf true
+                ?: return@derivedStateOf true
             lastVisibleItem.index == layoutInfo.totalItemsCount - 1
         }
     }
