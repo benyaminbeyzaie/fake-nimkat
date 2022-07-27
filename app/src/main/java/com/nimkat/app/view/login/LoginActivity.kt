@@ -62,7 +62,7 @@ class LoginActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        var phone = intent.getStringExtra("phone")?: ""
+        val phone = intent.getStringExtra("phone")?: ""
         setContent {
             NimkatTheme {
                 // A surface container using the 'background' color from the theme
@@ -108,7 +108,7 @@ fun LoginContent(authViewModel: AuthViewModel, phone: String) {
             Log.d("Login", "isCodeSent.value?.status == DataStatus.Error")
             LaunchedEffect(lifecycleOwner.lifecycleScope) {
                 errorSnackBar.showSnackbar(
-                    message = "متاسفانه مشکلی پیش اومده یا دستگاهت به اینترنت متصل نیست!",
+                    message = context.getString(R.string.errorMessage),
                     actionLabel = "RED",
                     duration = SnackbarDuration.Short
                 )
@@ -227,6 +227,7 @@ fun LoginContent(authViewModel: AuthViewModel, phone: String) {
                 ) {
                     Text(
                         "+98",
+                        fontFamily = mainFont,
                         color = colorResource(R.color.primary_text),
                         modifier = Modifier
                             .wrapContentSize(),

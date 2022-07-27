@@ -7,6 +7,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -60,8 +61,11 @@ import com.nimkat.app.view.question_detail.QuestionDetailContent
 import com.nimkat.app.view_model.TextQuestionViewModel
 import com.rd.PageIndicatorView
 import com.rd.animation.type.AnimationType
+import dagger.hilt.EntryPoint
+import dagger.hilt.android.AndroidEntryPoint
 
-class QuestionSearchActivity : ComponentActivity() {
+@AndroidEntryPoint
+class QuestionSearchActivity : AppCompatActivity() {
 
     companion object {
         fun sendIntent(context: Context, question: String, questions: ArrayList<DiscoveryAnswers>) =
@@ -144,7 +148,7 @@ fun QuestionSearchContent(
                 )
             }
         },
-        backgroundColor = colorResource(R.color.color_back)
+        backgroundColor = colorResource(R.color.background)
     ) {
 
 

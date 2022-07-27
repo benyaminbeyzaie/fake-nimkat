@@ -21,6 +21,9 @@
 
     <color name="textfield_background">#E0E0E0 </color>
 
+    <color name="green_dark">#05AC00</color>
+
+<!--    <color name="green_dark"> Color(5, 172, 0, 255)</color>-->
 
     <color name="gray50">#FAFAFA</color>
     <color name="gray100">#F5F5F5</color>

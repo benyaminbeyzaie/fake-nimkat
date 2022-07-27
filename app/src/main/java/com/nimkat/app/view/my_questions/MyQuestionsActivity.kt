@@ -93,7 +93,7 @@ fun MyQuestionsContent(viewModel: MyQuestionsViewModel) {
         DataStatus.Error -> {
             LaunchedEffect(lifecycleOwner.lifecycleScope) {
                 errorSnackBar.showSnackbar(
-                    message = "متاسفانه مشکلی پیش اومده یا دستگاهت به اینترنت متصل نیست!",
+                    message = context.getString(R.string.errorMessage),
                     actionLabel = "RED",
                     duration = SnackbarDuration.Short
                 )

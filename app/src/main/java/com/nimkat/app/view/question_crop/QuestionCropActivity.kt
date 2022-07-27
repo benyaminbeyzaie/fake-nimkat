@@ -69,7 +69,7 @@ class QuestionCropActivity : AppCompatActivity() {
         if (mode == 0) {
             photoUri = intent.getParcelableExtra<Uri>("URI")!!
         }
-        Log.d("kiloURI", imagePath)
+        Log.d("ImageCapture", imagePath)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -78,7 +78,7 @@ class QuestionCropActivity : AppCompatActivity() {
             val result = CropImage.getActivityResult(data)
             if (resultCode == RESULT_OK) {
                 val resultUri = result.uri
-                Log.d("kiloURI", "copped image uri is: $resultUri")
+                Log.d("ImageCapture", "copped image uri is: $resultUri")
                 a(resultUri);
             }else{
                     setResult(Activity.RESULT_CANCELED, Intent().apply {

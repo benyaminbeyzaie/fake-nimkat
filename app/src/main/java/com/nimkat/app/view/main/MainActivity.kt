@@ -11,7 +11,6 @@ import android.os.Bundle
 import android.preference.PreferenceManager
 import android.util.Log
 import android.widget.Toast
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
@@ -73,18 +72,19 @@ class MainActivity : AppCompatActivity() {
     private lateinit var outputDirectory: File
     private lateinit var cameraExecutor: ExecutorService
 
-    var shouldShowCamera: MutableState<Boolean> = mutableStateOf(false)
+    private var shouldShowCamera: MutableState<Boolean> = mutableStateOf(false)
 
-    val authViewModel: AuthViewModel by viewModels()
+    private val authViewModel: AuthViewModel by viewModels()
 
     @OptIn(ExperimentalMaterialApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-//        val profileViewModel:ProfileViewModel by viewModels()
-//        profileViewModel.initAuth()
+
         val authViewModel: AuthViewModel by viewModels()
         authViewModel.initAuth()
+
         val textQuestionViewModel: TextQuestionViewModel by viewModels()
+
         outputDirectory = getOutputDirectory()
         cameraExecutor = Executors.newSingleThreadExecutor()
 
@@ -122,8 +122,6 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
-        requestCameraPermission()
-
     }
 
     override fun onBackPressed() {
@@ -135,7 +133,6 @@ class MainActivity : AppCompatActivity() {
                 return
             }
         }
-
         super.onBackPressed()
     }
 
@@ -185,8 +182,7 @@ class MainActivity : AppCompatActivity() {
 
 
     private fun handleImageCapture(uri: Uri, mode: Int) {
-        Log.i("kilo", "Image captured: $uri")
-//        shouldShowCamera.value = false
+        Log.i("ImageCapture", "Image captured: $uri")
         val intent = Intent(this@MainActivity, QuestionCropActivity::class.java)
         intent.putExtra("mode", mode)
         intent.putExtra("URI", uri)
@@ -201,7 +197,7 @@ class MainActivity : AppCompatActivity() {
                 if (resultCode == Activity.RESULT_OK) {
                     data?.apply {
                         val parcelableExtra = getParcelableExtra<Uri>("photouri")
-                        Log.d("kiloURI", "IMAGE CROPPING SUCCESSFULL. $parcelableExtra")
+                        Log.d("ImageCapture", "IMAGE CROPPING SUCCESSFULL. $parcelableExtra")
                         Toast.makeText(x, "IMAGE CROPPING SUCCESSFULL.", Toast.LENGTH_SHORT).show()
                         // now we should use this uri to load bitmap of the image and then send it to server
                     }
@@ -213,11 +209,9 @@ class MainActivity : AppCompatActivity() {
             ASK_FOR_EDIT_PROFILE ->{
                 if (resultCode == RESULT_OK){
                     data?.apply {
-                        val grade = getStringExtra("grade")
                         val gradeID = getIntExtra("gradeID" , 0)
                         val name = getStringExtra("name")
                         authViewModel.update(name!! , gradeID)
-                        Toast.makeText(x, "profile changed .", Toast.LENGTH_SHORT).show()
                     }
                 }
             }

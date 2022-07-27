@@ -74,13 +74,13 @@ class OtpActivity : AppCompatActivity() {
             }
     }
 
-    private var REQ_USER_CONSENT = 200
-    var smsBroadcastReciver: SmsReciever? = null
-    var smsCode = ""
+    private var ReqUserConsent = 200
+    private var smsBroadcastReceiver: SmsReciever? = null
+    private var smsCode = ""
     var id:String = ""
-    var mobile: String = ""
+    private var mobile: String = ""
 
-    val authViewModel: AuthViewModel by viewModels()
+    private val authViewModel: AuthViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -121,11 +121,11 @@ class OtpActivity : AppCompatActivity() {
     }
 
     private fun registerBroadcastReceiver() {
-        smsBroadcastReciver = SmsReciever()
-        smsBroadcastReciver!!.smsBroadcastReciverListener =
+        smsBroadcastReceiver = SmsReciever()
+        smsBroadcastReceiver!!.smsBroadcastReciverListener =
             object : SmsReciever.SmsBroadcastReciverListener {
                 override fun onSuccess(intent: Intent?) {
-                    startActivityForResult(intent, REQ_USER_CONSENT)
+                    startActivityForResult(intent, ReqUserConsent)
                 }
 
                 override fun onFailure() {
@@ -134,12 +134,12 @@ class OtpActivity : AppCompatActivity() {
             }
 
         val intentFilter = IntentFilter(SmsRetriever.SMS_RETRIEVED_ACTION)
-        registerReceiver(smsBroadcastReciver, intentFilter)
+        registerReceiver(smsBroadcastReceiver, intentFilter)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == REQ_USER_CONSENT) {
+        if (requestCode == ReqUserConsent) {
             if (resultCode == RESULT_OK && data != null) {
                 val message = data.getStringExtra(SmsRetriever.EXTRA_SMS_MESSAGE)
                 getOtpFromMessage(message)
@@ -149,13 +149,13 @@ class OtpActivity : AppCompatActivity() {
 
     private fun getOtpFromMessage(message: String?) {
         val otpPatter = Pattern.compile("(|^)\\d{5}")
-        val matcher = otpPatter.matcher(message)
+        val matcher = otpPatter.matcher(message!!)
         if (matcher.find()) {
 
             smsCode = matcher.group(0)!!
             contentSetter()
 
-            if (smsCode != null && smsCode != ""){
+            if (smsCode != ""){
                 authViewModel.verifyCode(smsCode, id)
             }
 
@@ -169,13 +169,13 @@ class OtpActivity : AppCompatActivity() {
 
     override fun onStop() {
         super.onStop()
-        unregisterReceiver(smsBroadcastReciver)
+        unregisterReceiver(smsBroadcastReceiver)
     }
 
 
     override fun dispatchTouchEvent(event: MotionEvent): Boolean {
         if (event.action == MotionEvent.ACTION_DOWN) {
-            val v: View? = getCurrentFocus()
+            val v: View? = currentFocus
             if (v is EditText) {
                 val outRect = Rect()
                 v.getGlobalVisibleRect(outRect)
@@ -216,7 +216,7 @@ fun OtpContent(id: String, authViewModel: AuthViewModel, smsCode: String, mobile
         Log.d("Login", "isCodeSent.value?.status == DataStatus.Error")
         LaunchedEffect(lifecycleOwner.lifecycleScope) {
             errorSnackBar.showSnackbar(
-                message = "متاسفانه مشکلی پیش اومده یا دستگاهت به اینترنت متصل نیست!",
+                message = context.getString(R.string.errorMessage),
                 actionLabel = "RED",
                 duration = SnackbarDuration.Short
             )
@@ -336,7 +336,7 @@ fun OtpContent(id: String, authViewModel: AuthViewModel, smsCode: String, mobile
         }
     }
     
-    SnackBar(snackbarHostState = errorSnackBar, Color.Red, true, {})
+    SnackBar(snackbarHostState = errorSnackBar, Color.Red, true) {}
 
 }
 
@@ -400,14 +400,12 @@ fun CodeItem(
         keyboardActions = KeyboardActions(
             onDone = {
                 keyboardController?.hide()
-                var enteredCode = "";
-                var ind = 0
-                for (state in states) {
+                var enteredCode = ""
+                for ((ind, state) in states.withIndex()) {
                     enteredCode += state.value
                     if (state.value == ""){
                         errors[ind].value = true
                     }
-                    ind++
                 }
                 if (enteredCode.length == 5) {
                     authViewModel.verifyCode(enteredCode, id)
@@ -418,5 +416,3 @@ fun CodeItem(
     )
 }
 
-
-//if (isError.value) colorResource(R.color.red) else Color.Transparent

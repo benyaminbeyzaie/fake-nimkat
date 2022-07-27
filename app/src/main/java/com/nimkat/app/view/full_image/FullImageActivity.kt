@@ -8,6 +8,7 @@ import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -47,7 +48,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-class FullImageActivity : ComponentActivity() {
+class FullImageActivity : AppCompatActivity() {
 
 
     companion object {
@@ -121,7 +122,7 @@ fun FullImageContent(imageUrl: String) {
                 )
             }
         },
-        backgroundColor = colorResource(R.color.color_back)
+        backgroundColor = colorResource(R.color.background)
     ) {
         AndroidView(
             factory = { context ->

@@ -58,4 +58,5 @@
     <string name="question_search_desc_3">سوالت شامل اشکال هندسی یا معادلات پیچیده بود.</string>
     <string name="question_search_desc_4">توی بانک سوالمون سوال مشابهی پیدا نشده.</string>
     <string name="darThemeTag">isDark</string>
+    <string name="errorMessage">متاسفانه مشکلی پیش اومده یا دستگاهت به اینترنت متصل نیست!</string>
 </resources>

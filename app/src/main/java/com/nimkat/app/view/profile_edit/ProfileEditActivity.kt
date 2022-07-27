@@ -126,7 +126,7 @@ class ProfileEditActivity : AppCompatActivity() {
         when (requestCode) {
             ASK_GRADE_CODE -> {
                 if (resultCode == Activity.RESULT_OK) {
-                    Log.d("GradeAct" , "result recieved")
+                    Log.d("GradeAct" , "result received")
                     data?.apply {
                         grade = getStringExtra("grade")!!
                         gradeID = getIntExtra("gradeID" , 0)
@@ -141,7 +141,6 @@ class ProfileEditActivity : AppCompatActivity() {
 
 }
 
-//@Preview
 @Composable
 fun ProfileEditContent(name: String?, phone: String?, grade: String? , gradeID: Int) {
 
@@ -194,7 +193,7 @@ fun ProfileEditContent(name: String?, phone: String?, grade: String? , gradeID: 
         ) {
 
             OutlinedTextField(
-                value = phoneNumber.value?.substring(3) ?: "9171234567",
+                value = phoneNumber.value?.substring(3) ?: "0000000000",
                 onValueChange = {
                 },
                 enabled = false,
@@ -261,7 +260,7 @@ fun ProfileEditContent(name: String?, phone: String?, grade: String? , gradeID: 
         Spacer(modifier = Modifier.height(10.dp))
 
         OutlinedTextField(
-            value = username.value ?: "آنیتا علیخانی",
+            value = username.value ?: "null",
             onValueChange = {
                 username.value = it
             },
@@ -299,7 +298,7 @@ fun ProfileEditContent(name: String?, phone: String?, grade: String? , gradeID: 
                 .padding(16.dp, 0.dp)
         ) {
             OutlinedTextField(
-                value = grade ?: "اول",
+                value = grade ?: "null",
                 onValueChange = {
                 },
                 enabled = false,
