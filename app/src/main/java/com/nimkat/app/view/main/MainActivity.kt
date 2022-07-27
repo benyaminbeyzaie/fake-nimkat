@@ -34,8 +34,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.LifecycleOwner
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
@@ -54,6 +56,9 @@ import kotlinx.coroutines.launch
 import java.io.File
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+import android.app.AlertDialog
+import android.content.DialogInterface
+
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
@@ -158,6 +163,17 @@ class MainActivity : AppCompatActivity() {
             shouldShowCamera.value = true
         } else {
             Log.d("permission", "Permission denied")
+
+            val dialogBuilder = AlertDialog.Builder(this)
+
+            dialogBuilder.setMessage(getString(R.string.cameraError))
+                .setCancelable(false)
+                .setPositiveButton(getString(R.string.understood), DialogInterface.OnClickListener {
+                        dialog, id -> {}
+                })
+            val alert = dialogBuilder.create()
+            alert.show()
+
         }
     }
 

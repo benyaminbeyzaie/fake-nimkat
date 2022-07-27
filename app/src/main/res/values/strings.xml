@@ -59,4 +59,6 @@
     <string name="question_search_desc_4">توی بانک سوالمون سوال مشابهی پیدا نشده.</string>
     <string name="darThemeTag">isDark</string>
     <string name="errorMessage">متاسفانه مشکلی پیش اومده یا دستگاهت به اینترنت متصل نیست!</string>
+    <string name="cameraError">اگه بخوای سوالت رو به صورت عکس بپرسی، باید دسترسی دوربین رو فعال کنی. هروقت روی دکمه آبی رنگ دوربین کلیک کنی، مجددا درخواست دسترسی دوربین رو میبینی.</string>
+    <string name="understood">فهمیدم.</string>
 </resources>

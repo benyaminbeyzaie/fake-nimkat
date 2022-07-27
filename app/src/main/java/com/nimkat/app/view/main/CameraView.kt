@@ -1,6 +1,7 @@
 package com.nimkat.app.view.main
 
 import android.Manifest
+import android.app.Activity
 import android.content.Context
 import android.content.pm.PackageManager
 import android.net.Uri
@@ -33,9 +34,11 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.nimkat.app.R
 import com.nimkat.app.view.SnackBar
+import kotlinx.coroutines.delay
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
@@ -82,7 +85,7 @@ fun CameraView(
     }
 
 
-    val canTakePicture = remember{ mutableStateOf(shouldShowCamera.value)}
+    val canTakePicture = remember{ shouldShowCamera}
 
     val requestPermissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -97,14 +100,20 @@ fun CameraView(
 
 
     fun requestCameraPermission() {
-        when (PackageManager.PERMISSION_GRANTED) {
+        when {
             ContextCompat.checkSelfPermission(
                 context,
                 Manifest.permission.CAMERA
-            ) -> {
+            ) == PackageManager.PERMISSION_GRANTED -> {
                 Log.d("permission", "Permission previously granted")
-                canTakePicture.value = true
+                shouldShowCamera.value = true
             }
+
+            ActivityCompat.shouldShowRequestPermissionRationale(
+                (context as Activity),
+                Manifest.permission.CAMERA
+            ) -> requestPermissionLauncher.launch(Manifest.permission.CAMERA)
+
             else -> requestPermissionLauncher.launch(Manifest.permission.CAMERA)
         }
     }
@@ -112,9 +121,7 @@ fun CameraView(
 
     // 3
     Box(contentAlignment = Alignment.BottomCenter, modifier = Modifier.fillMaxSize()) {
-        if (canTakePicture.value) {
             AndroidView({ previewView }, modifier = Modifier.fillMaxSize())
-        }
 
 
         FloatingActionButton(
