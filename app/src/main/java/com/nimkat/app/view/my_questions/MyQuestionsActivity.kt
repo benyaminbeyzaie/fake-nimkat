@@ -173,23 +173,14 @@ fun MyQuestionsContent(viewModel: MyQuestionsViewModel) {
                         ) {
                             Box(modifier = Modifier.clickable {
                                 if (list[index].files.isEmpty()) {
-                                    QuestionDetailActivity.sendIntent(
-                                        context,
-                                        list[index].id!!,
-                                        list[index].text,
-                                        null
-                                    )
+                                    QuestionDetailActivity.sendIntent(context, list[index].id!!, list[index].text, null)
                                 } else {
-                                    QuestionDetailActivity.sendIntent(
-                                        context,
-                                        list[index].id!!,
-                                        list[index].text,
-                                        list[index].files.first().file?.attachment
-                                    )
+                                    QuestionDetailActivity.sendIntent(context, list[index].id!!, list[index].text, list[index].files.first().file?.attachment)
                                 }
                             }) {
-                                if (list[index].files.isNotEmpty() && list[index].files.first().file?.attachment != null) {
+                                if (list[index].files.isNotEmpty()  && list[index].files.first().file?.attachment != null) {
                                     SubcomposeAsyncImage(
+                                        modifier = Modifier.fillMaxWidth(),
                                         model = list[index].files.first().file?.attachment,
                                         contentDescription = null,
                                         loading = {
@@ -216,6 +207,8 @@ fun MyQuestionsContent(viewModel: MyQuestionsViewModel) {
             }
         }
 
+
+
     }
     SnackBar(snackbarHostState = errorSnackBar, Color.Red, true) {}
 }
@@ -226,7 +219,8 @@ fun LazyListState.OnBottomReached(loadMore: () -> Unit) {
     val shouldLoadMore = remember {
         derivedStateOf {
             val lastVisibleItem = layoutInfo.visibleItemsInfo.lastOrNull()
-                ?: return@derivedStateOf true
+                ?:
+                return@derivedStateOf true
             lastVisibleItem.index == layoutInfo.totalItemsCount - 1
         }
     }

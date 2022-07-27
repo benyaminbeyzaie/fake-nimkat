@@ -23,6 +23,7 @@ class AuthRepository @Inject constructor(
     fun initAuth(): AuthModel? {
         if (authModel != null) return authModel
         val authString = authPrefs.getAuthString()
+        Log.d("AUTHSTRING" , "Auth string is " + authString)
         if (authString === null) return null
         val gson = Gson()
         authModel = gson.fromJson(authString, AuthModel::class.java)
@@ -40,6 +41,7 @@ class AuthRepository @Inject constructor(
         val apiResponse = api.verifyCode(id, VerifyCodeBody(smsCode))
         if (apiResponse.body() === null) return null
         if (!apiResponse.isSuccessful) return null
+        Log.d("Auth", "profile status " + apiResponse.body()!!.isProfileCompleted)
         val gson = Gson()
         authPrefs.setAuthString(gson.toJson(apiResponse.body()))
         Log.d("Auth", "json is: " + gson.toJson(apiResponse.body()))
@@ -69,7 +71,10 @@ class AuthRepository @Inject constructor(
             "Token ${authModel?.token}"
         )
         if (apiResponse.body() === null) return null;
+        authModel!!.isProfileCompleted = apiResponse.body()!!.isProfileCompleted
         val gson = Gson()
+        authPrefs.setAuthString(gson.toJson(apiResponse.body()))
+        Log.d("Auth", "profile status " + apiResponse.body()!!.isProfileCompleted)
         authPrefs.setProfileString(gson.toJson(apiResponse.body()))
         Log.d("Auth", "json is: " + gson.toJson(apiResponse.body()))
         return apiResponse
@@ -81,6 +86,7 @@ class AuthRepository @Inject constructor(
         if (authModel == null) return null
         val apiResponse = api.getProfile(id, "Token ${authModel?.token}")
         if (apiResponse.body() === null) return null;
+        Log.d("Auth", "profile status " + apiResponse.body()!!.isProfileCompleted)
         val gson = Gson()
         authPrefs.setProfileString(gson.toJson(apiResponse.body()))
         Log.d("Auth", "json is: " + gson.toJson(apiResponse.body()))
