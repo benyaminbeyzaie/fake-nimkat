@@ -4,16 +4,19 @@ import android.Manifest
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
+import android.preference.PreferenceManager
 import android.util.Log
 import android.widget.Toast
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.annotation.StringRes
+import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.background
@@ -33,7 +36,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.LifecycleOwner
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.PagerState
@@ -43,7 +45,6 @@ import com.nimkat.app.ui.theme.NimkatTheme
 import com.nimkat.app.utils.CROP_IMAGE_CODE
 import com.nimkat.app.view.question_crop.QuestionCropActivity
 import com.nimkat.app.view_model.AuthViewModel
-import com.nimkat.app.view_model.TextQuestionViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -52,7 +53,7 @@ import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
 @AndroidEntryPoint
-class MainActivity : ComponentActivity() {
+class MainActivity : AppCompatActivity() {
     private var cameraScaffoldState: ScaffoldState? = null
     private var coroutineScope: CoroutineScope? = null
 
@@ -68,18 +69,30 @@ class MainActivity : ComponentActivity() {
     private lateinit var outputDirectory: File
     private lateinit var cameraExecutor: ExecutorService
 
-    private var shouldShowCamera: MutableState<Boolean> = mutableStateOf(false)
+    var shouldShowCamera: MutableState<Boolean> = mutableStateOf(false)
 
+    val authViewModel: AuthViewModel by viewModels()
 
+    @OptIn(ExperimentalMaterialApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 //        val profileViewModel:ProfileViewModel by viewModels()
 //        profileViewModel.initAuth()
-        val authViewModel: AuthViewModel by viewModels()
+
         authViewModel.initAuth()
-        val textQuestionViewModel: TextQuestionViewModel by viewModels()
         outputDirectory = getOutputDirectory()
         cameraExecutor = Executors.newSingleThreadExecutor()
+
+        val prefs: SharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
+        val isDark = prefs.getBoolean(getString(R.string.darThemeTag), false)
+
+        if (isDark){
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+        }else{
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+        }
+
+        requestCameraPermission()
 
         setContent {
             NimkatTheme {
@@ -93,16 +106,14 @@ class MainActivity : ComponentActivity() {
                     Greeting(
                         cameraScaffoldState!!,
                         authViewModel,
-                        textQuestionViewModel,
                         cameraExecutor,
                         outputDirectory,
-                        this,
                         onImageCaptured = ::handleImageCapture
                     )
                 }
             }
         }
-        requestCameraPermission()
+
 
     }
 
@@ -115,8 +126,7 @@ class MainActivity : ComponentActivity() {
                 return
             }
         }
-
-        super.onBackPressed()
+        finish()
     }
 
     override fun onDestroy() {
@@ -192,6 +202,17 @@ class MainActivity : ComponentActivity() {
                     Toast.makeText(this, "IMAGE CROPPING CANCELED.", Toast.LENGTH_SHORT).show()
                 }
             }
+            ASK_FOR_EDIT_PROFILE ->{
+                if (resultCode == RESULT_OK){
+                    data?.apply {
+                        val grade = getStringExtra("grade")
+                        val gradeID = getIntExtra("gradeID" , 0)
+                        val name = getStringExtra("name")
+                        authViewModel.update(name!! , gradeID)
+                        Toast.makeText(x, "profile changed .", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
 
         }
     }
@@ -200,18 +221,19 @@ class MainActivity : ComponentActivity() {
 }
 
 
-@OptIn(ExperimentalPagerApi::class)
+@OptIn(ExperimentalPagerApi::class, ExperimentalMaterialApi::class)
 @Composable
 fun Greeting(
     cameraScaffoldState: ScaffoldState,
     authViewModel: AuthViewModel,
-    textQuestionViewModel: TextQuestionViewModel,
     cameraExecutor: ExecutorService,
     outputDirectory: File,
-    lifecycleOwner: LifecycleOwner,
-    onImageCaptured: (Uri, Int) -> Unit
+    shouldShowCamera: MutableState<Boolean>,
+    onImageCaptured: (Uri, Int) -> Unit,
 ) {
     val coroutineScope = rememberCoroutineScope()
+
+
 
     val pagerState = rememberPagerState(
         initialPage = 1,
@@ -238,7 +260,7 @@ fun Greeting(
                     ) { index ->
                         when (index) {
                             0 -> {
-                                TextQuestion(textQuestionViewModel , lifecycleOwner)
+                                TextQuestion()
                             }
                             1 -> {
                                 Camera(
@@ -246,6 +268,7 @@ fun Greeting(
                                     cameraExecutor,
                                     outputDirectory,
                                     authViewModel,
+                                    shouldShowCamera,
                                     onImageCaptured = onImageCaptured
                                 )
                             }

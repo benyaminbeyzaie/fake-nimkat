@@ -35,7 +35,7 @@ class AuthViewModel @Inject constructor(
 
 
     fun initAuth(shouldInitProfile: Boolean = true) {
-        Log.d("Auth View Model", "init auth called")
+        Log.d("Auth View Model", "init auth called " + _authModel.value?.data.toString())
         if (_authModel.value?.data != null) return
         val authModel = repository.initAuth() ?: return
         _authModel.postValue(DataHolder.success(authModel))
@@ -48,10 +48,16 @@ class AuthViewModel @Inject constructor(
     fun getCode(phoneNumber: String) {
         _isCodeSent.postValue(DataHolder.loading())
         viewModelScope.launch {
-            val response = repository.getCode(phoneNumber)
-            if (response.isSuccessful && response.body() != null) {
-                _isCodeSent.postValue(DataHolder.success(response.body()!!.smsCode))
-            } else {
+            try {
+                val response = repository.getCode(phoneNumber)
+                Log.d("Response", response.message())
+                if (response.isSuccessful && response.body() != null) {
+                    _isCodeSent.postValue(DataHolder.success(response.body()!!.smsCode))
+                } else {
+                    _isCodeSent.postValue(DataHolder.error())
+                }
+            }catch (e: Exception){
+                Log.d("Response" , "an error Eccured")
                 _isCodeSent.postValue(DataHolder.error())
             }
         }
@@ -60,26 +66,30 @@ class AuthViewModel @Inject constructor(
     fun verifyCode(smsCode: String, id: String) {
         _authModel.postValue(DataHolder.loading())
         viewModelScope.launch {
-            val response = repository.verifyCode(smsCode, id)
-            if (response != null && response.isSuccessful && response.body() != null) {
-                if (!response.body()!!.isProfileCompleted) {
-                    _authModel.postValue(DataHolder.needCompletion(response.body()!!))
-                    Log.d("AUTH NEED ", response.body()!!.toString())
-                } else {
-                    _profileModel.postValue(DataHolder.loading())
-                    val profileResponse = repository.getProfile(id)
-                    if (profileResponse != null && profileResponse.isSuccessful && profileResponse.body() != null) {
-                        Log.d("PROF", profileResponse.body()!!.toString())
-                        _profileModel.postValue(DataHolder.success(profileResponse.body()!!))
-                        Log.d("PROF", "LOAD Into Profile Model ")
+            try {
+                val response = repository.verifyCode(smsCode, id)
+                if (response != null && response.isSuccessful && response.body() != null) {
+                    if (!response.body()!!.isProfileCompleted) {
+                        _authModel.postValue(DataHolder.needCompletion(response.body()!!))
+                        Log.d("AUTH NEED ", response.body()!!.toString())
                     } else {
-                        _profileModel.postValue(DataHolder.error())
-                        Log.d("PROF", "COULD NOT LOAD ")
-                    }
-                    _authModel.postValue(DataHolder.success(response.body()!!))
+                        _profileModel.postValue(DataHolder.loading())
+                        val profileResponse = repository.getProfile(id)
+                        if (profileResponse != null && profileResponse.isSuccessful && profileResponse.body() != null) {
+                            Log.d("PROF", profileResponse.body()!!.toString())
+                            _profileModel.postValue(DataHolder.success(profileResponse.body()!!))
+                            Log.d("PROF", "LOAD Into Profile Model ")
+                        } else {
+                            _profileModel.postValue(DataHolder.error())
+                            Log.d("PROF", "COULD NOT LOAD ")
+                        }
+                        _authModel.postValue(DataHolder.success(response.body()!!))
 
+                    }
+                } else {
+                    _authModel.postValue(DataHolder.error())
                 }
-            } else {
+            }catch (e: Exception){
                 _authModel.postValue(DataHolder.error())
             }
         }
@@ -87,25 +97,32 @@ class AuthViewModel @Inject constructor(
 
     fun clearAuth() {
         viewModelScope.launch {
-            repository.clearAuth()
             _authModel.postValue(DataHolder.pure())
             _profileModel.postValue(DataHolder.pure())
+            repository.clearAuth()
         }
     }
 
     fun update(name: String, gradeId: Int) {
+        var data = _profileModel.value?.data
         _profileModel.postValue(DataHolder.loading())
         viewModelScope.launch {
-            val response = repository.updateProfile(
-                name,
-                gradeId,
-            )
-            if (response != null && response.isSuccessful && response.body() != null) {
-                Log.d("update ", response.body()!!.toString())
-                _profileModel.postValue(DataHolder.success(response.body()!!))
-                Log.d("update ", "LOAD Into Profile Model ")
-            } else {
-                _profileModel.postValue(DataHolder.error())
+            try {
+                val response = repository.updateProfile(
+                    name,
+                    gradeId,
+                )
+                if (response != null && response.isSuccessful && response.body() != null) {
+                    Log.d("update ", response.body()!!.toString())
+                    _profileModel.postValue(DataHolder.success(response.body()!!))
+                    Log.d("update ", "LOAD Into Profile Model ")
+                } else {
+                    Log.d("update ", "update error" + response.toString())
+                    _profileModel.postValue(DataHolder.error())
+                }
+            }catch (e: Exception){
+                _profileModel.postValue(DataHolder.errorWithData(data = data!!))
+                Log.d("update ", "update more error ")
             }
         }
     }
@@ -117,5 +134,4 @@ class AuthViewModel @Inject constructor(
             _profileModel.postValue(DataHolder.pure())
         }
     }
-
 }

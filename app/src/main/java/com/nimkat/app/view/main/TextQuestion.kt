@@ -108,7 +108,8 @@ fun TextQuestion(viewModel: TextQuestionViewModel, lifecycleOwner: LifecycleOwne
                 backgroundColor = colorResource(R.color.textfield_background),
                 focusedIndicatorColor = Color.Transparent,
                 unfocusedIndicatorColor = Color.Transparent,
-                disabledIndicatorColor = Color.Transparent
+                disabledIndicatorColor = Color.Transparent,
+                cursorColor = colorResource(id = R.color.blue)
             ),
             textStyle = TextStyle(
                 fontSize = 14.sp,

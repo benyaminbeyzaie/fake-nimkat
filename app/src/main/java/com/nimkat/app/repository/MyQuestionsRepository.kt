@@ -15,7 +15,7 @@ class MyQuestionsRepository @Inject constructor(
     private val api: NimkatApi,
     private val authPrefs: AuthPrefs
 ) {
-    var pageSize = 10;
+    var pageSize = 20;
     var authModel: AuthModel? = null;
 
 

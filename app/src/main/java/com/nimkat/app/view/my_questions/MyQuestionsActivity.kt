@@ -8,6 +8,7 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -24,8 +25,10 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -33,18 +36,22 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.lifecycleScope
 import coil.compose.AsyncImage
 import com.nimkat.app.R
+import com.nimkat.app.models.DataStatus
 import com.nimkat.app.models.QuestionModel
 import com.nimkat.app.ui.theme.NimkatTheme
 import com.nimkat.app.ui.theme.RippleWhite
 import com.nimkat.app.ui.theme.mainFont
+import com.nimkat.app.view.SnackBar
+import com.nimkat.app.view.otp.OtpActivity
 import com.nimkat.app.view.question_detail.QuestionDetailActivity
 import com.nimkat.app.view_model.MyQuestionsViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
-class MyQuestionsActivity : ComponentActivity() {
+class MyQuestionsActivity : AppCompatActivity() {
 
     companion object {
         fun sendIntent(context: Context) = Intent(context, MyQuestionsActivity::class.java).apply {
@@ -63,7 +70,6 @@ class MyQuestionsActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colors.background
                 ) {
-
                     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
                         MyQuestionsContent(viewModel)
                     }
@@ -74,20 +80,36 @@ class MyQuestionsActivity : ComponentActivity() {
 }
 
 
-@OptIn(ExperimentalFoundationApi::class)
+@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterialApi::class)
 @Composable
 fun MyQuestionsContent(viewModel: MyQuestionsViewModel) {
 
     val context = LocalContext.current
     val questions = viewModel.myQuestions.observeAsState()
+    val lifecycleOwner = LocalLifecycleOwner.current
+    val errorSnackBar = remember { SnackbarHostState() }
+
+    when (questions.value?.status) {
+        DataStatus.Error -> {
+            LaunchedEffect(lifecycleOwner.lifecycleScope) {
+                errorSnackBar.showSnackbar(
+                    message = "متاسفانه مشکلی پیش اومده یا دستگاهت به اینترنت متصل نیست!",
+                    actionLabel = "RED",
+                    duration = SnackbarDuration.Short
+                )
+            }
+        }
+        else -> {}
+    }
+
+
 
     Scaffold(
         topBar = {
             Row(
                 modifier = Modifier
                     .background(colorResource(R.color.main_color))
-                    .padding(2.dp, 0.dp),
-                verticalAlignment = Alignment.CenterVertically
+,                verticalAlignment = Alignment.CenterVertically
             ) {
                 CompositionLocalProvider(LocalRippleTheme provides RippleWhite) {
                     IconButton(
@@ -99,7 +121,7 @@ fun MyQuestionsContent(viewModel: MyQuestionsViewModel) {
                     ) {
                         Icon(
                             painter = painterResource(R.drawable.ic_back), null,
-                            tint = colorResource(R.color.white),
+                            tint = colorResource(R.color.primary_text),
                             modifier = Modifier
                                 .size(24.dp)
                                 .rotate(180f)
@@ -110,14 +132,14 @@ fun MyQuestionsContent(viewModel: MyQuestionsViewModel) {
                     stringResource(R.string.my_questions),
                     modifier = Modifier
                         .fillMaxWidth(),
-                    color = colorResource(R.color.white),
+                    color = colorResource(R.color.primary_text),
                     fontFamily = mainFont,
                     fontWeight = FontWeight.Bold,
                     fontSize = 16.sp,
                 )
             }
         },
-        backgroundColor = colorResource(R.color.color_back)
+        backgroundColor = colorResource(R.color.background)
     ) {
         val list = ArrayList<QuestionModel>()
         Log.d("My Question Activity", "new list created")
@@ -133,7 +155,8 @@ fun MyQuestionsContent(viewModel: MyQuestionsViewModel) {
                     Card(
                         modifier = Modifier
                             .padding(4.dp),
-                        shape = RoundedCornerShape(8.dp)
+                        shape = RoundedCornerShape(8.dp),
+                        backgroundColor = colorResource(id = R.color.secondary_text_variant)
                     ) {
                         Box(modifier = Modifier.clickable {
                             if (list[index].files.isEmpty()) {
@@ -144,15 +167,17 @@ fun MyQuestionsContent(viewModel: MyQuestionsViewModel) {
                         }) {
                             if (list[index].files.isNotEmpty()  && list[index].files.first().file?.attachment != null) {
                                 AsyncImage(
+                                    modifier = Modifier.fillMaxWidth(),
                                     model = list[index].files.first().file?.attachment,
-                                    contentDescription = null
+                                    contentDescription = null,
                                 )
                             }
                             if (list[index].text != null) {
                                 Text(
                                     text = (list[index].text.toString()),
                                     modifier = Modifier.padding(12.dp),
-                                    fontSize = 14.sp
+                                    fontSize = 14.sp,
+                                    color = colorResource(id = R.color.primary_text)
                                 )
                             }
                         }
@@ -166,6 +191,7 @@ fun MyQuestionsContent(viewModel: MyQuestionsViewModel) {
         }
 
     }
+    SnackBar(snackbarHostState = errorSnackBar, Color.Red, true) {}
 }
 
 @Composable
