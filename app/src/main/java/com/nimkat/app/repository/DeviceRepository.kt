@@ -41,16 +41,21 @@ class DeviceRepository @Inject constructor(
             if (task.isSuccessful && task.result != null) {
                 val token = task.result!!.token
                 GlobalScope.launch {
-                    apiResponse = api.registerDevice(
-                        "Token ${authModel?.token}",
-                        RegistrationModel(
-                            active = true,
-                            registrationId = token,
-                            type = "android",
-                            deviceId = UUID.randomUUID().toString(),
-                            name = "name"
+                    try {
+                        apiResponse = api.registerDevice(
+                            "Token ${authModel?.token}",
+                            RegistrationModel(
+                                active = true,
+                                registrationId = token,
+                                type = "android",
+                                deviceId = UUID.randomUUID().toString(),
+                                name = "name"
+                            )
                         )
-                    )
+                    } catch (e: Exception) {
+
+                    }
+
                 }
             }
         }
