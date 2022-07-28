@@ -37,7 +37,7 @@ class AskQuestionRepository @Inject constructor(
 
     suspend fun sendImageQuestion(base64: String): Response<QuestionModel>? {
         val authModel = authPrefs.initAuth() ?: return null
-        val fileUploadResponse = api.upload("Token ${authModel.token}", FileUploadBody(base64, UUID.randomUUID().toString() + ".jpeg"))
+        val fileUploadResponse = api.upload(body = FileUploadBody(base64, UUID.randomUUID().toString() + ".jpeg"))
         if (fileUploadResponse.isSuccessful) {
             return api.sendQuestion("Token ${authModel.token}", AskQuestionBody(null, listOf(fileUploadResponse.body()!!.id!!), "DS", "v1"))
         }

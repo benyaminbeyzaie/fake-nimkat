@@ -20,17 +20,16 @@ class AuthRepository @Inject constructor(
     var authModel: AuthModel? = null;
 
     fun initAuth(firebaseToken: String? = null): AuthModel? {
-        if (authModel != null) return authModel
-        val authString = authPrefs.getAuthString()
-        Log.d("AUTHSTRING" , "Auth string is " + authString)
-        if (authString === null) return null
-        val gson = Gson()
-        authModel = gson.fromJson(authString, AuthModel::class.java)
         if (firebaseToken != null) {
             GlobalScope.launch {
                 deviceRepository.registerDevice(firebaseToken)
             }
         }
+        if (authModel != null) return authModel
+        val authString = authPrefs.getAuthString()
+        if (authString === null) return null
+        val gson = Gson()
+        authModel = gson.fromJson(authString, AuthModel::class.java)
         return authModel;
     }
 

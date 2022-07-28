@@ -47,6 +47,7 @@ import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.PagerState
 import com.google.accompanist.pager.rememberPagerState
+import com.google.firebase.FirebaseApp
 import com.nimkat.app.R
 import com.nimkat.app.models.DataStatus
 import com.nimkat.app.ui.theme.NimkatTheme
@@ -90,9 +91,12 @@ class MainActivity : AppCompatActivity() {
     @OptIn(ExperimentalMaterialApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        FirebaseApp.initializeApp(this)
+
         authViewModel.initAuth()
         outputDirectory = getOutputDirectory()
         cameraExecutor = Executors.newSingleThreadExecutor()
+        var flag = false;
 
         val prefs: SharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
         val isDark = prefs.getBoolean(getString(R.string.darThemeTag), false)
@@ -104,6 +108,29 @@ class MainActivity : AppCompatActivity() {
         }
 
         requestCameraPermission()
+
+        askQuestionsViewModel.discoveryAnswers.observe(this) { value ->
+            when (value?.status) {
+                DataStatus.NeedLogin -> {
+                    LoginActivity.sendIntent(this)
+                }
+                DataStatus.Success -> {
+                     value.data?.let { list ->
+                        if (flag) QuestionSearchActivity.sendIntent(
+                            this,
+                            list,
+                            askQuestionsViewModel.questionId.value!!.data.toString()
+                        )
+                    }
+                }
+                DataStatus.Error -> {
+                    this.toast("Error : ".plus(value.message.toString()))
+                }
+                else -> {}
+            }
+        }
+        flag = true;
+
 
         setContent {
             NimkatTheme {
@@ -207,7 +234,6 @@ class MainActivity : AppCompatActivity() {
                 if (resultCode == Activity.RESULT_OK) {
                     data?.apply {
                         val parcelableExtra = getParcelableExtra<Uri>("photouri")
-                        Log.d("kiloURI", "IMAGE CROPPING SUCCESSFULL. $parcelableExtra")
                         Toast.makeText(x, "IMAGE CROPPING SUCCESSFULL.", Toast.LENGTH_SHORT).show()
                         // now we should use this uri to load bitmap of the image and then send it to server
                         val viewModel: AskQuestionViewModel by viewModels()
@@ -218,7 +244,6 @@ class MainActivity : AppCompatActivity() {
                         viewModel.askImageQuestion(encodedImage)
                     }
                 } else {
-                    Log.d("kiloURI", "IMAGE CROPPING CANCELED.")
                     Toast.makeText(this, "IMAGE CROPPING CANCELED.", Toast.LENGTH_SHORT).show()
                 }
             }
@@ -255,22 +280,7 @@ fun Greeting(
     val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current
 
-    val discoveryAnswers = askQuestionViewModel.discoveryAnswers.observeAsState()
 
-    when (discoveryAnswers.value?.status) {
-        DataStatus.NeedLogin -> {
-            LoginActivity.sendIntent(context)
-        }
-        DataStatus.Success -> {
-            discoveryAnswers.value?.data?.let { list ->
-                QuestionSearchActivity.sendIntent(context, list, askQuestionViewModel.questionId.value!!.data.toString())
-            }
-        }
-        DataStatus.Error -> {
-            context.toast("Error : ".plus(discoveryAnswers.value?.message.toString()))
-        }
-        else -> {}
-    }
 
 
     val pagerState = rememberPagerState(

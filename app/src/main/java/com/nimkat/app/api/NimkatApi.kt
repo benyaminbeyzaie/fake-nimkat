@@ -1,4 +1,5 @@
 package com.nimkat.app.api
+
 import com.nimkat.app.models.*
 import retrofit2.Response
 import retrofit2.http.*
@@ -68,7 +69,9 @@ interface NimkatApi {
 
     @POST("upload/base64")
     suspend fun upload(
-        @Header("Authorization") token: String,
+//        @Header("Authorization") token: String,
+        @Header("accept") accept: String? = "application/json",
+        @Header("Content-Type") contentType: String? = "application/json",
         @Body body: FileUploadBody,
     ): Response<File>
 }
