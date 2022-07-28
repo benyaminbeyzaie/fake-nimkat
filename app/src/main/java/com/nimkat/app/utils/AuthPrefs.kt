@@ -3,7 +3,6 @@ package com.nimkat.app.utils
 import android.content.Context
 import android.content.SharedPreferences
 import android.preference.PreferenceManager
-import android.util.Log
 import com.google.gson.Gson
 import com.nimkat.app.models.AuthModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -12,7 +11,7 @@ import javax.inject.Singleton
 
 @Singleton
 class AuthPrefs @Inject constructor(@ApplicationContext context : Context){
-    private val authPrefTag = "auth_tag";
+    private val authPrefTag = "auth_tag"
     private val profileTag = "profile_tag"
     private val prefs: SharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
     private var authModel: AuthModel? = null
@@ -27,15 +26,15 @@ class AuthPrefs @Inject constructor(@ApplicationContext context : Context){
     }
 
     fun getAuthString(): String? {
-        val authString = prefs.getString(authPrefTag, "");
+        val authString = prefs.getString(authPrefTag, "")
 
-        return authString;
+        return authString
     }
 
     fun getProfileString(): String? {
-        val authString = prefs.getString(profileTag, "");
+        val authString = prefs.getString(profileTag, "")
 
-        return authString;
+        return authString
     }
 
     fun setAuthString(query: String) {

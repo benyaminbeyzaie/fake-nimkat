@@ -3,7 +3,6 @@ package com.nimkat.app.models
 import android.os.Parcel
 import android.os.Parcelable
 import com.google.gson.annotations.SerializedName
-import java.io.Serializable
 
 
 data class DiscoveryAnswers (
@@ -17,10 +16,9 @@ data class DiscoveryAnswers (
     parcel.readString(),
     parcel.readString(),
     parcel.readValue(Int::class.java.classLoader) as? Int
-  ) {
-  }
+  )
 
-  override fun writeToParcel(parcel: Parcel, flags: Int) {
+    override fun writeToParcel(parcel: Parcel, flags: Int) {
     parcel.writeValue(id)
     parcel.writeString(question)
     parcel.writeString(answer)

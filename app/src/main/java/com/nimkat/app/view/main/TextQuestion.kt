@@ -1,11 +1,5 @@
 package com.nimkat.app.view.main
 
-import android.util.Log
-import androidx.appcompat.view.ContextThemeWrapper
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.expandHorizontally
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -20,25 +14,17 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.viewinterop.AndroidView
-import androidx.lifecycle.LifecycleOwner
-import com.github.ybq.android.spinkit.SpinKitView
 import com.nimkat.app.R
 import com.nimkat.app.models.DataStatus
 import com.nimkat.app.ui.theme.RippleWhite
 import com.nimkat.app.ui.theme.mainFont
 import com.nimkat.app.ui.theme.secondFont
-import com.nimkat.app.utils.toast
-import com.nimkat.app.view.login.LoginActivity
-import com.nimkat.app.view.profile_edit.grade.ExpandableState
-import com.nimkat.app.view.search.QuestionSearchActivity
+import com.nimkat.app.view.CircularIndeterminanteProgressBar
 import com.nimkat.app.view_model.AskQuestionViewModel
 
 @Composable
@@ -122,23 +108,7 @@ fun TextQuestion(viewModel: AskQuestionViewModel) {
             ) {
 
                 if (loading.value) {
-                    AndroidView(
-                        factory = { context ->
-                            SpinKitView(
-                                ContextThemeWrapper(
-                                    context,
-                                    com.github.ybq.android.spinkit.R.style.SpinKitView_ThreeBounce
-                                )
-                            ).apply {
-
-                            }
-                        },
-                        update = {
-
-
-                        },
-                    )
-
+                    CircularIndeterminanteProgressBar(true)
                 } else {
                     Row {
                         Text(

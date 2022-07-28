@@ -1,21 +1,20 @@
 package com.nimkat.app.view.main
 
 import android.Manifest
-import android.R.attr
 import android.app.Activity
+import android.app.AlertDialog
 import android.content.Context
+import android.content.DialogInterface
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
-import android.opengl.ETC1.encodeImage
 import android.os.Bundle
 import android.preference.PreferenceManager
 import android.util.Base64
 import android.util.Log
-import android.widget.Toast
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
@@ -30,7 +29,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -43,6 +41,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.LifecycleOwner
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.PagerState
@@ -53,7 +52,6 @@ import com.nimkat.app.models.DataStatus
 import com.nimkat.app.ui.theme.NimkatTheme
 import com.nimkat.app.utils.ASK_FOR_EDIT_PROFILE
 import com.nimkat.app.utils.CROP_IMAGE_CODE
-import com.nimkat.app.utils.toast
 import com.nimkat.app.view.login.LoginActivity
 import com.nimkat.app.view.question_crop.QuestionCropActivity
 import com.nimkat.app.view.search.QuestionSearchActivity
@@ -67,9 +65,6 @@ import java.io.File
 import java.io.InputStream
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
-import android.app.AlertDialog
-import android.content.DialogInterface
-import androidx.lifecycle.LifecycleOwner
 
 
 @AndroidEntryPoint
@@ -77,7 +72,7 @@ class MainActivity : AppCompatActivity() {
     companion object {
         fun sendIntent(context: Context, loginSuccessful: Boolean = false) =
             Intent(context, MainActivity::class.java).apply {
-                putExtra("boolean" , loginSuccessful)
+                putExtra("boolean", loginSuccessful)
                 context.startActivity(this)
             }
     }
@@ -98,14 +93,14 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         FirebaseApp.initializeApp(this)
 
-        loginSuccessful = intent.getBooleanExtra("boolean" , false)
+        loginSuccessful = intent.getBooleanExtra("boolean", false)
         authViewModel.initAuth()
 
 //        val textQuestionViewModel: TextQuestionViewModel by viewModels()
 
         outputDirectory = getOutputDirectory()
         cameraExecutor = Executors.newSingleThreadExecutor()
-        var flag = false;
+        var flag = false
 
         val prefs: SharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
         val isDark = prefs.getBoolean(getString(R.string.darThemeTag), false)
@@ -119,26 +114,29 @@ class MainActivity : AppCompatActivity() {
         requestCameraPermission()
 
         askQuestionsViewModel.discoveryAnswers.observe(this) { value ->
-            when (value?.status) {
-                DataStatus.NeedLogin -> {
-                    LoginActivity.sendIntent(this)
-                }
-                DataStatus.Success -> {
-                     value.data?.let { list ->
-                        if (flag) QuestionSearchActivity.sendIntent(
-                            this,
-                            list,
-                            askQuestionsViewModel.questionId.value!!.data.toString()
-                        )
+            if (flag) {
+                when (value?.status) {
+                    DataStatus.NeedLogin -> {
+                        LoginActivity.sendIntent(this)
                     }
+                    DataStatus.Success -> {
+                        value.data?.let { list ->
+                            QuestionSearchActivity.sendIntent(
+                                this,
+                                list,
+                                askQuestionsViewModel.questionId.value!!.data.toString()
+                            )
+                        }
+                    }
+                    DataStatus.Error -> {
+
+                    }
+                    else -> {}
                 }
-                DataStatus.Error -> {
-                    this.toast("Error : ".plus(value.message.toString()))
-                }
-                else -> {}
+            }else{
+                flag = true
             }
         }
-        flag = true;
 
 
         setContent {
@@ -205,9 +203,11 @@ class MainActivity : AppCompatActivity() {
 
             dialogBuilder.setMessage(getString(R.string.cameraError))
                 .setCancelable(false)
-                .setPositiveButton(getString(R.string.understood), DialogInterface.OnClickListener {
-                        dialog, id -> {}
-                })
+                .setPositiveButton(
+                    getString(R.string.understood),
+                    DialogInterface.OnClickListener { dialog, id ->
+                        {}
+                    })
             val alert = dialogBuilder.create()
             alert.show()
 
@@ -258,7 +258,6 @@ class MainActivity : AppCompatActivity() {
                     data?.apply {
                         val parcelableExtra = getParcelableExtra<Uri>("photouri")
                         Log.d("ImageCapture", "IMAGE CROPPING SUCCESSFULL. $parcelableExtra")
-                        Toast.makeText(x, "IMAGE CROPPING SUCCESSFULL.", Toast.LENGTH_SHORT).show()
                         // now we should use this uri to load bitmap of the image and then send it to server
                         val viewModel: AskQuestionViewModel by viewModels()
                         val imageUri: Uri = parcelableExtra!!
@@ -268,7 +267,6 @@ class MainActivity : AppCompatActivity() {
                         viewModel.askImageQuestion(encodedImage)
                     }
                 } else {
-                    Toast.makeText(this, "IMAGE CROPPING CANCELED.", Toast.LENGTH_SHORT).show()
                 }
             }
             ASK_FOR_EDIT_PROFILE -> {
@@ -303,8 +301,6 @@ fun Greeting(
 ) {
     val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current
-
-
 
 
     val pagerState = rememberPagerState(

@@ -1,9 +1,5 @@
 package com.nimkat.app.repository
 
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.net.Uri
-import android.util.Base64
 import com.nimkat.app.api.NimkatApi
 import com.nimkat.app.models.AskQuestionBody
 import com.nimkat.app.models.FileIdBody
@@ -11,9 +7,6 @@ import com.nimkat.app.models.FileUploadBody
 import com.nimkat.app.models.QuestionModel
 import com.nimkat.app.utils.AuthPrefs
 import retrofit2.Response
-import java.io.ByteArrayOutputStream
-import java.io.IOException
-import java.io.InputStream
 import java.util.*
 import javax.inject.Inject
 import javax.inject.Singleton

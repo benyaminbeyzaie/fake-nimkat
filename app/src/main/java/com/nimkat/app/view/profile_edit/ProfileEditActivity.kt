@@ -3,13 +3,10 @@ package com.nimkat.app.view.profile_edit
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
 import android.util.Log
-import android.widget.Toast
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -24,7 +21,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.colorResource
@@ -39,7 +35,6 @@ import androidx.compose.ui.text.style.TextDirection
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.lifecycleScope
 import com.nimkat.app.R
 import com.nimkat.app.models.EducationalGrade
 import com.nimkat.app.ui.theme.NimkatTheme
@@ -48,10 +43,7 @@ import com.nimkat.app.ui.theme.mainFont
 import com.nimkat.app.ui.theme.secondFont
 import com.nimkat.app.utils.ASK_FOR_EDIT_PROFILE
 import com.nimkat.app.utils.ASK_GRADE_CODE
-import com.nimkat.app.utils.CROP_IMAGE_CODE
 import com.nimkat.app.view.profile_edit.grade.GradeActivity
-import kotlinx.coroutines.launch
-import kotlin.math.log
 
 
 class ProfileEditActivity : AppCompatActivity() {

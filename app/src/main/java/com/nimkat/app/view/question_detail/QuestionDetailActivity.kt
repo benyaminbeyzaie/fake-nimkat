@@ -42,7 +42,6 @@ import com.nimkat.app.ui.theme.NimkatTheme
 import com.nimkat.app.ui.theme.RippleWhite
 import com.nimkat.app.ui.theme.mainFont
 import com.nimkat.app.view.CircularIndeterminanteProgressBar
-import com.nimkat.app.view_model.MyQuestionsViewModel
 import com.nimkat.app.view_model.SingleQuestionViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlin.math.roundToInt
@@ -109,7 +108,7 @@ fun QuestionDetailContent(text: String?, url: String?, viewModel: SingleQuestion
                     ) {
                         Icon(
                             painter = painterResource(R.drawable.ic_back), null,
-                            tint = colorResource(R.color.primary_text),
+                            tint = colorResource(R.color.white),
                             modifier = Modifier
                                 .size(24.dp)
                                 .rotate(180f)
@@ -120,7 +119,7 @@ fun QuestionDetailContent(text: String?, url: String?, viewModel: SingleQuestion
                     stringResource(R.string.question_and_answer),
                     modifier = Modifier
                         .fillMaxWidth(),
-                    color = colorResource(R.color.primary_text),
+                    color = colorResource(R.color.white),
                     fontFamily = mainFont,
                     fontWeight = FontWeight.Bold,
                     fontSize = 16.sp,

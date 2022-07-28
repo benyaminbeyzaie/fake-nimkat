@@ -45,7 +45,7 @@ class SingleQuestionViewModel @Inject constructor(
                     }
                 } else if (_answers.value!!.data == null) {
                     Log.d("SingleQuestionViewModel", "_answers.value!!.data == null")
-                    _answers.postValue(DataHolder.success(response.body()!!.results.toMutableList()));
+                    _answers.postValue(DataHolder.success(response.body()!!.results.toMutableList()))
                 } else {
                     Log.d("SingleQuestionViewModel", "else")
                     _answers.value!!.data!!.addAll(response.body()!!.results)

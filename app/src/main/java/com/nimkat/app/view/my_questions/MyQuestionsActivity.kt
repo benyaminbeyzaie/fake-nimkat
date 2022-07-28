@@ -5,7 +5,6 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -37,7 +36,6 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.lifecycleScope
-import coil.compose.AsyncImage
 import coil.compose.SubcomposeAsyncImage
 import com.nimkat.app.R
 import com.nimkat.app.models.DataStatus
@@ -47,7 +45,6 @@ import com.nimkat.app.ui.theme.RippleWhite
 import com.nimkat.app.ui.theme.mainFont
 import com.nimkat.app.view.CircularIndeterminanteProgressBar
 import com.nimkat.app.view.SnackBar
-import com.nimkat.app.view.otp.OtpActivity
 import com.nimkat.app.view.question_detail.QuestionDetailActivity
 import com.nimkat.app.view_model.MyQuestionsViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -130,7 +127,7 @@ fun MyQuestionsContent(viewModel: MyQuestionsViewModel) {
                     ) {
                         Icon(
                             painter = painterResource(R.drawable.ic_back), null,
-                            tint = colorResource(R.color.primary_text),
+                            tint = colorResource(R.color.white),
                             modifier = Modifier
                                 .size(24.dp)
                                 .rotate(180f)
@@ -141,7 +138,7 @@ fun MyQuestionsContent(viewModel: MyQuestionsViewModel) {
                     stringResource(R.string.my_questions),
                     modifier = Modifier
                         .fillMaxWidth(),
-                    color = colorResource(R.color.primary_text),
+                    color = colorResource(R.color.white),
                     fontFamily = mainFont,
                     fontWeight = FontWeight.Bold,
                     fontSize = 16.sp,

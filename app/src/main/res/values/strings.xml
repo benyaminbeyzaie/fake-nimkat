@@ -1,7 +1,6 @@
 <resources>
     <string name="app_name">FNimkat</string>
     <string name="camera">دوربین</string>
-    <string name="gallery">گالری</string>
     <string name="text_question">سوال متنی</string>
     <string name="enter_your_question">سوالت رو اینجا بنویس</string>
     <string name="ok">حله</string>
@@ -20,13 +19,10 @@
     <string name="title_activity_login">LoginActivity</string>
     <string name="login_desc">یه پیام کوتاه برات ارسال میکنیم تا بتونی توی اپلیکیشن ثبت نام کنی یا وارد اکانت قبلیت بشی 👇</string>
     <string name="mobile_hint">مثلا : 9123456789</string>
-    <string name="login_invite_code">اگر کد دعوت داری اینجا وارد کن تا اعتبار بگیری</string>
     <string name="get_otp_code">دریافت کد تایید</string>
-    <string name="invite_code">کد دعوت</string>
     <string name="title_activity_otp">OtpActivity</string>
     <string name="otp_code">کد تایید</string>
     <string name="otp_desc">کد تاییدی که به شماره زیر ارسال شده است را وارد کنید :</string>
-    <string name="resend">ارسال مجدد</string>
     <string name="my_questions">سوالات من</string>
     <string name="contact_us">ارتباط با ما</string>
     <string name="logout">خروج از حساب کاربری</string>
@@ -41,7 +37,6 @@
     <string name="title_activity_question_detail">QuestionDetailActivity</string>
     <string name="question_and_answer">سوال و جواب</string>
     <string name="title_activity_question_crop">QuestionCropActivity</string>
-    <string name="title_activity_main2">MainActivity2</string>
     <string name="title_activity_whats_your_name">WhatsYourNameActivity</string>
     <string name="name">نام</string>
     <string name="title_activity_complete_profile">CompleteProfile</string>
@@ -63,9 +58,7 @@
     <string name="cameraError">اگه بخوای سوالت رو به صورت عکس بپرسی، باید دسترسی دوربین رو فعال کنی. هروقت روی دکمه آبی رنگ دوربین کلیک کنی، مجددا درخواست دسترسی دوربین رو میبینی.</string>
     <string name="understood">فهمیدم.</string>
     <string name="loginSuccessful"> با موفقیت وارد شدی!</string>
-    <string name="profileChanged">پروفایل با موفقیت آپدیت شد.</string>
     <string name="areYouSure">آیا واقعا میخواهید اکانت خود را حذف کنید؟ با اینکار تمام اطلاعات شما از سایت حذف خواهد شد.</string>
-    <string name="processing">در حال پردازش </string>
 
 
 </resources>

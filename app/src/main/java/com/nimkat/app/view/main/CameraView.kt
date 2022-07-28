@@ -24,7 +24,10 @@ import androidx.compose.material.Icon
 import androidx.compose.material.SnackbarHostState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Collections
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -38,7 +41,6 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.nimkat.app.R
 import com.nimkat.app.view.SnackBar
-import kotlinx.coroutines.delay
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
