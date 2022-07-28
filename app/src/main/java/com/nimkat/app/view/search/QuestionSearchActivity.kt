@@ -126,7 +126,11 @@ fun QuestionSearchContent(
     val questionModel = askQuestionViewModel.questionModel.observeAsState()
     when (askedTeachers.value?.status) {
         DataStatus.Success -> {
-            QuestionDetailActivity.sendIntent(LocalContext.current, questionModel.value!!.data!!.id!!, questionModel.value!!.data!!.text, null)
+            if (questionModel.value!!.data!!.files.isEmpty()) {
+                QuestionDetailActivity.sendIntent(LocalContext.current, questionModel.value!!.data!!.id!!, questionModel.value!!.data!!.text,null)
+            } else {
+                QuestionDetailActivity.sendIntent(LocalContext.current, questionModel.value!!.data!!.id!!, questionModel.value!!.data!!.text,questionModel.value!!.data!!.files.first().file!!.attachment)
+            }
         }
         else -> {}
     }
