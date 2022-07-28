@@ -1,14 +1,19 @@
 package com.nimkat.app.view.main
 
 import android.Manifest
+import android.R.attr
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.net.Uri
+import android.opengl.ETC1.encodeImage
 import android.os.Bundle
 import android.preference.PreferenceManager
+import android.util.Base64
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.setContent
@@ -25,8 +30,10 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
@@ -40,20 +47,26 @@ import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.PagerState
 import com.google.accompanist.pager.rememberPagerState
-import com.google.firebase.FirebaseApp
 import com.nimkat.app.R
+import com.nimkat.app.models.DataStatus
 import com.nimkat.app.ui.theme.NimkatTheme
 import com.nimkat.app.utils.ASK_FOR_EDIT_PROFILE
 import com.nimkat.app.utils.CROP_IMAGE_CODE
+import com.nimkat.app.utils.toast
+import com.nimkat.app.view.login.LoginActivity
 import com.nimkat.app.view.question_crop.QuestionCropActivity
+import com.nimkat.app.view.search.QuestionSearchActivity
+import com.nimkat.app.view_model.AskQuestionViewModel
 import com.nimkat.app.view_model.AuthViewModel
-import com.nimkat.app.view_model.TextQuestionViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import java.io.ByteArrayOutputStream
 import java.io.File
+import java.io.InputStream
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
@@ -72,7 +85,7 @@ class MainActivity : AppCompatActivity() {
     var shouldShowCamera: MutableState<Boolean> = mutableStateOf(false)
 
     private val authViewModel: AuthViewModel by viewModels()
-    private val textQuestionsViewModel: TextQuestionViewModel by viewModels()
+    private val askQuestionsViewModel: AskQuestionViewModel by viewModels()
 
     @OptIn(ExperimentalMaterialApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -84,9 +97,9 @@ class MainActivity : AppCompatActivity() {
         val prefs: SharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
         val isDark = prefs.getBoolean(getString(R.string.darThemeTag), false)
 
-        if (isDark){
+        if (isDark) {
             AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
-        }else{
+        } else {
             AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
         }
 
@@ -108,7 +121,7 @@ class MainActivity : AppCompatActivity() {
                         outputDirectory,
                         onImageCaptured = ::handleImageCapture,
                         shouldShowCamera = shouldShowCamera,
-                        textQuestionViewModel = textQuestionsViewModel,
+                        askQuestionViewModel = askQuestionsViewModel,
                     )
                 }
             }
@@ -179,6 +192,13 @@ class MainActivity : AppCompatActivity() {
         startActivityForResult(intent, CROP_IMAGE_CODE)
     }
 
+    private fun encodeImage(bm: Bitmap): String {
+        val baos = ByteArrayOutputStream()
+        bm.compress(Bitmap.CompressFormat.JPEG, 100, baos)
+        val b: ByteArray = baos.toByteArray()
+        return Base64.encodeToString(b, Base64.DEFAULT)
+    }
+
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         val x = this
@@ -190,21 +210,25 @@ class MainActivity : AppCompatActivity() {
                         Log.d("kiloURI", "IMAGE CROPPING SUCCESSFULL. $parcelableExtra")
                         Toast.makeText(x, "IMAGE CROPPING SUCCESSFULL.", Toast.LENGTH_SHORT).show()
                         // now we should use this uri to load bitmap of the image and then send it to server
+                        val viewModel: AskQuestionViewModel by viewModels()
+                        val imageUri: Uri = parcelableExtra!!
+                        val imageStream: InputStream? = contentResolver.openInputStream(imageUri)
+                        val selectedImage = BitmapFactory.decodeStream(imageStream)
+                        val encodedImage: String = encodeImage(selectedImage)
+                        viewModel.askImageQuestion(encodedImage)
                     }
-
-
                 } else {
                     Log.d("kiloURI", "IMAGE CROPPING CANCELED.")
                     Toast.makeText(this, "IMAGE CROPPING CANCELED.", Toast.LENGTH_SHORT).show()
                 }
             }
-            ASK_FOR_EDIT_PROFILE ->{
-                if (resultCode == RESULT_OK){
+            ASK_FOR_EDIT_PROFILE -> {
+                if (resultCode == RESULT_OK) {
                     data?.apply {
                         val grade = getStringExtra("grade")
-                        val gradeID = getIntExtra("gradeID" , 0)
+                        val gradeID = getIntExtra("gradeID", 0)
                         val name = getStringExtra("name")
-                        authViewModel.update(name!! , gradeID)
+                        authViewModel.update(name!!, gradeID)
                         Toast.makeText(x, "profile changed .", Toast.LENGTH_SHORT).show()
                     }
                 }
@@ -226,10 +250,27 @@ fun Greeting(
     outputDirectory: File,
     shouldShowCamera: MutableState<Boolean>,
     onImageCaptured: (Uri, Int) -> Unit,
-    textQuestionViewModel: TextQuestionViewModel
+    askQuestionViewModel: AskQuestionViewModel
 ) {
     val coroutineScope = rememberCoroutineScope()
+    val context = LocalContext.current
 
+    val discoveryAnswers = askQuestionViewModel.discoveryAnswers.observeAsState()
+
+    when (discoveryAnswers.value?.status) {
+        DataStatus.NeedLogin -> {
+            LoginActivity.sendIntent(context)
+        }
+        DataStatus.Success -> {
+            discoveryAnswers.value?.data?.let { list ->
+                QuestionSearchActivity.sendIntent(context, list, askQuestionViewModel.questionId.value!!.data.toString())
+            }
+        }
+        DataStatus.Error -> {
+            context.toast("Error : ".plus(discoveryAnswers.value?.message.toString()))
+        }
+        else -> {}
+    }
 
 
     val pagerState = rememberPagerState(
@@ -257,7 +298,7 @@ fun Greeting(
                     ) { index ->
                         when (index) {
                             0 -> {
-                                TextQuestion(textQuestionViewModel)
+                                TextQuestion(askQuestionViewModel)
                             }
                             1 -> {
                                 Camera(

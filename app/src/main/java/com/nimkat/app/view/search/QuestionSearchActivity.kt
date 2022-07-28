@@ -18,6 +18,7 @@ import androidx.compose.material.*
 import androidx.compose.material.ripple.LocalRippleTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -37,13 +38,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.LifecycleOwner
 import coil.compose.AsyncImage
 import com.github.ybq.android.spinkit.SpinKitView
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.rememberPagerState
 import com.nimkat.app.R
+import com.nimkat.app.models.DataHolder
 import com.nimkat.app.models.DataStatus
 import com.nimkat.app.models.DiscoveryAnswers
 import com.nimkat.app.ui.theme.NimkatTheme
@@ -52,21 +53,26 @@ import com.nimkat.app.ui.theme.mainFont
 import com.nimkat.app.ui.theme.secondFont
 import com.nimkat.app.utils.LIST
 import com.nimkat.app.utils.QUESTION
-import com.nimkat.app.utils.toast
+import com.nimkat.app.utils.QUESTION_ID
 import com.nimkat.app.view.full_image.FullImageActivity
-import com.nimkat.app.view.login.LoginActivity
 import com.nimkat.app.view.question_detail.QuestionDetailActivity
-import com.nimkat.app.view.question_detail.QuestionDetailContent
-import com.nimkat.app.view_model.TextQuestionViewModel
+import com.nimkat.app.view_model.AskQuestionViewModel
+import com.nimkat.app.view_model.AuthViewModel
 import com.rd.PageIndicatorView
 import com.rd.animation.type.AnimationType
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class QuestionSearchActivity : ComponentActivity() {
 
     companion object {
-        fun sendIntent(context: Context, question: String, questions: ArrayList<DiscoveryAnswers>) =
+        fun sendIntent(
+            context: Context,
+            questions: ArrayList<DiscoveryAnswers>,
+            questionId: String?,
+        ) =
             Intent(context, QuestionSearchActivity::class.java).apply {
-                putExtra(QUESTION, question)
+                putExtra(QUESTION_ID, questionId)
                 putParcelableArrayListExtra(LIST, questions)
                 context.startActivity(this)
             }
@@ -76,8 +82,11 @@ class QuestionSearchActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val question = intent.getStringExtra(QUESTION).orEmpty()
+        val questionId = intent.getStringExtra(QUESTION_ID).orEmpty()
+
         val questions: ArrayList<DiscoveryAnswers>? = intent.getParcelableArrayListExtra(LIST)
+        val askQuestionViewModel: AskQuestionViewModel by viewModels()
+
 
 
         setContent {
@@ -87,7 +96,7 @@ class QuestionSearchActivity : ComponentActivity() {
                     color = MaterialTheme.colors.background
                 ) {
                     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
-                        QuestionSearchContent(question, questions)
+                        QuestionSearchContent(questionId, questions, askQuestionViewModel)
                     }
                 }
             }
@@ -98,10 +107,18 @@ class QuestionSearchActivity : ComponentActivity() {
 @OptIn(ExperimentalPagerApi::class)
 @Composable
 fun QuestionSearchContent(
-    question: String,
+    questionId: String,
     questions: List<DiscoveryAnswers>?,
+    askQuestionViewModel: AskQuestionViewModel,
 ) {
-
+    val askedTeachers = askQuestionViewModel.askedTeacher.observeAsState()
+    val questionModel = askQuestionViewModel.questionModel.observeAsState()
+    when (askedTeachers.value?.status) {
+        DataStatus.Success -> {
+            QuestionDetailActivity.sendIntent(LocalContext.current, questionModel.value!!.data!!.id!!, questionModel.value!!.data!!.text, null)
+        }
+        else -> {}
+    }
     val context = LocalContext.current
 
     Scaffold(
@@ -267,7 +284,7 @@ fun QuestionSearchContent(
                 } else {
                     Button(
                         onClick = {
-                            // viewModel.sendQuestion(question)
+                            askQuestionViewModel.askTeachers(questionId)
                         },
                         modifier = Modifier
                             .fillMaxWidth()

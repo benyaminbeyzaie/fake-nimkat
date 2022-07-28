@@ -16,3 +16,10 @@ class QuestionModel : Serializable {
   @SerializedName("has_answer"                ) var hasAnswer              : String?                     = null
 
 }
+
+data class AskQuestionBody(
+  @SerializedName("text") val text : String?,
+  @SerializedName("files") val files : List<String>?,
+  @SerializedName("type") val type : String,
+  @SerializedName("engine_version") val engine_version : String?,
+)

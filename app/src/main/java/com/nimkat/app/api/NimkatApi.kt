@@ -1,7 +1,4 @@
 package com.nimkat.app.api
-
-import com.nimkat.app.callbacks.TextQuestionBody
-import com.nimkat.app.callbacks.TextQuestionCallback
 import com.nimkat.app.models.*
 import retrofit2.Response
 import retrofit2.http.*
@@ -43,16 +40,17 @@ interface NimkatApi {
 
 
     @POST("questions/")
-    suspend fun getTextQuestions(
+    suspend fun sendQuestion(
         @Header("Authorization") token: String,
-        @Body body: TextQuestionBody,
-    ): Response<TextQuestionCallback>
+        @Body body: AskQuestionBody,
+    ): Response<QuestionModel>
 
-    @POST("questions/")
-    suspend fun sendTextQuestions(
-        @Header("Authorization") token: String,
-        @Body body: TextQuestionBody,
-    ): Response<TextQuestionCallback>
+    @PATCH("questions/{id}/")
+    suspend fun askTeachers(
+        @Path("id") id: String,
+        @Body body: AskQuestionBody,
+        @Header("Authorization") token: String
+    ): Response<QuestionModel>
 
     @GET("answers/")
     suspend fun getAnswer(
@@ -67,4 +65,10 @@ interface NimkatApi {
         @Header("Authorization") token: String,
         @Body page: RegistrationModel,
     ): Response<RegistrationModel>
+
+    @POST("upload/base64")
+    suspend fun upload(
+        @Header("Authorization") token: String,
+        @Body body: FileUploadBody,
+    ): Response<File>
 }

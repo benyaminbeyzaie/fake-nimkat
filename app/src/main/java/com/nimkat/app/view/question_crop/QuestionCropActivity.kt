@@ -55,7 +55,7 @@ class QuestionCropActivity : AppCompatActivity() {
         if (mode == 0) {
             CropImage.activity(photoUri)
                 .start(this)
-        }else if (mode == 1){
+        } else if (mode == 1) {
             CropImage.activity()
                 .setGuidelines(CropImageView.Guidelines.ON)
                 .start(this)
@@ -65,7 +65,7 @@ class QuestionCropActivity : AppCompatActivity() {
 
     private fun checkArgument() {
         val intent = intent
-        mode = intent.getIntExtra("mode" , 1)
+        mode = intent.getIntExtra("mode", 1)
         if (mode == 0) {
             photoUri = intent.getParcelableExtra<Uri>("URI")!!
         }
@@ -80,10 +80,10 @@ class QuestionCropActivity : AppCompatActivity() {
                 val resultUri = result.uri
                 Log.d("kiloURI", "copped image uri is: $resultUri")
                 a(resultUri);
-            }else{
-                    setResult(Activity.RESULT_CANCELED, Intent().apply {
-                    })
-                    finish()
+            } else {
+                setResult(Activity.RESULT_CANCELED, Intent().apply {
+                })
+                finish()
 
             }
         }
@@ -142,8 +142,11 @@ fun QuestionCropContent(photouri: Uri) {
         })
 
 
-    Column(Modifier.fillMaxSize().
-    background(colorResource(R.color.background))) {
+    Column(
+        Modifier
+            .fillMaxSize()
+            .background(colorResource(R.color.background))
+    ) {
 
 //      we can load images with uri and Coil library
 
@@ -172,7 +175,9 @@ fun QuestionCropContent(photouri: Uri) {
 
         CompositionLocalProvider(LocalRippleTheme provides RippleWhite) {
             Row(
-                modifier = Modifier.fillMaxWidth().padding(5.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(5.dp)
             ) {
                 Button(
                     onClick = {
@@ -221,8 +226,8 @@ fun QuestionCropContent(photouri: Uri) {
                             context.finish()
                         }
                     },
-                    modifier = Modifier.
-                    weight(1f)
+                    modifier = Modifier
+                        .weight(1f)
 //                        .fillMaxWidth()
                         .padding(8.dp)
                         .height(60.dp),
