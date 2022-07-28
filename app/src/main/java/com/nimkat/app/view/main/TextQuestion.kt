@@ -50,7 +50,7 @@ fun TextQuestion(viewModel: TextQuestionViewModel, lifecycleOwner: LifecycleOwne
 
         when (it.status) {
             DataStatus.NeedLogin -> {
-                LoginActivity.sendIntent(context)
+                LoginActivity.sendIntent(context , isLoginNeededToAsk = true)
             }
             DataStatus.Success -> {
                 it.data?.let { list ->

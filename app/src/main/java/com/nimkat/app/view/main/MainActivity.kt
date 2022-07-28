@@ -34,10 +34,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Dialog
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.LifecycleOwner
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
@@ -68,8 +66,9 @@ class MainActivity : AppCompatActivity() {
 
 
     companion object {
-        fun sendIntent(context: Context) =
+        fun sendIntent(context: Context, loginSuccessful: Boolean = false) =
             Intent(context, MainActivity::class.java).apply {
+                putExtra("boolean" , loginSuccessful)
                 context.startActivity(this)
             }
     }
@@ -80,10 +79,13 @@ class MainActivity : AppCompatActivity() {
     private var shouldShowCamera: MutableState<Boolean> = mutableStateOf(false)
 
     private val authViewModel: AuthViewModel by viewModels()
+    private var loginSuccessful = false
 
     @OptIn(ExperimentalMaterialApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        loginSuccessful = intent.getBooleanExtra("boolean" , false)
 
         val authViewModel: AuthViewModel by viewModels()
         authViewModel.initAuth()
@@ -122,6 +124,7 @@ class MainActivity : AppCompatActivity() {
                         outputDirectory,
                         this,
                         shouldShowCamera,
+                        loginSuccessful,
                         onImageCaptured = ::handleImageCapture,
                     )
                 }
@@ -249,6 +252,7 @@ fun Greeting(
     outputDirectory: File,
     lifecycleOwner: LifecycleOwner,
     shouldShowCamera: MutableState<Boolean>,
+    loginSuccessful: Boolean,
     onImageCaptured: (Uri, Int) -> Unit
 ) {
     val coroutineScope = rememberCoroutineScope()
@@ -289,6 +293,7 @@ fun Greeting(
                                     outputDirectory,
                                     authViewModel,
                                     shouldShowCamera,
+                                    loginSuccessful,
                                     onImageCaptured = onImageCaptured
                                 )
                             }

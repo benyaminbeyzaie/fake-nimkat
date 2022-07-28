@@ -42,6 +42,7 @@ import com.nimkat.app.models.DataStatus
 import com.nimkat.app.ui.theme.RippleWhite
 import com.nimkat.app.ui.theme.mainFont
 import com.nimkat.app.ui.theme.secondFont
+import com.nimkat.app.view.ConfirmDialogue
 import com.nimkat.app.view.SnackBar
 import com.nimkat.app.view.login.LoginActivity
 import com.nimkat.app.view.my_questions.MyQuestionsActivity
@@ -63,19 +64,31 @@ fun Camera(
     outputDirectory: File,
     authViewModel: AuthViewModel,
     shouldShowCamera: MutableState<Boolean>,
+    loginSuccessful: Boolean,
     onImageCaptured: (Uri, Int) -> Unit
 ) {
 
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
-    val errorSnackBar = remember { SnackbarHostState() }
+    val errorSnackBarHostState = remember { SnackbarHostState() }
+    val goodSnackBarHostState =  remember { SnackbarHostState() }
 
     val profileModel = authViewModel.profileModelLiveData.observeAsState()
     if (profileModel.value?.status == DataStatus.Error) {
         LaunchedEffect(lifecycleOwner.lifecycleScope) {
-            errorSnackBar.showSnackbar(
+            errorSnackBarHostState.showSnackbar(
                 message = context.getString(R.string.errorMessage),
                 actionLabel = "RED",
+                duration = SnackbarDuration.Short
+            )
+        }
+    }
+
+    if (loginSuccessful){
+        LaunchedEffect(lifecycleOwner.lifecycleScope) {
+            goodSnackBarHostState.showSnackbar(
+                message = context.getString(R.string.loginSuccessful),
+                actionLabel = "GREEN",
                 duration = SnackbarDuration.Short
             )
         }
@@ -112,7 +125,7 @@ fun Camera(
                     executor = cameraExecutor,
                     onImageCaptured = onImageCaptured,
                     onError = {},
-                    errorSnackBar,
+                    errorSnackBarHostState,
                     shouldShowCamera
                 )
 
@@ -157,7 +170,8 @@ fun Camera(
                 }
             }
 
-            SnackBar(snackbarHostState = errorSnackBar, Color.Red, true) {}
+            SnackBar(snackbarHostState = errorSnackBarHostState, Color.Red, true) {}
+            SnackBar(snackbarHostState = goodSnackBarHostState, colorResource(id = R.color.green_dark), true) {}
 
         }
     }
@@ -175,6 +189,8 @@ fun Drawer(
     val isLoaded = profileModel.value?.data != null
     val isLogin = authModel.value?.data != null
     val isProfileCompleted = remember{ mutableStateOf(false)}
+
+    val showDeleteDialouge = remember{ mutableStateOf(false)}
 
 
     Log.d("Profile", profileModel.value?.data.toString())
@@ -493,7 +509,8 @@ fun Drawer(
                     .padding(0.dp, 4.dp, 0.dp, 0.dp)
                     .fillMaxWidth()
                     .clickable {
-                        authViewModel.delete()
+                        showDeleteDialouge.value = true
+//                        authViewModel.delete()
                     }) {
                 Row(
                     Modifier
@@ -519,6 +536,11 @@ fun Drawer(
                     )
                 }
             }
+
+            if (showDeleteDialouge.value){
+                ConfirmDialogue(authViewModel , showDeleteDialouge)
+            }
+
         }
 
         val darkState = remember { mutableStateOf(isDark) }

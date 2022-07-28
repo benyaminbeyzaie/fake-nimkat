@@ -206,7 +206,7 @@ fun OtpContent(id: String, authViewModel: AuthViewModel, smsCode: String, mobile
 
     val authState = authViewModel.authModelLiveData.observeAsState()
     if (authState.value?.status === DataStatus.Success) {
-        MainActivity.sendIntent(context)
+        MainActivity.sendIntent(context , true)
         (context as Activity).finish()
     }
     if (authState.value?.status === DataStatus.NeedCompletion) {
