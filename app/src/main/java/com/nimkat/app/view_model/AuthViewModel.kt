@@ -10,6 +10,7 @@ import com.nimkat.app.models.DataHolder
 import com.nimkat.app.models.ProfileModel
 import com.nimkat.app.repository.AuthRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -35,14 +36,19 @@ class AuthViewModel @Inject constructor(
     }
 
 
-    fun initAuth(shouldInitProfile: Boolean = true, firebaseToken: String? = null) {
-        Log.d("Auth View Model", "init auth called " + _authModel.value?.data.toString())
-        if (_authModel.value?.data != null && firebaseToken == null) return
-        val authModel = repository.initAuth(firebaseToken) ?: return
+    fun initAuth(shouldInitProfile: Boolean = true) {
+        if (_authModel.value?.data != null) return
+        val authModel = repository.initAuth() ?: return
         _authModel.postValue(DataHolder.success(authModel))
         Log.d("Auth View Model", "Auth Model is loaded")
         if (shouldInitProfile) {
             initProfile()
+        }
+    }
+
+    fun registerDevice(firebaseToken: String) {
+        GlobalScope.launch {
+            repository.registerDevice(firebaseToken)
         }
     }
 
