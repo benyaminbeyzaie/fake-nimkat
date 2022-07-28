@@ -82,7 +82,7 @@ class LoginActivity : AppCompatActivity() {
     }
 
     override fun onBackPressed() {
-        MainActivity.sendIntent(this, true)
+        MainActivity.sendIntent(this, false)
         finish()
     }
 }
@@ -92,8 +92,8 @@ class LoginActivity : AppCompatActivity() {
 fun LoginContent(authViewModel: AuthViewModel, phone: String, isLoginNeededToAsk: Boolean) {
     val mobile = remember { mutableStateOf(phone) }
     val context = LocalContext.current
-    val lifecycleOwner = LocalLifecycleOwner.current
     val isCodeSent = authViewModel.isCodeSentLiveData.observeAsState()
+    val lifecycleOwner = LocalLifecycleOwner.current
     val errorSnackBar = remember { SnackbarHostState() }
     val bool = remember { mutableStateOf(false) }
     val isError = remember { mutableStateOf(false) }
@@ -140,7 +140,7 @@ fun LoginContent(authViewModel: AuthViewModel, phone: String, isLoginNeededToAsk
     ) {
         IconButton(
             onClick = {
-                MainActivity.sendIntent(context, true)
+                MainActivity.sendIntent(context, false)
                 (context as Activity).finish()
             },
             modifier = Modifier

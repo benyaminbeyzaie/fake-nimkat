@@ -37,6 +37,7 @@ class AuthViewModel @Inject constructor(
 
 
     fun initAuth(shouldInitProfile: Boolean = true) {
+        Log.d("completeprofile" , "auth is " + _authModel.value?.data.toString())
         if (_authModel.value?.data != null) return
         val authModel = repository.initAuth() ?: return
         _authModel.postValue(DataHolder.success(authModel))
@@ -117,9 +118,14 @@ class AuthViewModel @Inject constructor(
                     gradeId,
                 )
                 if (response != null && response.isSuccessful && response.body() != null) {
+                    var data1 = _authModel.value?.data
+                    data1?.isProfileCompleted = true
+                    _authModel.postValue(DataHolder.success(data1!!))
+                    Log.d("update" , _authModel.value?.data.toString())
                     Log.d("update ", response.body()!!.toString())
                     _profileModel.postValue(DataHolder.success(response.body()!!))
                     Log.d("update ", "LOAD Into Profile Model ")
+//                    _authModel.value?.data?.isProfileCompleted = true
                 } else {
                     Log.d("update ", "update error" + response.toString())
                     _profileModel.postValue(DataHolder.error())

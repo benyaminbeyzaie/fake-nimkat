@@ -11,6 +11,7 @@ import com.nimkat.app.models.QuestionModel
 import com.nimkat.app.repository.AskQuestionRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
+import java.lang.Exception
 import javax.inject.Inject
 
 @HiltViewModel
@@ -77,19 +78,24 @@ class AskQuestionViewModel @Inject constructor(
         _discoveryAnswers.postValue(DataHolder.loading())
 
         viewModelScope.launch {
-            if (repository.isAuth() == null) {
-                _discoveryAnswers.postValue(DataHolder.needLogin())
-                return@launch
-            }
+            try {
+                if (repository.isAuth() == null) {
+                    _discoveryAnswers.postValue(DataHolder.needLogin())
+                    return@launch
+                }
 
-            val response = repository.sendImageQuestion(base64)
-            if (response == null || !response.isSuccessful) {
+                val response = repository.sendImageQuestion(base64)
+                if (response == null || !response.isSuccessful) {
+                    _discoveryAnswers.postValue(DataHolder.error())
+                    _questionModel.postValue(DataHolder.error())
+                } else {
+                    _questionId.postValue(DataHolder.success(response.body()!!.id!!))
+                    _discoveryAnswers.postValue(DataHolder.success(response.body()!!.discoveryAnswers))
+                    _questionModel.postValue(DataHolder.success(response.body()!!))
+                }
+            }catch (e: Exception){
                 _discoveryAnswers.postValue(DataHolder.error())
                 _questionModel.postValue(DataHolder.error())
-            } else {
-                _questionId.postValue(DataHolder.success(response.body()!!.id!!))
-                _discoveryAnswers.postValue(DataHolder.success(response.body()!!.discoveryAnswers))
-                _questionModel.postValue(DataHolder.success(response.body()!!))
             }
 
         }

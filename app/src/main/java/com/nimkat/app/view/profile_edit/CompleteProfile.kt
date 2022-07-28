@@ -38,8 +38,10 @@ class CompleteProfile : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         authViewModel.profileModelLiveData.observe(this) { value ->
             if (value.data?.isProfileCompleted == true) {
-                val intent = Intent(this, MainActivity::class.java)
-                startActivity(intent)
+                Log.d("CompleteProfile" , "from here")
+                MainActivity.sendIntent(this , true)
+//                val intent = Intent(this, MainActivity::class.java)
+//                startActivity(intent)
             }
         }
         val intent = Intent(this@CompleteProfile, WhatsYourNameActivity::class.java)

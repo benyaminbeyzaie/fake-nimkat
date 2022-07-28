@@ -9,10 +9,10 @@ import android.net.Uri
 import android.os.Bundle
 import android.util.Base64
 import android.util.Log
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.view.ContextThemeWrapper
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -23,31 +23,40 @@ import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.HighlightOff
 import androidx.compose.material.ripple.LocalRippleTheme
 import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
+import androidx.lifecycle.lifecycleScope
+import coil.compose.AsyncImage
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
+import com.github.ybq.android.spinkit.SpinKitView
 import com.nimkat.app.R
 import com.nimkat.app.models.DataStatus
 import com.nimkat.app.ui.theme.NimkatTheme
 import com.nimkat.app.ui.theme.RippleWhite
 import com.nimkat.app.ui.theme.secondFont
 import com.nimkat.app.utils.toast
+import com.nimkat.app.view.SnackBar
 import com.nimkat.app.view.login.LoginActivity
 import com.nimkat.app.view.search.QuestionSearchActivity
 import com.nimkat.app.view_model.AskQuestionViewModel
 import com.theartofdev.edmodo.cropper.CropImage
 import com.theartofdev.edmodo.cropper.CropImageView
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.delay
 import java.io.ByteArrayOutputStream
 import java.io.InputStream
 
@@ -59,7 +68,8 @@ class QuestionCropActivity : AppCompatActivity() {
     private lateinit var photoUri: Uri
     private var mode: Int = 1
     private val askQuestionsViewModel: AskQuestionViewModel by viewModels()
-
+    lateinit var resultUri : Uri
+    var isLoading = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -68,20 +78,32 @@ class QuestionCropActivity : AppCompatActivity() {
             when (value?.status) {
                 DataStatus.NeedLogin -> {
                     LoginActivity.sendIntent(this)
+                    isLoading = false
                 }
                 DataStatus.Success -> {
                     value.data?.let { list ->
-                        if (flag) QuestionSearchActivity.sendIntent(
-                            this,
-                            list,
-                            askQuestionsViewModel.questionId.value!!.data.toString()
-                        )
+                        if (flag) {
+                            QuestionSearchActivity.sendIntent(
+                                this,
+                                list,
+                                askQuestionsViewModel.questionId.value!!.data.toString()
+                            )
+                            finish()
+                        }
                     }
+                    isLoading = false
                 }
                 DataStatus.Error -> {
-                    this.toast("Error : ".plus(value.message.toString()))
+                    isLoading = false
+                    contentSetter(resultUri, askQuestionsViewModel , true , isLoading)
                 }
-                else -> {}
+                DataStatus.Loading ->{
+                    isLoading = true
+                    contentSetter(resultUri, askQuestionsViewModel , true , isLoading)
+                }
+                else -> {isLoading = false
+//                    contentSetter(resultUri, askQuestionsViewModel , true , isLoading)
+                }
             }
         }
         flag = true
@@ -113,9 +135,9 @@ class QuestionCropActivity : AppCompatActivity() {
         if (requestCode == CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE) {
             val result = CropImage.getActivityResult(data)
             if (resultCode == RESULT_OK) {
-                val resultUri = result.uri
+                resultUri = result.uri
                 Log.d("ImageCapture", "copped image uri is: $resultUri")
-                a(resultUri, askQuestionsViewModel);
+                contentSetter(resultUri, askQuestionsViewModel , isLoading= isLoading);
             } else {
                 setResult(Activity.RESULT_CANCELED, Intent().apply {
                 })
@@ -126,7 +148,7 @@ class QuestionCropActivity : AppCompatActivity() {
     }
 
 
-    fun a(photouri: Uri, askQuestionsViewModel: AskQuestionViewModel) {
+    fun contentSetter(photouri: Uri, askQuestionsViewModel: AskQuestionViewModel , error:Boolean = false , isLoading: Boolean) {
         setContent {
             NimkatTheme {
                 Surface(
@@ -135,7 +157,7 @@ class QuestionCropActivity : AppCompatActivity() {
                 ) {
                     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
                         Log.d("imageview", imagePath)
-                        QuestionCropContent(photouri, askQuestionsViewModel)
+                        QuestionCropContent(photouri, askQuestionsViewModel , error , isLoading)
 
                     }
 
@@ -147,13 +169,27 @@ class QuestionCropActivity : AppCompatActivity() {
 }
 
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun QuestionCropContent(photouri: Uri, askQuestionsViewModel: AskQuestionViewModel) {
+fun QuestionCropContent(photouri: Uri, askQuestionsViewModel: AskQuestionViewModel, error: Boolean, isLoading: Boolean) {
+    val shouldShowCamera: MutableState<Boolean> = remember { mutableStateOf(false) }
+    shouldShowCamera.value = false
 
     val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
+    val errorSnackBar = remember { SnackbarHostState() }
+
+    if (error){
+        LaunchedEffect(lifecycleOwner.lifecycleScope) {
+            errorSnackBar.showSnackbar(
+                message = context.getString(R.string.errorMessage),
+                actionLabel = "RED",
+                duration = SnackbarDuration.Short
+            )
+        }
+    }
 
     lateinit var bitmap: Bitmap
-    val shouldShowCamera: MutableState<Boolean> = remember { mutableStateOf(false) }
     Glide.with(context)
         .asBitmap()
         .load(photouri)
@@ -171,13 +207,11 @@ fun QuestionCropContent(photouri: Uri, askQuestionsViewModel: AskQuestionViewMod
             }
         })
 
-
     Column(
         Modifier
             .fillMaxSize()
             .background(colorResource(R.color.background))
     ) {
-
         if (shouldShowCamera.value) {
             Image(
                 bitmap.asImageBitmap(),
@@ -196,7 +230,8 @@ fun QuestionCropContent(photouri: Uri, askQuestionsViewModel: AskQuestionViewMod
             ) {
                 Button(
                     onClick = {
-                        val imageStream: InputStream? = context.contentResolver.openInputStream(photouri)
+                        val imageStream: InputStream? =
+                            context.contentResolver.openInputStream(photouri)
                         val selectedImage = BitmapFactory.decodeStream(imageStream)
                         val baos = ByteArrayOutputStream()
                         selectedImage.compress(Bitmap.CompressFormat.JPEG, 100, baos)
@@ -204,6 +239,7 @@ fun QuestionCropContent(photouri: Uri, askQuestionsViewModel: AskQuestionViewMod
                         val encodedImage: String = Base64.encodeToString(b, Base64.DEFAULT)
                         askQuestionsViewModel.askImageQuestion(encodedImage)
                     },
+                    enabled = !isLoading,
                     modifier = Modifier
                         .weight(1f)
                         .padding(8.dp)
@@ -211,22 +247,42 @@ fun QuestionCropContent(photouri: Uri, askQuestionsViewModel: AskQuestionViewMod
                     shape = RoundedCornerShape(20.dp),
                     colors = ButtonDefaults.buttonColors(backgroundColor = colorResource(R.color.green)),
                 ) {
-                    Row {
-                        Text(
-                            text = stringResource(R.string.ok),
-                            style = TextStyle(
-                                fontFamily = secondFont
-                            ),
-                            color = colorResource(R.color.white),
-                            fontSize = 20.sp,
+                    if (isLoading) {
+                        AndroidView(
+                            factory = { context ->
+                                SpinKitView(
+                                    ContextThemeWrapper(
+                                        context,
+                                        com.github.ybq.android.spinkit.R.style.SpinKitView_ThreeBounce
+                                    )
+                                ).apply {
+
+                                }
+                            },
+                            update = {
+
+
+                            },
                         )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Icon(
-                            Icons.Outlined.CheckCircle,
-                            null,
-                            tint = colorResource(R.color.white),
-                            modifier = Modifier.padding(0.dp, 6.dp, 0.dp, 0.dp)
-                        )
+
+                    } else {
+                        Row {
+                            Text(
+                                text = stringResource(R.string.ok),
+                                style = TextStyle(
+                                    fontFamily = secondFont
+                                ),
+                                color = colorResource(R.color.white),
+                                fontSize = 20.sp,
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Icon(
+                                Icons.Outlined.CheckCircle,
+                                null,
+                                tint = colorResource(R.color.white),
+                                modifier = Modifier.padding(0.dp, 6.dp, 0.dp, 0.dp)
+                            )
+                        }
                     }
                 }
 
@@ -244,6 +300,7 @@ fun QuestionCropContent(photouri: Uri, askQuestionsViewModel: AskQuestionViewMod
 //                        .fillMaxWidth()
                         .padding(8.dp)
                         .height(60.dp),
+                    enabled = !isLoading,
                     shape = RoundedCornerShape(20.dp),
                     colors = ButtonDefaults.buttonColors(backgroundColor = colorResource(R.color.red)),
                 ) {
@@ -268,8 +325,8 @@ fun QuestionCropContent(photouri: Uri, askQuestionsViewModel: AskQuestionViewMod
             }
         }
 
-
     }
+    SnackBar(snackbarHostState = errorSnackBar, Color.Red, true) {}
 
 }
 

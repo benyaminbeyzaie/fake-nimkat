@@ -131,3 +131,4 @@ dependencies {
 
 
     implementation 'com.google.firebase:firebase-core:21.1.0'
+}

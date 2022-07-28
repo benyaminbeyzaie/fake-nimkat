@@ -65,5 +65,7 @@
     <string name="loginSuccessful"> با موفقیت وارد شدی!</string>
     <string name="profileChanged">پروفایل با موفقیت آپدیت شد.</string>
     <string name="areYouSure">آیا واقعا میخواهید اکانت خود را حذف کنید؟ با اینکار تمام اطلاعات شما از سایت حذف خواهد شد.</string>
+    <string name="processing">در حال پردازش </string>
+
 
 </resources>

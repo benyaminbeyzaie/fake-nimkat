@@ -58,6 +58,7 @@ import com.nimkat.app.utils.QUESTION
 import com.nimkat.app.utils.toast
 import com.nimkat.app.utils.QUESTION_ID
 import com.nimkat.app.view.full_image.FullImageActivity
+import com.nimkat.app.view.main.MainActivity
 import com.nimkat.app.view.question_detail.QuestionDetailActivity
 import com.nimkat.app.view_model.AskQuestionViewModel
 import com.nimkat.app.view_model.AuthViewModel
@@ -105,6 +106,12 @@ class QuestionSearchActivity : AppCompatActivity() {
                 }
             }
         }
+    }
+
+    override fun onBackPressed() {
+//        MainActivity.sendIntent(this, false)
+//        finish()
+        super.onBackPressed()
     }
 }
 

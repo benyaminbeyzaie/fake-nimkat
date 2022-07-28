@@ -8,6 +8,7 @@ import android.net.Uri
 import android.preference.PreferenceManager
 import android.util.Log
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.appcompat.view.ContextThemeWrapper
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -35,8 +36,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat.startActivity
 import androidx.lifecycle.lifecycleScope
+import com.github.ybq.android.spinkit.SpinKitView
 import com.nimkat.app.R
 import com.nimkat.app.models.DataStatus
 import com.nimkat.app.ui.theme.RippleWhite
@@ -448,6 +451,7 @@ fun Drawer(
                     )
                     Button(
                         onClick = {
+                            Log.d("completeProfile" , "from camera")
                             CompleteProfile.sendIntent(context)
                             (context as Activity).finish()
                         },

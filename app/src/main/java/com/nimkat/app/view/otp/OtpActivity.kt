@@ -4,13 +4,8 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.graphics.Rect
 import android.os.Bundle
 import android.util.Log
-import android.view.MotionEvent
-import android.view.View
-import android.view.inputmethod.InputMethodManager
-import android.widget.EditText
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -47,7 +42,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.lifecycleScope
 import com.google.android.gms.auth.api.phone.SmsRetriever
-import com.google.firebase.FirebaseApp
 import com.google.firebase.messaging.FirebaseMessaging
 import com.nimkat.app.R
 import com.nimkat.app.models.DataStatus
@@ -86,6 +80,7 @@ class OtpActivity : AppCompatActivity() {
 
     private val authViewModel: AuthViewModel by viewModels()
 
+    var x: OtpActivity? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -93,8 +88,8 @@ class OtpActivity : AppCompatActivity() {
 
         id = intent.getStringExtra("id").orEmpty()
         mobile = intent.getStringExtra("mobile").orEmpty()
-
-        contentSetter()
+        x = this
+        contentSetter(true , x)
     }
 
     override fun onBackPressed() {
@@ -102,16 +97,30 @@ class OtpActivity : AppCompatActivity() {
         finish()
     }
 
-    private fun contentSetter() {
-        setContent {
-            NimkatTheme {
-                // A surface container using the 'background' color from the theme
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colors.background
-                ) {
-                    CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
-                        OtpContent(id, authViewModel, smsCode , mobile)
+    private fun contentSetter(flag: Boolean, x: OtpActivity?) {
+        if (flag) {
+            setContent {
+                NimkatTheme {
+                    // A surface container using the 'background' color from the theme
+                    Surface(
+                        modifier = Modifier.fillMaxSize(),
+                        color = MaterialTheme.colors.background
+                    ) {
+                        CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
+                            OtpContent(id, authViewModel, smsCode, mobile , x)
+                        }
+                    }
+                }
+            }
+        }else{
+            setContent {
+                NimkatTheme {
+                    // A surface container using the 'background' color from the theme
+                    Surface(
+                        modifier = Modifier.fillMaxSize(),
+                        color = MaterialTheme.colors.background
+                    ) {
+                        Text(text = "default")
                     }
                 }
             }
@@ -157,7 +166,7 @@ class OtpActivity : AppCompatActivity() {
         if (matcher.find()) {
 
             smsCode = matcher.group(0)!!
-            contentSetter()
+            contentSetter(true, x)
 
             if (smsCode != ""){
                 authViewModel.verifyCode(smsCode, id)
@@ -176,30 +185,17 @@ class OtpActivity : AppCompatActivity() {
         unregisterReceiver(smsBroadcastReceiver)
     }
 
-
-    override fun dispatchTouchEvent(event: MotionEvent): Boolean {
-        if (event.action == MotionEvent.ACTION_DOWN) {
-            val v: View? = currentFocus
-            if (v is EditText) {
-                val outRect = Rect()
-                v.getGlobalVisibleRect(outRect)
-                if (!outRect.contains(event.rawX.toInt(), event.rawY.toInt())) {
-                    v.clearFocus()
-                    val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-                    imm.hideSoftInputFromWindow(v.getWindowToken(), 0)
-                }
-            }
-        }
-        return super.dispatchTouchEvent(event)
-    }
-
-
-
 }
 
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalMaterialApi::class)
 @Composable
-fun OtpContent(id: String, authViewModel: AuthViewModel, smsCode: String, mobile: String) {
+fun OtpContent(
+    id: String,
+    authViewModel: AuthViewModel,
+    smsCode: String,
+    mobile: String,
+    x: OtpActivity?
+) {
     val context = LocalContext.current
 
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -217,13 +213,18 @@ fun OtpContent(id: String, authViewModel: AuthViewModel, smsCode: String, mobile
                     Log.d("CompleteProfile", token)
                     authViewModel.initAuth()
                     authViewModel.registerDevice(token)
-                    MainActivity.sendIntent(context)
-                    (context as Activity).finish()
+                    MainActivity.sendIntent(context , true)
+                    x?.finish()
                 }
             }
         }
     }
     if (authState.value?.status === DataStatus.NeedCompletion) {
+        authViewModel.initAuth()
+        Log.d("completeProfile" , authState.value?.status.toString())
+        Log.d("completeProfile" , authState.value?.message.toString())
+        Log.d("completeProfile" , authState.value?.data.toString())
+        Log.d("completeProfile" , "from OTP")
         CompleteProfile.sendIntent(context)
     }
     if (authState.value?.status === DataStatus.Error) {

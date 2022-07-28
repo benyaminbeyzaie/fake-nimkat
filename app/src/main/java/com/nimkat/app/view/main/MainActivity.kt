@@ -69,7 +69,7 @@ import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import android.app.AlertDialog
 import android.content.DialogInterface
-
+import androidx.lifecycle.LifecycleOwner
 
 
 @AndroidEntryPoint
@@ -101,7 +101,7 @@ class MainActivity : AppCompatActivity() {
         loginSuccessful = intent.getBooleanExtra("boolean" , false)
         authViewModel.initAuth()
 
-        val textQuestionViewModel: TextQuestionViewModel by viewModels()
+//        val textQuestionViewModel: TextQuestionViewModel by viewModels()
 
         outputDirectory = getOutputDirectory()
         cameraExecutor = Executors.newSingleThreadExecutor()
