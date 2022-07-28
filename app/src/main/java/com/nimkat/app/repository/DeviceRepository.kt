@@ -1,12 +1,15 @@
 package com.nimkat.app.repository
 
-import com.google.firebase.iid.FirebaseInstanceId
+import android.content.Context
+import com.google.firebase.FirebaseApp
+import com.google.firebase.messaging.FirebaseMessaging
 import com.google.gson.Gson
 import com.nimkat.app.api.NimkatApi
 import com.nimkat.app.models.AuthModel
 import com.nimkat.app.models.RegistrationModel
 import com.nimkat.app.utils.AuthPrefs
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.launch
 import retrofit2.Response
 import java.util.*
@@ -31,34 +34,23 @@ class DeviceRepository @Inject constructor(
         return authModel;
     }
 
-    suspend fun registerDevice(): Response<RegistrationModel>? {
-        initAuth();
+    suspend fun registerDevice(firebaseToken: String): Response<RegistrationModel>? {
+        initAuth()
 
         if (authModel == null) return null
         var apiResponse: Response<RegistrationModel>? = null
 
-        FirebaseInstanceId.getInstance().instanceId.addOnCompleteListener { task ->
-            if (task.isSuccessful && task.result != null) {
-                val token = task.result!!.token
-                GlobalScope.launch {
-                    try {
-                        apiResponse = api.registerDevice(
-                            "Token ${authModel?.token}",
-                            RegistrationModel(
-                                active = true,
-                                registrationId = token,
-                                type = "android",
-                                deviceId = UUID.randomUUID().toString(),
-                                name = "name"
-                            )
-                        )
-                    } catch (e: Exception) {
+        apiResponse = api.registerDevice(
+            "Token ${authModel?.token}",
+            RegistrationModel(
+                active = true,
+                registrationId = firebaseToken,
+                type = "android",
+                deviceId = UUID.randomUUID().toString(),
+                name = "name"
+            )
+        )
 
-                    }
-
-                }
-            }
-        }
         if (apiResponse == null || apiResponse!!.body() === null) return null;
         return apiResponse
     }

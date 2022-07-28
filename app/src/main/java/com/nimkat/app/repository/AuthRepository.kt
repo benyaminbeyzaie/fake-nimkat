@@ -5,7 +5,6 @@ import com.google.gson.Gson
 import com.nimkat.app.api.NimkatApi
 import com.nimkat.app.models.*
 import com.nimkat.app.utils.AuthPrefs
-import com.nimkat.app.utils.FirebaseServices
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import retrofit2.Response
@@ -20,16 +19,17 @@ class AuthRepository @Inject constructor(
 ) {
     var authModel: AuthModel? = null;
 
-    fun initAuth(): AuthModel? {
+    fun initAuth(firebaseToken: String? = null): AuthModel? {
+        if (firebaseToken != null) {
+            GlobalScope.launch {
+                deviceRepository.registerDevice(firebaseToken)
+            }
+        }
         if (authModel != null) return authModel
         val authString = authPrefs.getAuthString()
-        Log.d("AUTHSTRING" , "Auth string is " + authString)
         if (authString === null) return null
         val gson = Gson()
         authModel = gson.fromJson(authString, AuthModel::class.java)
-        GlobalScope.launch {
-            deviceRepository.registerDevice()
-        }
         return authModel;
     }
 

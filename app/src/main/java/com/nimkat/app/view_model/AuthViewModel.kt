@@ -35,10 +35,10 @@ class AuthViewModel @Inject constructor(
     }
 
 
-    fun initAuth(shouldInitProfile: Boolean = true) {
+    fun initAuth(shouldInitProfile: Boolean = true, firebaseToken: String? = null) {
         Log.d("Auth View Model", "init auth called " + _authModel.value?.data.toString())
-        if (_authModel.value?.data != null) return
-        val authModel = repository.initAuth() ?: return
+        if (_authModel.value?.data != null && firebaseToken == null) return
+        val authModel = repository.initAuth(firebaseToken) ?: return
         _authModel.postValue(DataHolder.success(authModel))
         Log.d("Auth View Model", "Auth Model is loaded")
         if (shouldInitProfile) {

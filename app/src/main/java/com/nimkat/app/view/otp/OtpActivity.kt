@@ -47,6 +47,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.lifecycleScope
 import com.google.android.gms.auth.api.phone.SmsRetriever
+import com.google.firebase.FirebaseApp
+import com.google.firebase.messaging.FirebaseMessaging
 import com.nimkat.app.R
 import com.nimkat.app.models.DataStatus
 import com.nimkat.app.ui.theme.NimkatTheme
@@ -60,6 +62,8 @@ import com.nimkat.app.view.main.MainActivity
 import com.nimkat.app.view.profile_edit.CompleteProfile
 import com.nimkat.app.view_model.AuthViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import java.util.regex.Pattern
 
 @AndroidEntryPoint
@@ -206,8 +210,17 @@ fun OtpContent(id: String, authViewModel: AuthViewModel, smsCode: String, mobile
 
     val authState = authViewModel.authModelLiveData.observeAsState()
     if (authState.value?.status === DataStatus.Success) {
-        MainActivity.sendIntent(context , true)
-        (context as Activity).finish()
+        FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
+            if (task.isSuccessful && task.result != null) {
+                val token = task.result
+                GlobalScope.launch {
+                    Log.d("CompleteProfile", token)
+                    authViewModel.initAuth(firebaseToken = token)
+                    MainActivity.sendIntent(context)
+                    (context as Activity).finish()
+                }
+            }
+        }
     }
     if (authState.value?.status === DataStatus.NeedCompletion) {
         CompleteProfile.sendIntent(context)

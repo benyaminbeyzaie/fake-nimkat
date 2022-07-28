@@ -1,6 +1,11 @@
 package com.nimkat.app.view.main
 
+import android.util.Log
 import androidx.appcompat.view.ContextThemeWrapper
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandHorizontally
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -10,6 +15,7 @@ import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.ripple.LocalRippleTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -18,6 +24,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -30,39 +37,29 @@ import com.nimkat.app.ui.theme.mainFont
 import com.nimkat.app.ui.theme.secondFont
 import com.nimkat.app.utils.toast
 import com.nimkat.app.view.login.LoginActivity
+import com.nimkat.app.view.profile_edit.grade.ExpandableState
 import com.nimkat.app.view.search.QuestionSearchActivity
-import com.nimkat.app.view_model.TextQuestionViewModel
+import com.nimkat.app.view_model.AskQuestionViewModel
 
 @Composable
-fun TextQuestion(viewModel: TextQuestionViewModel, lifecycleOwner: LifecycleOwner) {
-
-    val context = LocalContext.current
-
+fun TextQuestion(viewModel: AskQuestionViewModel) {
     val text = remember { mutableStateOf("") }
     val loading = remember {
         mutableStateOf(false)
     }
 
-    viewModel.myQuestions.removeObservers(lifecycleOwner)
-    viewModel.reCreate()
-    viewModel.myQuestions.observe(lifecycleOwner) {
-        loading.value = it.status == DataStatus.Loading
+    val discoveryAnswers = viewModel.discoveryAnswers.observeAsState()
 
-        when (it.status) {
-            DataStatus.NeedLogin -> {
-                LoginActivity.sendIntent(context , isLoginNeededToAsk = true)
-            }
-            DataStatus.Success -> {
-                it.data?.let { list ->
-                    QuestionSearchActivity.sendIntent(context, text.value, list)
-                }
-            }
-            DataStatus.Error -> {
-                context.toast("Error : ".plus(it.message.toString()))
-            }
-            else -> {}
+    when (discoveryAnswers.value?.status) {
+        DataStatus.Loading -> {
+            loading.value = true
+        }
+        else -> {
+            loading.value = false
         }
     }
+
+
 
 
 
@@ -71,6 +68,8 @@ fun TextQuestion(viewModel: TextQuestionViewModel, lifecycleOwner: LifecycleOwne
             .fillMaxSize()
             .background(colorResource(R.color.background))
     ) {
+
+        val text = remember { mutableStateOf("") }
 
         TextField(
             value = text.value,
@@ -111,7 +110,7 @@ fun TextQuestion(viewModel: TextQuestionViewModel, lifecycleOwner: LifecycleOwne
             Button(
                 onClick = {
                     if (text.value.isEmpty()) return@Button
-                    viewModel.loadQuestions(text.value)
+                    viewModel.sendQuestion(text.value)
                 },
                 modifier = Modifier
                     .fillMaxWidth()

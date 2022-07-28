@@ -15,6 +15,16 @@ class AuthPrefs @Inject constructor(@ApplicationContext context : Context){
     private val authPrefTag = "auth_tag";
     private val profileTag = "profile_tag"
     private val prefs: SharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
+    private var authModel: AuthModel? = null
+
+    fun initAuth(): AuthModel? {
+        if (authModel != null) return authModel
+        val authString = getAuthString()
+        if (authString === null) return null
+        val gson = Gson()
+        authModel = gson.fromJson(authString, AuthModel::class.java)
+        return authModel
+    }
 
     fun getAuthString(): String? {
         val authString = prefs.getString(authPrefTag, "");
@@ -34,13 +44,6 @@ class AuthPrefs @Inject constructor(@ApplicationContext context : Context){
 
     fun setProfileString(query: String){
         prefs.edit().putString(profileTag , query).apply()
-    }
-
-    fun initAuth(): AuthModel? {
-        val authString = getAuthString()
-        if (authString === null) return null
-        val gson = Gson()
-        return gson.fromJson(authString, AuthModel::class.java)
     }
 
     fun clearAuth() {
