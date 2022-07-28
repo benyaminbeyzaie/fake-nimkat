@@ -19,7 +19,12 @@ class QuestionModel : Serializable {
 
 data class AskQuestionBody(
   @SerializedName("text") val text : String?,
-  @SerializedName("files") val files : List<String>?,
+  @SerializedName("files") val files : List<FileIdBody>?,
   @SerializedName("type") val type : String,
   @SerializedName("engine_version") val engine_version : String?,
+)
+
+data class FileIdBody(
+  @SerializedName("file_id") val fileId : String?,
+  @SerializedName("order") val order : Int?,
 )

@@ -3,12 +3,15 @@ package com.nimkat.app.view.question_crop
 import android.app.Activity
 import android.content.Intent
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Bundle
+import android.util.Base64
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -34,21 +37,54 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
 import com.nimkat.app.R
+import com.nimkat.app.models.DataStatus
 import com.nimkat.app.ui.theme.NimkatTheme
 import com.nimkat.app.ui.theme.RippleWhite
 import com.nimkat.app.ui.theme.secondFont
+import com.nimkat.app.utils.toast
+import com.nimkat.app.view.login.LoginActivity
+import com.nimkat.app.view.search.QuestionSearchActivity
+import com.nimkat.app.view_model.AskQuestionViewModel
 import com.theartofdev.edmodo.cropper.CropImage
 import com.theartofdev.edmodo.cropper.CropImageView
+import dagger.hilt.android.AndroidEntryPoint
+import java.io.ByteArrayOutputStream
+import java.io.InputStream
 
 
+@AndroidEntryPoint
 class QuestionCropActivity : AppCompatActivity() {
 
     private var imagePath = ""
     private lateinit var photoUri: Uri
     private var mode: Int = 1
+    private val askQuestionsViewModel: AskQuestionViewModel by viewModels()
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        var flag = false
+        askQuestionsViewModel.discoveryAnswers.observe(this) { value ->
+            when (value?.status) {
+                DataStatus.NeedLogin -> {
+                    LoginActivity.sendIntent(this)
+                }
+                DataStatus.Success -> {
+                    value.data?.let { list ->
+                        if (flag) QuestionSearchActivity.sendIntent(
+                            this,
+                            list,
+                            askQuestionsViewModel.questionId.value!!.data.toString()
+                        )
+                    }
+                }
+                DataStatus.Error -> {
+                    this.toast("Error : ".plus(value.message.toString()))
+                }
+                else -> {}
+            }
+        }
+        flag = true
 
         checkArgument()
 
@@ -79,7 +115,7 @@ class QuestionCropActivity : AppCompatActivity() {
             if (resultCode == RESULT_OK) {
                 val resultUri = result.uri
                 Log.d("ImageCapture", "copped image uri is: $resultUri")
-                a(resultUri);
+                a(resultUri, askQuestionsViewModel);
             } else {
                 setResult(Activity.RESULT_CANCELED, Intent().apply {
                 })
@@ -90,18 +126,16 @@ class QuestionCropActivity : AppCompatActivity() {
     }
 
 
-    fun a(photouri: Uri) {
-
+    fun a(photouri: Uri, askQuestionsViewModel: AskQuestionViewModel) {
         setContent {
             NimkatTheme {
-                // A surface container using the 'background' color from the theme
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colors.background
                 ) {
                     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
                         Log.d("imageview", imagePath)
-                        QuestionCropContent(photouri)
+                        QuestionCropContent(photouri, askQuestionsViewModel)
 
                     }
 
@@ -114,14 +148,10 @@ class QuestionCropActivity : AppCompatActivity() {
 
 
 @Composable
-fun QuestionCropContent(photouri: Uri) {
+fun QuestionCropContent(photouri: Uri, askQuestionsViewModel: AskQuestionViewModel) {
 
     val context = LocalContext.current
 
-
-    /***
-     *this part will get a photo Uri and return a bitmap
-     */
     lateinit var bitmap: Bitmap
     val shouldShowCamera: MutableState<Boolean> = remember { mutableStateOf(false) }
     Glide.with(context)
@@ -148,21 +178,6 @@ fun QuestionCropContent(photouri: Uri) {
             .background(colorResource(R.color.background))
     ) {
 
-//      we can load images with uri and Coil library
-
-//        if (shouldShowCamera.value) {
-//            Image(
-//                painter = rememberAsyncImagePainter(photouri),
-//                contentDescription = null,
-//                modifier = Modifier
-//                    .weight(1f)
-//                    .fillMaxWidth(),
-//            )
-//        }
-
-
-//      or we can load images as a bitmap
-
         if (shouldShowCamera.value) {
             Image(
                 bitmap.asImageBitmap(),
@@ -181,18 +196,16 @@ fun QuestionCropContent(photouri: Uri) {
             ) {
                 Button(
                     onClick = {
-                        val data = Intent().apply {
-                            putExtra("photouri", photouri)
-                        }
-
-                        if (context is Activity) {
-                            context.setResult(Activity.RESULT_OK, data)
-                            context.finish()
-                        }
+                        val imageStream: InputStream? = context.contentResolver.openInputStream(photouri)
+                        val selectedImage = BitmapFactory.decodeStream(imageStream)
+                        val baos = ByteArrayOutputStream()
+                        selectedImage.compress(Bitmap.CompressFormat.JPEG, 100, baos)
+                        val b: ByteArray = baos.toByteArray()
+                        val encodedImage: String = Base64.encodeToString(b, Base64.DEFAULT)
+                        askQuestionsViewModel.askImageQuestion(encodedImage)
                     },
                     modifier = Modifier
                         .weight(1f)
-//                        .fillMaxWidth()
                         .padding(8.dp)
                         .height(60.dp),
                     shape = RoundedCornerShape(20.dp),
@@ -255,7 +268,9 @@ fun QuestionCropContent(photouri: Uri) {
             }
         }
 
+
     }
+
 }
 
 
