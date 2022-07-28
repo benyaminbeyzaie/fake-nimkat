@@ -18,9 +18,9 @@ All you have to do to use Nimkat(as a student) is:
 5. When an educator answers your question, the app will notify you with a notification.
 
   
-As the final project of our Mobile programming course(at Sharif University of Technology), we decided to recreate a simple version of Nimkat, using Android.
+As the final project of our Mobile programming course(at Sharif University of Technology), we decided to recreate a simple version of Nimkat, using Android. We implement Almost every important feature of [Nimkat](https://cafebazaar.ir/app/ir.hezardastan.nimkat).Just some animations are not implemented. We also add "Delete Account" feature which is not presented by [Nimkat](https://cafebazaar.ir/app/ir.hezardastan.nimkat) yet.
 
-
+Here are some screenshots from our app:
 
 
 Startup            |  Menu          | Dark Theme
@@ -28,11 +28,11 @@ Startup            |  Menu          | Dark Theme
 ![startup](/Screenshots/startup.png) |  ![menu](/Screenshots/drawer.png) |  ![menu](/Screenshots/darkTheme.png)
 
 
-First assignment of Mobile programming, Sharif University of Technology.
 
+- We use kotlin as main programming language for our app.
 - Project architecture is based on MVVM
-- We use Room for data base
-- We use some components from MUI
+- We use [jetpack compse toolkit](https://developer.android.com/jetpack/compose) for building UI.
+- We use [firebase](https://firebase.google.com/)
 
 # Contributors
 Benyamin Beyzaie 98100356
