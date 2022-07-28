@@ -9,12 +9,15 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import com.google.firebase.messaging.FirebaseMessaging
 import com.nimkat.app.utils.ASK_GRADE_CODE
 import com.nimkat.app.utils.ASK_NAME_CODE
 import com.nimkat.app.view.main.MainActivity
 import com.nimkat.app.view.profile_edit.grade.GradeActivity
 import com.nimkat.app.view_model.AuthViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class CompleteProfile : AppCompatActivity() {
@@ -35,8 +38,10 @@ class CompleteProfile : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         authViewModel.profileModelLiveData.observe(this) { value ->
             if (value.data?.isProfileCompleted == true) {
-                val intent = Intent(this, MainActivity::class.java)
-                startActivity(intent)
+                Log.d("CompleteProfile" , "from here")
+                MainActivity.sendIntent(this , true)
+//                val intent = Intent(this, MainActivity::class.java)
+//                startActivity(intent)
             }
         }
         val intent = Intent(this@CompleteProfile, WhatsYourNameActivity::class.java)
@@ -62,10 +67,12 @@ class CompleteProfile : AppCompatActivity() {
             ASK_GRADE_CODE -> {
                 if (resultCode == Activity.RESULT_OK) {
                     data?.apply {
-                        grade = getStringExtra("grade")!!
-                        gradeID = getIntExtra("gradeID", 0)
-                        authViewModel.initAuth()
-                        authViewModel.update(name , gradeID)
+                        GlobalScope.launch {
+                            grade = getStringExtra("grade")!!
+                            gradeID = getIntExtra("gradeID", 0)
+                            authViewModel.initAuth()
+                            authViewModel.update(name, gradeID)
+                        }
                     }
                 }
             }

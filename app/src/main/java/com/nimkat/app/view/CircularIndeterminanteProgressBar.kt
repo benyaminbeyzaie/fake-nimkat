@@ -12,21 +12,23 @@ import com.nimkat.app.R
 @Composable
 fun CircularIndeterminanteProgressBar(
     isDisplayed: Boolean,
-    height: Int
+    height: Int = 0,
+    space: Int = 0
 ) {
     if (isDisplayed) {
-        if (height == 0){
+        if (height == 0) {
             Row(
                 modifier = Modifier
-                    .fillMaxWidth(),
+                    .fillMaxWidth()
+                    .padding(space.dp),
                 horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically
+//                verticalAlignment = Alignment.CenterVertically
             ) {
                 CircularProgressIndicator(
                     color = colorResource(R.color.blue)
                 )
             }
-        }else{
+        } else {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -39,16 +41,6 @@ fun CircularIndeterminanteProgressBar(
                 )
             }
         }
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(height.dp),
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            CircularProgressIndicator(
-                color = colorResource(R.color.blue)
-            )
-        }
+
     }
 }

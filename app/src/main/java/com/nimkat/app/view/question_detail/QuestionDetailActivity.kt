@@ -35,11 +35,14 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
+import coil.compose.SubcomposeAsyncImage
 import com.nimkat.app.R
 import com.nimkat.app.models.AnswerModel
 import com.nimkat.app.ui.theme.NimkatTheme
 import com.nimkat.app.ui.theme.RippleWhite
 import com.nimkat.app.ui.theme.mainFont
+import com.nimkat.app.view.CircularIndeterminanteProgressBar
+import com.nimkat.app.view_model.MyQuestionsViewModel
 import com.nimkat.app.view_model.SingleQuestionViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlin.math.roundToInt
@@ -153,7 +156,7 @@ fun QuestionDetailContent(text: String?, url: String?, viewModel: SingleQuestion
                                 }
                             }
                     ) {
-                        AsyncImage(
+                        SubcomposeAsyncImage(
                             modifier = Modifier
                                 .align(Alignment.Center)
                                 .fillMaxWidth()
@@ -163,7 +166,10 @@ fun QuestionDetailContent(text: String?, url: String?, viewModel: SingleQuestion
                                 )
                                 .offset { IntOffset(offsetX.roundToInt(), offsetY.roundToInt()) },
                             model = url,
-                            contentDescription = null
+                            contentDescription = null,
+                            loading = {
+                                CircularIndeterminanteProgressBar(true)
+                            }
                         )
                     }
 

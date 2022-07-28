@@ -5,7 +5,6 @@ import android.app.Activity
 import android.content.Context
 import android.content.pm.PackageManager
 import android.net.Uri
-import android.os.Environment
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -19,7 +18,10 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.*
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.FloatingActionButton
+import androidx.compose.material.Icon
+import androidx.compose.material.SnackbarHostState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Collections
 import androidx.compose.runtime.*
@@ -34,11 +36,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.lifecycleScope
 import com.nimkat.app.R
 import com.nimkat.app.view.SnackBar
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
@@ -85,7 +85,7 @@ fun CameraView(
     }
 
 
-    val canTakePicture = remember{ mutableStateOf(shouldShowCamera.value)}
+    val canTakePicture = remember{ shouldShowCamera}
 
     val requestPermissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -106,8 +106,13 @@ fun CameraView(
                 Manifest.permission.CAMERA
             ) == PackageManager.PERMISSION_GRANTED -> {
                 Log.d("permission", "Permission previously granted")
-                canTakePicture.value = true
+                shouldShowCamera.value = true
             }
+
+            ActivityCompat.shouldShowRequestPermissionRationale(
+                (context as Activity),
+                Manifest.permission.CAMERA
+            ) -> requestPermissionLauncher.launch(Manifest.permission.CAMERA)
 
             else -> requestPermissionLauncher.launch(Manifest.permission.CAMERA)
         }
@@ -116,14 +121,11 @@ fun CameraView(
 
     // 3
     Box(contentAlignment = Alignment.BottomCenter, modifier = Modifier.fillMaxSize()) {
-        if (canTakePicture.value) {
             AndroidView({ previewView }, modifier = Modifier.fillMaxSize())
-        }
 
 
         FloatingActionButton(
             onClick = {
-                Log.i("kilo", "ON CLICK")
                 if (canTakePicture.value) {
                     takePhoto(
                         imageCapture = imageCapture,
@@ -151,7 +153,6 @@ fun CameraView(
 
         FloatingActionButton(
             onClick = {
-                Log.i("kilo", "ON CLICK")
                 pickFromGallery(
                     onImageCaptured = onImageCaptured,
                 )
@@ -169,7 +170,7 @@ fun CameraView(
                 tint = colorResource(R.color.white),
             )
         }
-        SnackBar(snackbarHostState = snackbarHostState, Color(5, 172, 0, 255), true, {})
+        SnackBar(snackbarHostState = snackbarHostState, Color.Red, true) {}
 
     }
 }
@@ -200,7 +201,7 @@ private fun takePhoto(
 
     imageCapture.takePicture(outputOptions, executor, object : ImageCapture.OnImageSavedCallback {
         override fun onError(exception: ImageCaptureException) {
-            Log.e("kilo", "Take photo error:", exception)
+            Log.e("ImageCapture", "Take photo error:", exception)
             onError(exception)
         }
 

@@ -1,5 +1,11 @@
 package com.nimkat.app.view.main
 
+import android.util.Log
+import androidx.appcompat.view.ContextThemeWrapper
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandHorizontally
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -9,24 +15,54 @@ import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.ripple.LocalRippleTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
+import androidx.lifecycle.LifecycleOwner
+import com.github.ybq.android.spinkit.SpinKitView
 import com.nimkat.app.R
+import com.nimkat.app.models.DataStatus
 import com.nimkat.app.ui.theme.RippleWhite
 import com.nimkat.app.ui.theme.mainFont
 import com.nimkat.app.ui.theme.secondFont
+import com.nimkat.app.utils.toast
+import com.nimkat.app.view.login.LoginActivity
+import com.nimkat.app.view.profile_edit.grade.ExpandableState
+import com.nimkat.app.view.search.QuestionSearchActivity
+import com.nimkat.app.view_model.AskQuestionViewModel
 
-@Preview
 @Composable
-fun TextQuestion() {
+fun TextQuestion(viewModel: AskQuestionViewModel) {
+    val text = remember { mutableStateOf("") }
+    val loading = remember {
+        mutableStateOf(false)
+    }
+
+    val discoveryAnswers = viewModel.discoveryAnswers.observeAsState()
+
+    when (discoveryAnswers.value?.status) {
+        DataStatus.Loading -> {
+            loading.value = true
+        }
+        else -> {
+            loading.value = false
+        }
+    }
+
+
+
+
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -72,30 +108,55 @@ fun TextQuestion() {
 
         CompositionLocalProvider(LocalRippleTheme provides RippleWhite) {
             Button(
-                onClick = { },
+                onClick = {
+                    if (text.value.isEmpty()) return@Button
+                    viewModel.sendQuestion(text.value)
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp)
                     .height(60.dp),
+                enabled = !loading.value,
                 shape = RoundedCornerShape(20.dp),
                 colors = ButtonDefaults.buttonColors(backgroundColor = colorResource(R.color.green)),
             ) {
-                Row {
-                    Text(
-                        text = stringResource(R.string.ok),
-                        style = TextStyle(
-                            fontFamily = secondFont
-                        ),
-                        color = colorResource(R.color.white),
-                        fontSize = 20.sp,
+
+                if (loading.value) {
+                    AndroidView(
+                        factory = { context ->
+                            SpinKitView(
+                                ContextThemeWrapper(
+                                    context,
+                                    com.github.ybq.android.spinkit.R.style.SpinKitView_ThreeBounce
+                                )
+                            ).apply {
+
+                            }
+                        },
+                        update = {
+
+
+                        },
                     )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Icon(
-                        Icons.Outlined.CheckCircle,
-                        null,
-                        tint = colorResource(R.color.white),
-                        modifier = Modifier.padding(0.dp, 6.dp, 0.dp, 0.dp)
-                    )
+
+                } else {
+                    Row {
+                        Text(
+                            text = stringResource(R.string.ok),
+                            style = TextStyle(
+                                fontFamily = secondFont
+                            ),
+                            color = colorResource(R.color.white),
+                            fontSize = 20.sp,
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Icon(
+                            Icons.Outlined.CheckCircle,
+                            null,
+                            tint = colorResource(R.color.white),
+                            modifier = Modifier.padding(0.dp, 6.dp, 0.dp, 0.dp)
+                        )
+                    }
                 }
             }
         }

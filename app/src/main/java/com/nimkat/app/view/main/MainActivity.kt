@@ -1,14 +1,19 @@
 package com.nimkat.app.view.main
 
 import android.Manifest
+import android.R.attr
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.net.Uri
+import android.opengl.ETC1.encodeImage
 import android.os.Bundle
 import android.preference.PreferenceManager
+import android.util.Base64
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.setContent
@@ -25,8 +30,10 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
@@ -40,60 +47,99 @@ import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.PagerState
 import com.google.accompanist.pager.rememberPagerState
+import com.google.firebase.FirebaseApp
 import com.nimkat.app.R
+import com.nimkat.app.models.DataStatus
 import com.nimkat.app.ui.theme.NimkatTheme
 import com.nimkat.app.utils.ASK_FOR_EDIT_PROFILE
 import com.nimkat.app.utils.CROP_IMAGE_CODE
+import com.nimkat.app.utils.toast
+import com.nimkat.app.view.login.LoginActivity
 import com.nimkat.app.view.question_crop.QuestionCropActivity
+import com.nimkat.app.view.search.QuestionSearchActivity
+import com.nimkat.app.view_model.AskQuestionViewModel
 import com.nimkat.app.view_model.AuthViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import java.io.ByteArrayOutputStream
 import java.io.File
+import java.io.InputStream
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+import android.app.AlertDialog
+import android.content.DialogInterface
+import androidx.lifecycle.LifecycleOwner
+
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
-    private var cameraScaffoldState: ScaffoldState? = null
-    private var coroutineScope: CoroutineScope? = null
-
-
-
     companion object {
-        fun sendIntent(context: Context) =
+        fun sendIntent(context: Context, loginSuccessful: Boolean = false) =
             Intent(context, MainActivity::class.java).apply {
+                putExtra("boolean" , loginSuccessful)
                 context.startActivity(this)
             }
     }
 
+
+    private var cameraScaffoldState: ScaffoldState? = null
+    private var coroutineScope: CoroutineScope? = null
     private lateinit var outputDirectory: File
     private lateinit var cameraExecutor: ExecutorService
-
     var shouldShowCamera: MutableState<Boolean> = mutableStateOf(false)
 
-    val authViewModel: AuthViewModel by viewModels()
+    private val askQuestionsViewModel: AskQuestionViewModel by viewModels()
+    private val authViewModel: AuthViewModel by viewModels()
+    private var loginSuccessful = false
 
     @OptIn(ExperimentalMaterialApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-//        val profileViewModel:ProfileViewModel by viewModels()
-//        profileViewModel.initAuth()
+        FirebaseApp.initializeApp(this)
 
+        loginSuccessful = intent.getBooleanExtra("boolean" , false)
         authViewModel.initAuth()
+
+//        val textQuestionViewModel: TextQuestionViewModel by viewModels()
+
         outputDirectory = getOutputDirectory()
         cameraExecutor = Executors.newSingleThreadExecutor()
+        var flag = false;
 
         val prefs: SharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
         val isDark = prefs.getBoolean(getString(R.string.darThemeTag), false)
 
-        if (isDark){
+        if (isDark) {
             AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
-        }else{
+        } else {
             AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
         }
 
         requestCameraPermission()
+
+        askQuestionsViewModel.discoveryAnswers.observe(this) { value ->
+            when (value?.status) {
+                DataStatus.NeedLogin -> {
+                    LoginActivity.sendIntent(this)
+                }
+                DataStatus.Success -> {
+                     value.data?.let { list ->
+                        if (flag) QuestionSearchActivity.sendIntent(
+                            this,
+                            list,
+                            askQuestionsViewModel.questionId.value!!.data.toString()
+                        )
+                    }
+                }
+                DataStatus.Error -> {
+                    this.toast("Error : ".plus(value.message.toString()))
+                }
+                else -> {}
+            }
+        }
+        flag = true;
+
 
         setContent {
             NimkatTheme {
@@ -104,20 +150,20 @@ class MainActivity : AppCompatActivity() {
                 ) {
                     cameraScaffoldState = rememberScaffoldState()
                     coroutineScope = rememberCoroutineScope()
-
                     Greeting(
                         cameraScaffoldState!!,
                         authViewModel,
                         cameraExecutor,
                         outputDirectory,
+                        this,
                         shouldShowCamera,
+                        loginSuccessful,
                         onImageCaptured = ::handleImageCapture,
+                        askQuestionViewModel = askQuestionsViewModel,
                     )
                 }
             }
         }
-
-
     }
 
     override fun onBackPressed() {
@@ -129,7 +175,7 @@ class MainActivity : AppCompatActivity() {
                 return
             }
         }
-        finish()
+        super.onBackPressed()
     }
 
     override fun onDestroy() {
@@ -154,6 +200,17 @@ class MainActivity : AppCompatActivity() {
             shouldShowCamera.value = true
         } else {
             Log.d("permission", "Permission denied")
+
+            val dialogBuilder = AlertDialog.Builder(this)
+
+            dialogBuilder.setMessage(getString(R.string.cameraError))
+                .setCancelable(false)
+                .setPositiveButton(getString(R.string.understood), DialogInterface.OnClickListener {
+                        dialog, id -> {}
+                })
+            val alert = dialogBuilder.create()
+            alert.show()
+
         }
     }
 
@@ -178,12 +235,18 @@ class MainActivity : AppCompatActivity() {
 
 
     private fun handleImageCapture(uri: Uri, mode: Int) {
-        Log.i("kilo", "Image captured: $uri")
-//        shouldShowCamera.value = false
+        Log.i("ImageCapture", "Image captured: $uri")
         val intent = Intent(this@MainActivity, QuestionCropActivity::class.java)
         intent.putExtra("mode", mode)
         intent.putExtra("URI", uri)
         startActivityForResult(intent, CROP_IMAGE_CODE)
+    }
+
+    private fun encodeImage(bm: Bitmap): String {
+        val baos = ByteArrayOutputStream()
+        bm.compress(Bitmap.CompressFormat.JPEG, 100, baos)
+        val b: ByteArray = baos.toByteArray()
+        return Base64.encodeToString(b, Base64.DEFAULT)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -194,23 +257,26 @@ class MainActivity : AppCompatActivity() {
                 if (resultCode == Activity.RESULT_OK) {
                     data?.apply {
                         val parcelableExtra = getParcelableExtra<Uri>("photouri")
-                        Log.d("kiloURI", "IMAGE CROPPING SUCCESSFULL. $parcelableExtra")
+                        Log.d("ImageCapture", "IMAGE CROPPING SUCCESSFULL. $parcelableExtra")
                         Toast.makeText(x, "IMAGE CROPPING SUCCESSFULL.", Toast.LENGTH_SHORT).show()
                         // now we should use this uri to load bitmap of the image and then send it to server
+                        val viewModel: AskQuestionViewModel by viewModels()
+                        val imageUri: Uri = parcelableExtra!!
+                        val imageStream: InputStream? = contentResolver.openInputStream(imageUri)
+                        val selectedImage = BitmapFactory.decodeStream(imageStream)
+                        val encodedImage: String = encodeImage(selectedImage)
+                        viewModel.askImageQuestion(encodedImage)
                     }
-
                 } else {
                     Toast.makeText(this, "IMAGE CROPPING CANCELED.", Toast.LENGTH_SHORT).show()
                 }
             }
-            ASK_FOR_EDIT_PROFILE ->{
-                if (resultCode == RESULT_OK){
+            ASK_FOR_EDIT_PROFILE -> {
+                if (resultCode == RESULT_OK) {
                     data?.apply {
-                        val grade = getStringExtra("grade")
-                        val gradeID = getIntExtra("gradeID" , 0)
+                        val gradeID = getIntExtra("gradeID", 0)
                         val name = getStringExtra("name")
-                        authViewModel.update(name!! , gradeID)
-                        Toast.makeText(x, "profile changed .", Toast.LENGTH_SHORT).show()
+                        authViewModel.update(name!!, gradeID)
                     }
                 }
             }
@@ -229,10 +295,15 @@ fun Greeting(
     authViewModel: AuthViewModel,
     cameraExecutor: ExecutorService,
     outputDirectory: File,
+    lifecycleOwner: LifecycleOwner,
     shouldShowCamera: MutableState<Boolean>,
+    loginSuccessful: Boolean,
     onImageCaptured: (Uri, Int) -> Unit,
+    askQuestionViewModel: AskQuestionViewModel
 ) {
     val coroutineScope = rememberCoroutineScope()
+    val context = LocalContext.current
+
 
 
 
@@ -261,7 +332,7 @@ fun Greeting(
                     ) { index ->
                         when (index) {
                             0 -> {
-                                TextQuestion()
+                                TextQuestion(askQuestionViewModel)
                             }
                             1 -> {
                                 Camera(
@@ -270,6 +341,7 @@ fun Greeting(
                                     outputDirectory,
                                     authViewModel,
                                     shouldShowCamera,
+                                    loginSuccessful,
                                     onImageCaptured = onImageCaptured
                                 )
                             }

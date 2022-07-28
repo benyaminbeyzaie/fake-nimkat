@@ -4,13 +4,8 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.graphics.Rect
 import android.os.Bundle
 import android.util.Log
-import android.view.MotionEvent
-import android.view.View
-import android.view.inputmethod.InputMethodManager
-import android.widget.EditText
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -47,6 +42,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.lifecycleScope
 import com.google.android.gms.auth.api.phone.SmsRetriever
+import com.google.firebase.messaging.FirebaseMessaging
 import com.nimkat.app.R
 import com.nimkat.app.models.DataStatus
 import com.nimkat.app.ui.theme.NimkatTheme
@@ -60,6 +56,8 @@ import com.nimkat.app.view.main.MainActivity
 import com.nimkat.app.view.profile_edit.CompleteProfile
 import com.nimkat.app.view_model.AuthViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import java.util.regex.Pattern
 
 @AndroidEntryPoint
@@ -74,14 +72,15 @@ class OtpActivity : AppCompatActivity() {
             }
     }
 
-    private var REQ_USER_CONSENT = 200
-    var smsBroadcastReciver: SmsReciever? = null
-    var smsCode = ""
+    private var ReqUserConsent = 200
+    private var smsBroadcastReceiver: SmsReciever? = null
+    private var smsCode = ""
     var id:String = ""
-    var mobile: String = ""
+    private var mobile: String = ""
 
-    val authViewModel: AuthViewModel by viewModels()
+    private val authViewModel: AuthViewModel by viewModels()
 
+    var x: OtpActivity? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -89,8 +88,8 @@ class OtpActivity : AppCompatActivity() {
 
         id = intent.getStringExtra("id").orEmpty()
         mobile = intent.getStringExtra("mobile").orEmpty()
-
-        contentSetter()
+        x = this
+        contentSetter(true , x)
     }
 
     override fun onBackPressed() {
@@ -98,16 +97,30 @@ class OtpActivity : AppCompatActivity() {
         finish()
     }
 
-    private fun contentSetter() {
-        setContent {
-            NimkatTheme {
-                // A surface container using the 'background' color from the theme
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colors.background
-                ) {
-                    CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
-                        OtpContent(id, authViewModel, smsCode , mobile)
+    private fun contentSetter(flag: Boolean, x: OtpActivity?) {
+        if (flag) {
+            setContent {
+                NimkatTheme {
+                    // A surface container using the 'background' color from the theme
+                    Surface(
+                        modifier = Modifier.fillMaxSize(),
+                        color = MaterialTheme.colors.background
+                    ) {
+                        CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
+                            OtpContent(id, authViewModel, smsCode, mobile , x)
+                        }
+                    }
+                }
+            }
+        }else{
+            setContent {
+                NimkatTheme {
+                    // A surface container using the 'background' color from the theme
+                    Surface(
+                        modifier = Modifier.fillMaxSize(),
+                        color = MaterialTheme.colors.background
+                    ) {
+                        Text(text = "default")
                     }
                 }
             }
@@ -121,11 +134,11 @@ class OtpActivity : AppCompatActivity() {
     }
 
     private fun registerBroadcastReceiver() {
-        smsBroadcastReciver = SmsReciever()
-        smsBroadcastReciver!!.smsBroadcastReciverListener =
+        smsBroadcastReceiver = SmsReciever()
+        smsBroadcastReceiver!!.smsBroadcastReciverListener =
             object : SmsReciever.SmsBroadcastReciverListener {
                 override fun onSuccess(intent: Intent?) {
-                    startActivityForResult(intent, REQ_USER_CONSENT)
+                    startActivityForResult(intent, ReqUserConsent)
                 }
 
                 override fun onFailure() {
@@ -134,12 +147,12 @@ class OtpActivity : AppCompatActivity() {
             }
 
         val intentFilter = IntentFilter(SmsRetriever.SMS_RETRIEVED_ACTION)
-        registerReceiver(smsBroadcastReciver, intentFilter)
+        registerReceiver(smsBroadcastReceiver, intentFilter)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == REQ_USER_CONSENT) {
+        if (requestCode == ReqUserConsent) {
             if (resultCode == RESULT_OK && data != null) {
                 val message = data.getStringExtra(SmsRetriever.EXTRA_SMS_MESSAGE)
                 getOtpFromMessage(message)
@@ -149,13 +162,13 @@ class OtpActivity : AppCompatActivity() {
 
     private fun getOtpFromMessage(message: String?) {
         val otpPatter = Pattern.compile("(|^)\\d{5}")
-        val matcher = otpPatter.matcher(message)
+        val matcher = otpPatter.matcher(message!!)
         if (matcher.find()) {
 
             smsCode = matcher.group(0)!!
-            contentSetter()
+            contentSetter(true, x)
 
-            if (smsCode != null && smsCode != ""){
+            if (smsCode != ""){
                 authViewModel.verifyCode(smsCode, id)
             }
 
@@ -169,33 +182,20 @@ class OtpActivity : AppCompatActivity() {
 
     override fun onStop() {
         super.onStop()
-        unregisterReceiver(smsBroadcastReciver)
+        unregisterReceiver(smsBroadcastReceiver)
     }
-
-
-    override fun dispatchTouchEvent(event: MotionEvent): Boolean {
-        if (event.action == MotionEvent.ACTION_DOWN) {
-            val v: View? = getCurrentFocus()
-            if (v is EditText) {
-                val outRect = Rect()
-                v.getGlobalVisibleRect(outRect)
-                if (!outRect.contains(event.rawX.toInt(), event.rawY.toInt())) {
-                    v.clearFocus()
-                    val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-                    imm.hideSoftInputFromWindow(v.getWindowToken(), 0)
-                }
-            }
-        }
-        return super.dispatchTouchEvent(event)
-    }
-
-
 
 }
 
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalMaterialApi::class)
 @Composable
-fun OtpContent(id: String, authViewModel: AuthViewModel, smsCode: String, mobile: String) {
+fun OtpContent(
+    id: String,
+    authViewModel: AuthViewModel,
+    smsCode: String,
+    mobile: String,
+    x: OtpActivity?
+) {
     val context = LocalContext.current
 
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -206,17 +206,32 @@ fun OtpContent(id: String, authViewModel: AuthViewModel, smsCode: String, mobile
 
     val authState = authViewModel.authModelLiveData.observeAsState()
     if (authState.value?.status === DataStatus.Success) {
-        MainActivity.sendIntent(context)
-        (context as Activity).finish()
+        FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
+            if (task.isSuccessful && task.result != null) {
+                val token = task.result
+                GlobalScope.launch {
+                    Log.d("CompleteProfile", token)
+                    authViewModel.initAuth()
+                    authViewModel.registerDevice(token)
+                    MainActivity.sendIntent(context , true)
+                    x?.finish()
+                }
+            }
+        }
     }
     if (authState.value?.status === DataStatus.NeedCompletion) {
+        authViewModel.initAuth()
+        Log.d("completeProfile" , authState.value?.status.toString())
+        Log.d("completeProfile" , authState.value?.message.toString())
+        Log.d("completeProfile" , authState.value?.data.toString())
+        Log.d("completeProfile" , "from OTP")
         CompleteProfile.sendIntent(context)
     }
     if (authState.value?.status === DataStatus.Error) {
         Log.d("Login", "isCodeSent.value?.status == DataStatus.Error")
         LaunchedEffect(lifecycleOwner.lifecycleScope) {
             errorSnackBar.showSnackbar(
-                message = "متاسفانه مشکلی پیش اومده یا دستگاهت به اینترنت متصل نیست!",
+                message = context.getString(R.string.errorMessage),
                 actionLabel = "RED",
                 duration = SnackbarDuration.Short
             )
@@ -336,7 +351,7 @@ fun OtpContent(id: String, authViewModel: AuthViewModel, smsCode: String, mobile
         }
     }
     
-    SnackBar(snackbarHostState = errorSnackBar, Color.Red, true, {})
+    SnackBar(snackbarHostState = errorSnackBar, Color.Red, true) {}
 
 }
 
@@ -400,14 +415,12 @@ fun CodeItem(
         keyboardActions = KeyboardActions(
             onDone = {
                 keyboardController?.hide()
-                var enteredCode = "";
-                var ind = 0
-                for (state in states) {
+                var enteredCode = ""
+                for ((ind, state) in states.withIndex()) {
                     enteredCode += state.value
                     if (state.value == ""){
                         errors[ind].value = true
                     }
-                    ind++
                 }
                 if (enteredCode.length == 5) {
                     authViewModel.verifyCode(enteredCode, id)
@@ -418,5 +431,3 @@ fun CodeItem(
     )
 }
 
-
-//if (isError.value) colorResource(R.color.red) else Color.Transparent

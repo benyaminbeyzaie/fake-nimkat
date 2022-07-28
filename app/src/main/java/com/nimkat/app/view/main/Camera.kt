@@ -8,8 +8,7 @@ import android.net.Uri
 import android.preference.PreferenceManager
 import android.util.Log
 import androidx.appcompat.app.AppCompatDelegate
-import androidx.camera.core.ImageCapture
-import androidx.camera.core.ImageCaptureException
+import androidx.appcompat.view.ContextThemeWrapper
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -37,13 +36,16 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat.startActivity
 import androidx.lifecycle.lifecycleScope
+import com.github.ybq.android.spinkit.SpinKitView
 import com.nimkat.app.R
 import com.nimkat.app.models.DataStatus
 import com.nimkat.app.ui.theme.RippleWhite
 import com.nimkat.app.ui.theme.mainFont
 import com.nimkat.app.ui.theme.secondFont
+import com.nimkat.app.view.ConfirmDialogue
 import com.nimkat.app.view.SnackBar
 import com.nimkat.app.view.login.LoginActivity
 import com.nimkat.app.view.my_questions.MyQuestionsActivity
@@ -53,9 +55,6 @@ import com.nimkat.app.view_model.AuthViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.io.File
-import java.text.SimpleDateFormat
-import java.util.*
-import java.util.concurrent.Executor
 import java.util.concurrent.ExecutorService
 
 
@@ -68,19 +67,31 @@ fun Camera(
     outputDirectory: File,
     authViewModel: AuthViewModel,
     shouldShowCamera: MutableState<Boolean>,
+    loginSuccessful: Boolean,
     onImageCaptured: (Uri, Int) -> Unit
 ) {
 
+    val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
-    val errorSnackBar = remember { SnackbarHostState() }
+    val errorSnackBarHostState = remember { SnackbarHostState() }
+    val goodSnackBarHostState =  remember { SnackbarHostState() }
 
     val profileModel = authViewModel.profileModelLiveData.observeAsState()
-    if (profileModel.value?.status == DataStatus.ErrorWithData) {
+    if (profileModel.value?.status == DataStatus.Error) {
         LaunchedEffect(lifecycleOwner.lifecycleScope) {
-
-            errorSnackBar.showSnackbar(
-                message = "متاسفانه مشکلی پیش اومده یا دستگاهت به اینترنت متصل نیست!",
+            errorSnackBarHostState.showSnackbar(
+                message = context.getString(R.string.errorMessage),
                 actionLabel = "RED",
+                duration = SnackbarDuration.Short
+            )
+        }
+    }
+
+    if (loginSuccessful){
+        LaunchedEffect(lifecycleOwner.lifecycleScope) {
+            goodSnackBarHostState.showSnackbar(
+                message = context.getString(R.string.loginSuccessful),
+                actionLabel = "GREEN",
                 duration = SnackbarDuration.Short
             )
         }
@@ -106,7 +117,6 @@ fun Camera(
 
         Box {
 
-
             // camera
             Spacer(
                 modifier = Modifier
@@ -117,8 +127,8 @@ fun Camera(
                     outputDirectory = outputDirectory,
                     executor = cameraExecutor,
                     onImageCaptured = onImageCaptured,
-                    onError = { Log.e("kilo", "View error:", it) },
-                    errorSnackBar,
+                    onError = {},
+                    errorSnackBarHostState,
                     shouldShowCamera
                 )
 
@@ -163,7 +173,8 @@ fun Camera(
                 }
             }
 
-            SnackBar(snackbarHostState = errorSnackBar, Color.Red, true, {})
+            SnackBar(snackbarHostState = errorSnackBarHostState, Color.Red, true) {}
+            SnackBar(snackbarHostState = goodSnackBarHostState, colorResource(id = R.color.green_dark), true) {}
 
         }
     }
@@ -182,21 +193,21 @@ fun Drawer(
     val isLogin = authModel.value?.data != null
     val isProfileCompleted = remember{ mutableStateOf(false)}
 
+    val showDeleteDialouge = remember{ mutableStateOf(false)}
 
-    Log.d("PROF", profileModel.value?.data.toString())
+
+    Log.d("Profile", profileModel.value?.data.toString())
     if (profileModel.value?.data != null) {
-        Log.d("PROF", "load status changed to loaded")
+        Log.d("Profile", "load status changed to loaded")
         isProfileCompleted.value = true
     } else {
-        Log.d("PROF", "load status changed to unloaded")
+        Log.d("Profile", "load status changed to unloaded")
     }
 
-    Log.d("status" , "is loaded = " + isLoaded + " isLogin = " + isLogin + " completed = " + isProfileCompleted)
-    Log.d("status2" , "status is " + authModel.value?.data.toString())
     val prefs: SharedPreferences =
         PreferenceManager.getDefaultSharedPreferences(LocalContext.current)
     val isDark = prefs.getBoolean(stringResource(R.string.darThemeTag), false)
-    var darkTag = stringResource(id = R.string.darThemeTag)
+    val darkTag = stringResource(id = R.string.darThemeTag)
 
     Column(
         modifier
@@ -314,7 +325,6 @@ fun Drawer(
                         }
                         Text(
                             name1.value,
-//                        "آنیتا علیخانی",
                             modifier = Modifier
                                 .fillMaxWidth(),
                             color = colorResource(R.color.primary_text),
@@ -327,7 +337,6 @@ fun Drawer(
                         CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
                             Text(
                                 phone1.value,
-//                        "+989123456789",
                                 modifier = Modifier
                                     .fillMaxWidth(),
                                 color = colorResource(R.color.primary_text_variant),
@@ -442,6 +451,7 @@ fun Drawer(
                     )
                     Button(
                         onClick = {
+                            Log.d("completeProfile" , "from camera")
                             CompleteProfile.sendIntent(context)
                             (context as Activity).finish()
                         },
@@ -503,8 +513,8 @@ fun Drawer(
                     .padding(0.dp, 4.dp, 0.dp, 0.dp)
                     .fillMaxWidth()
                     .clickable {
-                        authViewModel.delete()
-                        authViewModel.clearAuth()
+                        showDeleteDialouge.value = true
+//                        authViewModel.delete()
                     }) {
                 Row(
                     Modifier
@@ -530,6 +540,11 @@ fun Drawer(
                     )
                 }
             }
+
+            if (showDeleteDialouge.value){
+                ConfirmDialogue(authViewModel , showDeleteDialouge)
+            }
+
         }
 
         val darkState = remember { mutableStateOf(isDark) }
@@ -576,43 +591,4 @@ fun Drawer(
 
 
     }
-}
-
-
-private fun pickFromGallery(
-    onImageCaptured: (Uri, Int) -> Unit,
-) {
-    onImageCaptured(Uri.parse(""), 1)
-}
-
-
-private fun takePhoto(
-    imageCapture: ImageCapture,
-    outputDirectory: File,
-    executor: Executor,
-    onImageCaptured: (Uri, Int) -> Unit,
-    onError: (ImageCaptureException) -> Unit
-) {
-
-    val filenameFormat = "yyyy-MM-dd-HH-mm-ss-SSS"
-    val photoFile = File(
-        outputDirectory,
-        SimpleDateFormat(filenameFormat, Locale.US).format(System.currentTimeMillis()) + ".jpg"
-    )
-
-    val outputOptions = ImageCapture.OutputFileOptions.Builder(photoFile).build()
-
-    imageCapture.takePicture(outputOptions, executor, object : ImageCapture.OnImageSavedCallback {
-        override fun onError(exception: ImageCaptureException) {
-            Log.e("kilo", "Take photo error:", exception)
-            onError(exception)
-        }
-
-        override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
-            val savedUri = Uri.fromFile(photoFile)
-            onImageCaptured(savedUri, 0)
-        }
-    })
-
-
 }

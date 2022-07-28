@@ -39,6 +39,20 @@ interface NimkatApi {
         @Query("user") user: String
     ): Response<PaginatedResponse<List<QuestionModel>>>
 
+
+    @POST("questions/")
+    suspend fun sendQuestion(
+        @Header("Authorization") token: String,
+        @Body body: AskQuestionBody,
+    ): Response<QuestionModel>
+
+    @PATCH("questions/{id}/")
+    suspend fun askTeachers(
+        @Path("id") id: String,
+        @Body body: AskQuestionBody,
+        @Header("Authorization") token: String
+    ): Response<QuestionModel>
+
     @GET("answers/")
     suspend fun getAnswer(
         @Header("Authorization") token: String,
@@ -52,4 +66,9 @@ interface NimkatApi {
         @Header("Authorization") token: String,
         @Body page: RegistrationModel,
     ): Response<RegistrationModel>
+
+    @POST("upload/base64/")
+    suspend fun upload(
+        @Body body: FileUploadBody,
+    ): Response<File>
 }

@@ -22,6 +22,14 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Nimkat">
         <activity
+            android:name=".view.full_image.FullImageActivity"
+            android:exported="false"
+            android:label="@string/title_activity_full_image"
+            android:theme="@style/Theme.Nimkat" />
+        <activity
+            android:name=".view.search.QuestionSearchActivity"
+            android:exported="false" />
+        <activity
             android:name=".view.profile_edit.CompleteProfile"
             android:exported="false"
             android:label="@string/title_activity_complete_profile"

@@ -54,15 +54,17 @@ import dagger.hilt.android.AndroidEntryPoint
 class LoginActivity : AppCompatActivity() {
 
     companion object {
-        fun sendIntent(context: Context , phone:String = "") = Intent(context, LoginActivity::class.java).apply {
+        fun sendIntent(context: Context , phone:String = "", isLoginNeededToAsk: Boolean = false) = Intent(context, LoginActivity::class.java).apply {
             putExtra("phone" , phone)
+            putExtra("boolean" , isLoginNeededToAsk)
             context.startActivity(this)
         }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        var phone = intent.getStringExtra("phone")?: ""
+        val phone = intent.getStringExtra("phone")?: ""
+        val isLoginNeededToAsk = intent.getBooleanExtra("boolean" , false)
         setContent {
             NimkatTheme {
                 // A surface container using the 'background' color from the theme
@@ -72,7 +74,7 @@ class LoginActivity : AppCompatActivity() {
                 ) {
 
                     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
-                        LoginContent(viewModel() , phone)
+                        LoginContent(viewModel() , phone , isLoginNeededToAsk)
                     }
                 }
             }
@@ -80,21 +82,31 @@ class LoginActivity : AppCompatActivity() {
     }
 
     override fun onBackPressed() {
-        MainActivity.sendIntent(this)
+        MainActivity.sendIntent(this, false)
         finish()
     }
 }
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun LoginContent(authViewModel: AuthViewModel, phone: String) {
+fun LoginContent(authViewModel: AuthViewModel, phone: String, isLoginNeededToAsk: Boolean) {
     val mobile = remember { mutableStateOf(phone) }
     val context = LocalContext.current
-    val lifecycleOwner = LocalLifecycleOwner.current
     val isCodeSent = authViewModel.isCodeSentLiveData.observeAsState()
+    val lifecycleOwner = LocalLifecycleOwner.current
     val errorSnackBar = remember { SnackbarHostState() }
     val bool = remember { mutableStateOf(false) }
     val isError = remember { mutableStateOf(false) }
+
+    if (isLoginNeededToAsk){
+        LaunchedEffect(lifecycleOwner.lifecycleScope) {
+            errorSnackBar.showSnackbar(
+                message = context.getString(R.string.loginNeeded),
+                actionLabel = "RED",
+                duration = SnackbarDuration.Short
+            )
+        }
+    }
 
 
     when (isCodeSent.value?.status) {
@@ -108,7 +120,7 @@ fun LoginContent(authViewModel: AuthViewModel, phone: String) {
             Log.d("Login", "isCodeSent.value?.status == DataStatus.Error")
             LaunchedEffect(lifecycleOwner.lifecycleScope) {
                 errorSnackBar.showSnackbar(
-                    message = "متاسفانه مشکلی پیش اومده یا دستگاهت به اینترنت متصل نیست!",
+                    message = context.getString(R.string.errorMessage),
                     actionLabel = "RED",
                     duration = SnackbarDuration.Short
                 )
@@ -128,7 +140,7 @@ fun LoginContent(authViewModel: AuthViewModel, phone: String) {
     ) {
         IconButton(
             onClick = {
-                MainActivity.sendIntent(context)
+                MainActivity.sendIntent(context, false)
                 (context as Activity).finish()
             },
             modifier = Modifier
@@ -227,6 +239,7 @@ fun LoginContent(authViewModel: AuthViewModel, phone: String) {
                 ) {
                     Text(
                         "+98",
+                        fontFamily = mainFont,
                         color = colorResource(R.color.primary_text),
                         modifier = Modifier
                             .wrapContentSize(),
