@@ -67,11 +67,8 @@ interface NimkatApi {
         @Body page: RegistrationModel,
     ): Response<RegistrationModel>
 
-    @POST("upload/base64")
+    @POST("upload/base64/")
     suspend fun upload(
-//        @Header("Authorization") token: String,
-        @Header("accept") accept: String? = "application/json",
-        @Header("Content-Type") contentType: String? = "application/json",
         @Body body: FileUploadBody,
     ): Response<File>
 }

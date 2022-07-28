@@ -6,6 +6,7 @@ import android.net.Uri
 import android.util.Base64
 import com.nimkat.app.api.NimkatApi
 import com.nimkat.app.models.AskQuestionBody
+import com.nimkat.app.models.FileIdBody
 import com.nimkat.app.models.FileUploadBody
 import com.nimkat.app.models.QuestionModel
 import com.nimkat.app.utils.AuthPrefs
@@ -39,7 +40,9 @@ class AskQuestionRepository @Inject constructor(
         val authModel = authPrefs.initAuth() ?: return null
         val fileUploadResponse = api.upload(body = FileUploadBody(base64, UUID.randomUUID().toString() + ".jpeg"))
         if (fileUploadResponse.isSuccessful) {
-            return api.sendQuestion("Token ${authModel.token}", AskQuestionBody(null, listOf(fileUploadResponse.body()!!.id!!), "DS", "v1"))
+            return api.sendQuestion("Token ${authModel.token}", AskQuestionBody(null, listOf(
+                FileIdBody(fileUploadResponse.body()!!.id!!, 1)
+            ), "DS", "v1"))
         }
         return null
     }
