@@ -215,7 +215,8 @@ fun OtpContent(id: String, authViewModel: AuthViewModel, smsCode: String, mobile
                 val token = task.result
                 GlobalScope.launch {
                     Log.d("CompleteProfile", token)
-                    authViewModel.initAuth(firebaseToken = token)
+                    authViewModel.initAuth()
+                    authViewModel.registerDevice(token)
                     MainActivity.sendIntent(context)
                     (context as Activity).finish()
                 }
