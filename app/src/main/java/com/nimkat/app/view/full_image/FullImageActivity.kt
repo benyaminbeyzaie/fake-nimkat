@@ -4,12 +4,9 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.graphics.drawable.BitmapDrawable
-import android.net.Uri
 import android.os.Bundle
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.view.ContextThemeWrapper
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
@@ -25,7 +22,6 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -34,16 +30,11 @@ import coil.ImageLoader
 import coil.request.ImageRequest
 import coil.request.SuccessResult
 import com.github.chrisbanes.photoview.PhotoView
-import com.github.ybq.android.spinkit.SpinKitView
 import com.nimkat.app.R
-import com.nimkat.app.models.DiscoveryAnswers
+import com.nimkat.app.ui.theme.NimkatTheme
 import com.nimkat.app.ui.theme.RippleWhite
 import com.nimkat.app.ui.theme.mainFont
 import com.nimkat.app.utils.IMAGE_URL
-import com.nimkat.app.utils.LIST
-import com.nimkat.app.ui.theme.NimkatTheme
-import com.nimkat.app.view.search.QuestionSearchActivity
-import com.nimkat.app.view.search.QuestionSearchContent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -139,7 +130,7 @@ fun FullImageContent(imageUrl: String) {
 
                     loader.execute(request).also { result ->
                         if (result is SuccessResult) {
-                            val successResult = (result as SuccessResult).drawable
+                            val successResult = result.drawable
                             val bitmap = (successResult as BitmapDrawable).bitmap
 
                             CoroutineScope(Dispatchers.Main).launch {

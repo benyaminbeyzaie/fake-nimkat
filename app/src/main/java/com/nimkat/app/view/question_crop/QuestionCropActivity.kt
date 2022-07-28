@@ -12,7 +12,6 @@ import android.util.Log
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.view.ContextThemeWrapper
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -23,7 +22,6 @@ import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.HighlightOff
 import androidx.compose.material.ripple.LocalRippleTheme
 import androidx.compose.runtime.*
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
@@ -36,19 +34,16 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.lifecycleScope
-import coil.compose.AsyncImage
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
-import com.github.ybq.android.spinkit.SpinKitView
 import com.nimkat.app.R
 import com.nimkat.app.models.DataStatus
 import com.nimkat.app.ui.theme.NimkatTheme
 import com.nimkat.app.ui.theme.RippleWhite
 import com.nimkat.app.ui.theme.secondFont
-import com.nimkat.app.utils.toast
+import com.nimkat.app.view.CircularIndeterminanteProgressBar
 import com.nimkat.app.view.SnackBar
 import com.nimkat.app.view.login.LoginActivity
 import com.nimkat.app.view.search.QuestionSearchActivity
@@ -56,7 +51,6 @@ import com.nimkat.app.view_model.AskQuestionViewModel
 import com.theartofdev.edmodo.cropper.CropImage
 import com.theartofdev.edmodo.cropper.CropImageView
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.delay
 import java.io.ByteArrayOutputStream
 import java.io.InputStream
 
@@ -99,7 +93,7 @@ class QuestionCropActivity : AppCompatActivity() {
                 }
                 DataStatus.Loading ->{
                     isLoading = true
-                    contentSetter(resultUri, askQuestionsViewModel , true , isLoading)
+                    contentSetter(resultUri, askQuestionsViewModel , false , isLoading)
                 }
                 else -> {isLoading = false
 //                    contentSetter(resultUri, askQuestionsViewModel , true , isLoading)
@@ -137,7 +131,7 @@ class QuestionCropActivity : AppCompatActivity() {
             if (resultCode == RESULT_OK) {
                 resultUri = result.uri
                 Log.d("ImageCapture", "copped image uri is: $resultUri")
-                contentSetter(resultUri, askQuestionsViewModel , isLoading= isLoading);
+                contentSetter(resultUri, askQuestionsViewModel , isLoading= isLoading)
             } else {
                 setResult(Activity.RESULT_CANCELED, Intent().apply {
                 })
@@ -171,7 +165,7 @@ class QuestionCropActivity : AppCompatActivity() {
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun QuestionCropContent(photouri: Uri, askQuestionsViewModel: AskQuestionViewModel, error: Boolean, isLoading: Boolean) {
+fun QuestionCropContent(photouri: Uri, askQuestionsViewModel: AskQuestionViewModel, error: Boolean = false, isLoading: Boolean) {
     val shouldShowCamera: MutableState<Boolean> = remember { mutableStateOf(false) }
     shouldShowCamera.value = false
 
@@ -248,22 +242,8 @@ fun QuestionCropContent(photouri: Uri, askQuestionsViewModel: AskQuestionViewMod
                     colors = ButtonDefaults.buttonColors(backgroundColor = colorResource(R.color.green)),
                 ) {
                     if (isLoading) {
-                        AndroidView(
-                            factory = { context ->
-                                SpinKitView(
-                                    ContextThemeWrapper(
-                                        context,
-                                        com.github.ybq.android.spinkit.R.style.SpinKitView_ThreeBounce
-                                    )
-                                ).apply {
+                        CircularIndeterminanteProgressBar(true)
 
-                                }
-                            },
-                            update = {
-
-
-                            },
-                        )
 
                     } else {
                         Row {

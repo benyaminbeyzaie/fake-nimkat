@@ -15,8 +15,8 @@ class MyQuestionsRepository @Inject constructor(
     private val api: NimkatApi,
     private val authPrefs: AuthPrefs
 ) {
-    var pageSize = 20;
-    var authModel: AuthModel? = null;
+    var pageSize = 20
+    var authModel: AuthModel? = null
 
 
     private fun initAuth(): AuthModel? {
@@ -25,17 +25,17 @@ class MyQuestionsRepository @Inject constructor(
         if (authString === null) return null
         val gson = Gson()
         authModel = gson.fromJson(authString, AuthModel::class.java)
-        return authModel;
+        return authModel
     }
 
     suspend fun getQuestions(page: Int, type: String = "BH", user: String = "me"): Response<PaginatedResponse<List<QuestionModel>>>? {
-        initAuth();
+        initAuth()
         if (authModel == null) return null
 
         val apiResponse = api.getQuestions(
             "Token ${authModel?.token}", page = page, pageSize = pageSize, type = type, user = user,
         )
-        if (apiResponse.body() === null) return null;
+        if (apiResponse.body() === null) return null
         return apiResponse
     }
 }

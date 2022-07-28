@@ -47,5 +47,5 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideFirebaseServices(): FirebaseServices = FirebaseServices();
+    fun provideFirebaseServices(): FirebaseServices = FirebaseServices()
 }

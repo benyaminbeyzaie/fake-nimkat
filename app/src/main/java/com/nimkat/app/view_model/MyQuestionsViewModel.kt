@@ -10,7 +10,6 @@ import com.nimkat.app.models.QuestionModel
 import com.nimkat.app.repository.MyQuestionsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
-import java.lang.Exception
 import javax.inject.Inject
 
 @HiltViewModel
@@ -46,7 +45,7 @@ class MyQuestionsViewModel @Inject constructor(
                             "My Question View Model",
                             "response.body() == null || response.body()!!.results.isEmpty()"
                         )
-                        hasMore = false;
+                        hasMore = false
                         if (_myQuestions.value == null || _myQuestions.value!!.data == null) {
                             _myQuestions.postValue(
                                 DataHolder.pure()
@@ -59,7 +58,7 @@ class MyQuestionsViewModel @Inject constructor(
                     } else if (_myQuestions.value!!.data == null) {
                         Log.d("My Question View Model", "_myQuestions.value!!.data == null")
                         hasMore = response.body()!!.next != null
-                        _myQuestions.postValue(DataHolder.success(response.body()!!.results.toMutableList()));
+                        _myQuestions.postValue(DataHolder.success(response.body()!!.results.toMutableList()))
                     } else {
                         Log.d("My Question View Model", "else")
                         hasMore = response.body()!!.next != null

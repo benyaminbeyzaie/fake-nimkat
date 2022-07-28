@@ -2,7 +2,6 @@
 <resources>
     <color name="main_color">#1E88E5</color>
     <color name="blue">#1E88E5</color>
-    <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
 <!--    <color name="color_back">#F8F8F8</color>-->
     <color name="color_hint">#6C6C6C</color>
@@ -13,7 +12,6 @@
 
     <color name="background">#FFFFFFFF</color>
 
-    <color name="secondary_text">#FFFFFFFF</color>
     <color name="secondary_text_variant">#F9F9F9</color>
 
     <color name="primary_text"> #151515 </color>
@@ -23,16 +21,9 @@
 
     <color name="green_dark">#05AC00</color>
 
+    <color name="indicator">#1E88E5 </color>
 <!--    <color name="green_dark"> Color(5, 172, 0, 255)</color>-->
 
-    <color name="gray50">#FAFAFA</color>
-    <color name="gray100">#F5F5F5</color>
-    <color name="gray200">#EEEEEE</color>
     <color name="gray300">#E0E0E0</color>
-    <color name="gray400">#BDBDBD</color>
     <color name="gray500">#9E9E9E</color>
-    <color name="gray600">#757575</color>
-    <color name="gray700">#616161</color>
-    <color name="gray800">#424242</color>
-    <color name="gray900">#212121</color>
 </resources>

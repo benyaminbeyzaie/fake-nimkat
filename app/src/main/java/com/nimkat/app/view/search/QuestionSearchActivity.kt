@@ -4,11 +4,9 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.view.ContextThemeWrapper
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -39,14 +37,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.LifecycleOwner
 import coil.compose.AsyncImage
-import com.github.ybq.android.spinkit.SpinKitView
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.rememberPagerState
 import com.nimkat.app.R
-import com.nimkat.app.models.DataHolder
 import com.nimkat.app.models.DataStatus
 import com.nimkat.app.models.DiscoveryAnswers
 import com.nimkat.app.ui.theme.NimkatTheme
@@ -54,17 +49,13 @@ import com.nimkat.app.ui.theme.RippleWhite
 import com.nimkat.app.ui.theme.mainFont
 import com.nimkat.app.ui.theme.secondFont
 import com.nimkat.app.utils.LIST
-import com.nimkat.app.utils.QUESTION
-import com.nimkat.app.utils.toast
 import com.nimkat.app.utils.QUESTION_ID
+import com.nimkat.app.view.CircularIndeterminanteProgressBar
 import com.nimkat.app.view.full_image.FullImageActivity
-import com.nimkat.app.view.main.MainActivity
 import com.nimkat.app.view.question_detail.QuestionDetailActivity
 import com.nimkat.app.view_model.AskQuestionViewModel
-import com.nimkat.app.view_model.AuthViewModel
 import com.rd.PageIndicatorView
 import com.rd.animation.type.AnimationType
-import dagger.hilt.EntryPoint
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -111,7 +102,8 @@ class QuestionSearchActivity : AppCompatActivity() {
     override fun onBackPressed() {
 //        MainActivity.sendIntent(this, false)
 //        finish()
-        super.onBackPressed()
+        finish()
+//        super.onBackPressed()
     }
 }
 
@@ -124,17 +116,19 @@ fun QuestionSearchContent(
 ) {
     val askedTeachers = askQuestionViewModel.askedTeacher.observeAsState()
     val questionModel = askQuestionViewModel.questionModel.observeAsState()
+    val context = LocalContext.current
     when (askedTeachers.value?.status) {
         DataStatus.Success -> {
             if (questionModel.value!!.data!!.files.isEmpty()) {
                 QuestionDetailActivity.sendIntent(LocalContext.current, questionModel.value!!.data!!.id!!, questionModel.value!!.data!!.text,null)
+                (context as Activity).finish()
             } else {
                 QuestionDetailActivity.sendIntent(LocalContext.current, questionModel.value!!.data!!.id!!, questionModel.value!!.data!!.text,questionModel.value!!.data!!.files.first().file!!.attachment)
+                (context as Activity).finish()
             }
         }
         else -> {}
     }
-    val context = LocalContext.current
 
     Scaffold(
         topBar = {
@@ -147,7 +141,7 @@ fun QuestionSearchContent(
                 CompositionLocalProvider(LocalRippleTheme provides RippleWhite) {
                     IconButton(
                         onClick = {
-                            if (context is Activity) context.onBackPressed()
+                            if (context is Activity) context.finish()
                         },
                         modifier = Modifier
                             .padding(4.dp, 12.dp)
@@ -274,27 +268,12 @@ fun QuestionSearchContent(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp, 16.dp, 16.dp, 0.dp),
-                color = colorResource(R.color.black),
+                color = colorResource(R.color.primary_text),
                 fontSize = 14.sp,
             )
             CompositionLocalProvider(LocalRippleTheme provides RippleWhite) {
                 if (loading.value) {
-                    AndroidView(
-                        factory = { context ->
-                            SpinKitView(
-                                ContextThemeWrapper(
-                                    context,
-                                    com.github.ybq.android.spinkit.R.style.SpinKitView_ThreeBounce
-                                )
-                            ).apply {
-
-                            }
-                        },
-                        update = {
-
-
-                        },
-                    )
+                    CircularIndeterminanteProgressBar(true)
 
                 } else {
                     Button(

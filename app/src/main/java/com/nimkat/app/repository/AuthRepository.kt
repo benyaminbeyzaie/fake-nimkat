@@ -5,8 +5,6 @@ import com.google.gson.Gson
 import com.nimkat.app.api.NimkatApi
 import com.nimkat.app.models.*
 import com.nimkat.app.utils.AuthPrefs
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import retrofit2.Response
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -17,7 +15,7 @@ class AuthRepository @Inject constructor(
     private val authPrefs: AuthPrefs,
     private val deviceRepository: DeviceRepository
 ) {
-    var authModel: AuthModel? = null;
+    var authModel: AuthModel? = null
 
     fun initAuth(): AuthModel? {
 
@@ -26,7 +24,7 @@ class AuthRepository @Inject constructor(
         if (authString === null) return null
         val gson = Gson()
         authModel = gson.fromJson(authString, AuthModel::class.java)
-        return authModel;
+        return authModel
     }
 
     suspend fun registerDevice(firebaseToken: String) {
@@ -64,13 +62,13 @@ class AuthRepository @Inject constructor(
         name: String,
         gradeID: Int,
     ): Response<ProfileModel>? {
-        initAuth();
+        initAuth()
         if (authModel == null) return null
         val apiResponse = api.updateProfile(
             authModel?.userId.toString(), ProfileInfo(name = name, grade = gradeID),
             "Token ${authModel?.token}"
         )
-        if (apiResponse.body() === null) return null;
+        if (apiResponse.body() === null) return null
         authModel!!.isProfileCompleted = apiResponse.body()!!.isProfileCompleted
         val gson = Gson()
         authPrefs.setAuthString(gson.toJson(authModel!!))
@@ -85,7 +83,7 @@ class AuthRepository @Inject constructor(
         initAuth()
         if (authModel == null) return null
         val apiResponse = api.getProfile(id, "Token ${authModel?.token}")
-        if (apiResponse.body() === null) return null;
+        if (apiResponse.body() === null) return null
         Log.d("Auth", "profile status " + apiResponse.body()!!.isProfileCompleted)
         val gson = Gson()
         authPrefs.setProfileString(gson.toJson(apiResponse.body()))

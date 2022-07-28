@@ -5,11 +5,8 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
-import android.widget.Toast
-import androidx.activity.ComponentActivity
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import com.google.firebase.messaging.FirebaseMessaging
 import com.nimkat.app.utils.ASK_GRADE_CODE
 import com.nimkat.app.utils.ASK_NAME_CODE
 import com.nimkat.app.view.main.MainActivity
